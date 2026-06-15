@@ -8,7 +8,7 @@
 
 ```
 Branch attivo:         main
-Commit di riferimento: PENDING-FIRST-COMMIT
+Commit di riferimento: 8a47d30
 Data snapshot:         2026-06-15
 ```
 
@@ -16,15 +16,19 @@ Data snapshot:         2026-06-15
 
 | Scheda | last-verified | Stato |
 |---|---|---|
-| STACK.md | PENDING-FIRST-COMMIT | aggiornata |
-| design-and-security.md | PENDING-FIRST-COMMIT | aggiornata |
-| deployment.md | PENDING-FIRST-COMMIT | aggiornata |
-| dev-testing.md | PENDING-FIRST-COMMIT | aggiornata |
-| current-work.md | PENDING-FIRST-COMMIT | aggiornata |
-| roadmap.md | PENDING-FIRST-COMMIT | aggiornata |
+| STACK.md | 8a47d30 | aggiornata |
+| design-and-security.md | 8a47d30 | aggiornata |
+| deployment.md | 8a47d30 | aggiornata |
+| dev-testing.md | 8a47d30 | aggiornata |
+| current-work.md | 8a47d30 | aggiornata |
+| roadmap.md | 8a47d30 | aggiornata |
 
 ## Punto di ripresa
 
-Primo commit non ancora eseguito. Dopo il commit, eseguire la skill `sync-context` per
-sostituire ogni PENDING-FIRST-COMMIT con l'hash reale di HEAD. Poi iniziare a popolare
-le schede di context/ leggendo il codice.
+Sistema inizializzato, ancorato al commit 8a47d30 e schede populate dalla specifica in
+`primo-prompt/`. Nessun file sorgente ancora scritto (greenfield). Prossimo passo:
+**Step 1** — scrivere `pyproject.toml` con uv, Python 3.12 e tutte le dipendenze.
+Ordine di implementazione completo in `context/current-work.md` (23 step).
+
+Prima di iniziare gli step core (dopo Step 5), configurare i MCP servers (GitHub MCP,
+PostgreSQL MCP, Context7, Sequential Thinking) — vedi `CLAUDE.md` §Promemoria MCP.
