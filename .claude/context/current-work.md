@@ -9,7 +9,7 @@ covers-paths:
   - Dockerfile
   - .github/**
 last-verified-commit: 8a47d3039a88d6258bc44197ff3ea5189dd0f5b9
-stato: in pianificazione
+stato: in sviluppo — step 6/23 completato
 ---
 
 # Lavoro in corso
@@ -26,12 +26,12 @@ L'ordine è prescritto e va rispettato: ogni step deve compilare e passare i tes
 procedere al successivo.
 
 ```
-Step  1: pyproject.toml — uv, Python 3.12, tutte le dipendenze (prod + dev)
-Step  2: .env.example + src/trading/config.py — Pydantic Settings
-Step  3: src/trading/db/models.py — Trade, Position, Signal, DailyPnL
-Step  4: src/trading/db/migrations/ — Alembic setup (alembic.ini, env.py, prima migration)
-Step  5: src/trading/db/repository.py — tutte le operazioni CRUD
-Step  6: src/trading/broker/client.py — IBClient, retry, disconnect handler, fill handler
+Step  1: pyproject.toml — uv, Python 3.12, tutte le dipendenze (prod + dev)          ✓ 795f243
+Step  2: .env.example + src/trading/config.py — Pydantic Settings                    ✓ 795f243
+Step  3: src/trading/db/models.py — Trade, Position, Signal, DailyPnL                ✓ 795f243
+Step  4: src/trading/db/migrations/ — Alembic setup (alembic.ini, env.py, prima migration) ✓ 795f243
+Step  5: src/trading/db/repository.py — tutte le operazioni CRUD                     ✓ 795f243
+Step  6: src/trading/broker/client.py — IBClient, retry, disconnect handler, fill handler  ✓ prossimo commit
 Step  7: src/trading/broker/market_data.py — yfinance warmup + real-time loop aggregazione 5s→5min
 Step  8: src/trading/broker/orders.py — get_contract() EU/US, LimitOrder + GTC StopOrder
 Step  9: src/trading/features/pipeline.py — pandas-ta-classic strategy
