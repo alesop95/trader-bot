@@ -1,0 +1,36 @@
+# Manifesto dei pacchetti LaTeX (template) — sezione 13 di PROJECT-SYSTEM.md.
+# Istanziare in radice come tex-packages.txt e ADATTARE al preambolo reale del proprio .tex:
+# una voce per riga col nome del pacchetto tlmgr; righe vuote e con # ignorate. tlmgr risolve
+# da solo le dipendenze, quindi elencare solo i pacchetti di primo livello.
+#
+# Base consigliata (build pdflatex + documento tecnico tipico). Togliere cio' che non serve,
+# aggiungere i pacchetti delle proprie \usepackage non presenti.
+
+# Strumento di build
+latexmk
+
+# Stack tipico di un documento tecnico
+amsmath
+amsfonts
+geometry
+booktabs
+hyperref
+listings
+float
+xcolor
+
+# Font T1 (se si usa \usepackage[T1]{fontenc})
+lm
+cm-super
+
+# Esempi opzionali da abilitare secondo il preambolo:
+#   babel-italian      # \usepackage[italian]{babel}
+#   hyphen-italian     # sillabazione italiana in pdflatex (vedi nota sotto)
+#   siunitx            # \usepackage{siunitx}
+#   pgf                # tikz
+#   circuitikz         # schemi circuitali
+#
+# Sillabazione: in pdflatex i pattern di una lingua babel stanno nel pacchetto
+# hyphen-<lingua> (es. hyphen-italian, hyphen-french). Per ogni babel-<lingua> usata
+# aggiungere il corrispondente hyphen-<lingua>: tlmgr, installandolo, rigenera language.dat
+# e i format, eliminando il warning "No hyphenation patterns were preloaded".

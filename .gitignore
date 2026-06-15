@@ -1,0 +1,45 @@
+# --- Sistema di progetto portabile: livello privato e ignorato (sezione 6/10) ---
+# Da unire al .gitignore del progetto. Inserire PRIMA di creare _notes/, altrimenti
+# la cartella finisce indicizzata.
+
+# Livello privato e verboso
+_notes/
+
+# Override personali e permessi personali
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Estratti temporanei dei .docx (cartelle scratch)
+_notes/.tmp-docx-*/
+.tmp-docx-*/
+
+# Documenti Word grezzi (binari). Dichiarare qui le eventuali eccezioni curate, es:
+#   *.docx
+#   !docs/specifica-ufficiale.docx
+*.docx
+
+# Ambiente materializzato (sezione 13): si versiona il manifesto, si ignora il derivato.
+# Python
+.venv/
+__pycache__/
+*.pyc
+# Node
+node_modules/
+# LaTeX: il .tex e' la fonte, il PDF e gli ausiliari sono derivati. Abilitare nei progetti LaTeX.
+# *.aux
+# *.log
+# *.out
+# *.toc
+# *.lof
+# *.lot
+# *.fls
+# *.fdb_latexmk
+# *.synctex.gz
+# *.bbl
+# *.blg
+# *.bcf
+# *.run.xml
+# *.nav
+# *.snm
+# *.vrb
+# *.pdf
