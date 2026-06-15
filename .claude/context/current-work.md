@@ -9,7 +9,7 @@ covers-paths:
   - Dockerfile
   - .github/**
 last-verified-commit: 8a47d3039a88d6258bc44197ff3ea5189dd0f5b9
-stato: in sviluppo — step 8/23 completato
+stato: in sviluppo — step 9/23 completato
 ---
 
 # Lavoro in corso
@@ -34,6 +34,7 @@ Step  5: src/trading/db/repository.py — tutte le operazioni CRUD              
 Step  6: src/trading/broker/client.py — IBClient, retry, disconnect handler, fill handler  ✓ prossimo commit
 Step  7: src/trading/broker/market_data.py — yfinance warmup + real-time loop aggregazione 5s→5min ✓ prossimo commit
 Step  8: src/trading/broker/orders.py — get_contract() EU/US, LimitOrder + GTC StopOrder       ✓ prossimo commit
+Step  9: src/trading/features/pipeline.py — pandas-ta-classic 0.6.20, 15 colonne verificate   ✓ prossimo commit
 Step  7: src/trading/broker/market_data.py — yfinance warmup + real-time loop aggregazione 5s→5min
 Step  8: src/trading/broker/orders.py — get_contract() EU/US, LimitOrder + GTC StopOrder
 Step  9: src/trading/features/pipeline.py — pandas-ta-classic strategy
