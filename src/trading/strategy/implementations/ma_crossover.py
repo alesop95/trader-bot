@@ -6,7 +6,7 @@ La funzione build_ma_crossover_composer() assembla il composer pronto all'uso.
 
 import asyncio
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import pandas as pd
 import yfinance as yf
@@ -36,44 +36,58 @@ class DividendFreeFilter(IUniverseFilter):
     Un'azione che stacca dividendo scende sistematicamente del valore del dividendo il
     giorno ex-div — il filtro evita di entrare a ridosso di quell'evento.
 
-    La chiamata a yfinance.Ticker.info è sincrona e wrappata in run_in_executor.
-    I simboli EU vengono tradotti con YAHOO_MAP prima della query.
-    In caso di errore sul singolo simbolo il filtro è permissivo: il simbolo viene incluso.
+    Cache giornaliera per simbolo: le chiamate yfinance avvengono al massimo una volta
+    al giorno per simbolo (la prima chiamata on_bar della sessione). Le chiamate
+    successive nella stessa sessione ritornano dal cache in O(1).
     """
 
     def __init__(self, lookforward_days: int = 5) -> None:
         self._lookforward_days = lookforward_days
+        self._ok_today: set[str] = set()    # simboli confermati OK per oggi
+        self._ex_today: set[str] = set()    # simboli esclusi per oggi
+        self._cache_date: date | None = None
 
     async def filter(self, candidates: list[str]) -> list[str]:
-        loop = asyncio.get_event_loop()
+        today = datetime.now(UTC).date()
+        if self._cache_date != today:
+            self._ok_today = set()
+            self._ex_today = set()
+            self._cache_date = today
 
-        async def _check(symbol: str) -> str | None:
-            yahoo_sym = YAHOO_MAP.get(symbol, symbol)
-            try:
-                info: dict = await loop.run_in_executor(
-                    None, lambda s=yahoo_sym: yf.Ticker(s).info
-                )
-                ex_div_ts = info.get("exDividendDate")
-                if ex_div_ts is None:
-                    return symbol
-                ex_div_dt = datetime.fromtimestamp(ex_div_ts, tz=UTC)
-                days_to_ex = (ex_div_dt - datetime.now(UTC)).days
-                if 0 <= days_to_ex <= self._lookforward_days:
-                    logger.info(
-                        "DividendFreeFilter: escluso {} — ex-div in {} giorni",
-                        symbol, days_to_ex,
+        unknown = [s for s in candidates if s not in self._ok_today and s not in self._ex_today]
+        if unknown:
+            loop = asyncio.get_event_loop()
+
+            async def _check(symbol: str) -> tuple[str, bool]:
+                yahoo_sym = YAHOO_MAP.get(symbol, symbol)
+                try:
+                    info: dict = await loop.run_in_executor(
+                        None, lambda s=yahoo_sym: yf.Ticker(s).info
                     )
-                    return None
-                return symbol
-            except Exception as exc:
-                logger.warning(
-                    "DividendFreeFilter: errore su {}, incluso per default ({})",
-                    symbol, exc,
-                )
-                return symbol
+                    ex_div_ts = info.get("exDividendDate")
+                    if ex_div_ts is None:
+                        return symbol, True
+                    ex_div_dt = datetime.fromtimestamp(ex_div_ts, tz=UTC)
+                    days_to_ex = (ex_div_dt - datetime.now(UTC)).days
+                    if 0 <= days_to_ex <= self._lookforward_days:
+                        logger.info(
+                            "DividendFreeFilter: escluso {} — ex-div in {} giorni",
+                            symbol, days_to_ex,
+                        )
+                        return symbol, False
+                    return symbol, True
+                except Exception as exc:
+                    logger.warning(
+                        "DividendFreeFilter: errore su {}, incluso per default ({})",
+                        symbol, exc,
+                    )
+                    return symbol, True
 
-        results = await asyncio.gather(*(_check(s) for s in candidates))
-        return [s for s in results if s is not None]
+            results = await asyncio.gather(*(_check(s) for s in unknown))
+            for sym, include in results:
+                (self._ok_today if include else self._ex_today).add(sym)
+
+        return [s for s in candidates if s not in self._ex_today]
 
 
 # ─── 2. SIGNAL GENERATOR ─────────────────────────────────────────────────────

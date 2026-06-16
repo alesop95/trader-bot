@@ -1,0 +1,116 @@
+services:
+
+  # ─── IB GATEWAY ──────────────────────────────────────────────────────────────
+  ib-gateway:
+    image: ghcr.io/gnzsnz/ib-gateway:stable
+    restart: unless-stopped
+    environment:
+      TWS_USERID: ${IBKR_USERNAME}
+      TWS_PASSWORD: ${IBKR_PASSWORD}
+      TRADING_MODE: ${TRADING_MODE:-paper}
+      VNC_SERVER_PASSWORD: ${VNC_PASSWORD:-changeme}
+      GATEWAY_OR_TWS: gateway
+    ports:
+      - "4001:4001"   # IB Gateway paper
+      - "4002:4002"   # IB Gateway live
+      - "5900:5900"   # VNC — accesso GUI per diagnostica
+    volumes:
+      - ib-gateway-settings:/home/ibgateway/tws-settings
+    healthcheck:
+      # Verifica che la porta sia in ascolto prima di dichiarare il container healthy
+      test: ["CMD-SHELL", "nc -z localhost ${IBKR_PORT:-4001}"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s   # IB Gateway impiega ~60s ad avviarsi completamente
+
+  # ─── DATABASE ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trader
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trader -d trader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── MIGRAZIONI ──────────────────────────────────────────────────────────────
+  migrate:
+    build: .
+    command: uv run alembic upgrade head
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://trader:${POSTGRES_PASSWORD}@postgres:5432/trader
+    env_file:
+      - path: .env
+        required: false
+
+  # ─── TRADING BOT ─────────────────────────────────────────────────────────────
+  bot:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      ib-gateway:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      # Sovrascrive DATABASE_URL da .env con il hostname del container
+      DATABASE_URL: postgresql+asyncpg://trader:${POSTGRES_PASSWORD}@postgres:5432/trader
+      # Sovrascrive IBKR_HOST da .env con il hostname del container
+      IBKR_HOST: ib-gateway
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8080:8080"   # /health + /metrics (Prometheus)
+    volumes:
+      - bot-logs:/app/logs
+
+  # ─── PROMETHEUS ──────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - bot
+
+  # ─── GRAFANA ─────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana-oss:latest
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  ib-gateway-settings:
+  postgres-data:
+  bot-logs:
+  prometheus-data:
+  grafana-data:

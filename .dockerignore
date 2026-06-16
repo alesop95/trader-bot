@@ -1,0 +1,32 @@
+# Ambiente virtuale locale — il Dockerfile ricrea il venv dentro l'immagine
+.venv/
+
+# Metadati del progetto e file di sistema
+.git/
+.gitignore
+.ruff_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# File di contesto Claude Code — non appartengono all'immagine
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+
+# Infrastruttura di orchestrazione — usata dall'host, non dal container
+docker-compose.yml
+monitoring/
+
+# Test — non servono nell'immagine di produzione
+tests/
+
+# Note e materiale grezzo
+_notes/
+
+# Credenziali e configurazione locale (mai nel build context)
+.env
+.env.example
+
+# Log locali
+logs/

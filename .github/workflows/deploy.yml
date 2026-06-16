@@ -1,0 +1,50 @@
+name: test-and-deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # consente il trigger manuale da GitHub UI
+
+jobs:
+
+  # ── TEST ───────────────────────────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.12"
+
+      - name: installa dipendenze
+        run: uv sync --frozen --dev
+
+      - name: lint
+        run: uv run ruff check src/
+
+      - name: unit test
+        run: uv run pytest tests/unit/ -v --tb=short
+
+  # ── DEPLOY ─────────────────────────────────────────────────────────────────
+  # Parte solo se il job test è passato; richiede l'environment "production"
+  # configurato su GitHub (Settings → Environments) con i segreti SSH.
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          script: |
+            set -euo pipefail
+            cd ~/trader-bot
+            git pull origin main
+            docker compose up --build -d
+            docker compose logs --tail=30 bot
