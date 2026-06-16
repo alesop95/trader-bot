@@ -9,7 +9,7 @@ covers-paths:
   - Dockerfile
   - .github/**
 last-verified-commit: 8a47d3039a88d6258bc44197ff3ea5189dd0f5b9
-stato: in sviluppo — step 10/23 completato
+stato: in sviluppo — step 17/23 completato
 ---
 
 # Lavoro in corso
@@ -40,13 +40,13 @@ Step  7: src/trading/broker/market_data.py — yfinance warmup + real-time loop 
 Step  8: src/trading/broker/orders.py — get_contract() EU/US, LimitOrder + GTC StopOrder
 Step  9: src/trading/features/pipeline.py — pandas-ta-classic strategy
 Step 10: src/trading/strategy/interfaces.py — 6 ABC + dataclass RawSignal/AllocatedSignal
-Step 11: src/trading/strategy/composer.py + registry.py
-Step 12: src/trading/strategy/implementations/ma_crossover.py — DividendFreeFilter incluso
-Step 13: src/trading/risk/manager.py + risk/circuit_breaker.py
-Step 14: src/trading/scheduler/jobs.py — dual session EU CET + US ET
-Step 15: src/trading/notifications/telegram.py
-Step 16: src/trading/monitoring/healthcheck.py — FastAPI, :8080/health
-Step 17: src/trading/reporting/flex_query.py — IBKR Flex Web Service
+Step 11: src/trading/strategy/composer.py + registry.py                        ✓ prossimo commit
+Step 12: src/trading/strategy/implementations/ma_crossover.py — DividendFreeFilter incluso    ✓ prossimo commit
+Step 13: src/trading/risk/manager.py + risk/circuit_breaker.py                        ✓ prossimo commit
+Step 14: src/trading/scheduler/jobs.py — dual session EU CET + US ET                    ✓ prossimo commit
+Step 15: src/trading/notifications/telegram.py                                          ✓ prossimo commit
+Step 16: src/trading/monitoring/healthcheck.py — FastAPI, :8080/health               ✓ prossimo commit
+Step 17: src/trading/reporting/flex_query.py — IBKR Flex Web Service               ✓ prossimo commit
 Step 18: src/trading/main.py — TradingBot, integrazione completa, signal handlers
 Step 19: docker-compose.yml — gnzsnz/ib-gateway-docker + bot + postgres + grafana
 Step 20: Dockerfile — uv-based (FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim)
