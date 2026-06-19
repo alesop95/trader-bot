@@ -28,8 +28,12 @@ con cui questo repository e gia configurato.
 Profilo personale: alias SSH `github-personal`, chiave `id_ed25519_personal`, identita
 `user.name` alesop95 e `user.email` alessio.sopranzi.95@gmail.com, utente GitHub alesop95.
 
-L'alias nudo `github.com` punta alla chiave di lavoro. Questi valori sono specifici di questa
-macchina: su un altro ambiente vanno riletti dal relativo `~/.ssh/config` senza inventarli.
+L'alias nudo `github.com` punta alla chiave di lavoro. La convenzione dei nomi degli alias,
+`github-personal` per l'identita personale e `github-corp` per quella di lavoro, e generale e si
+puo adottare identica su qualsiasi macchina, cosi che la stessa logica di selezione del profilo
+valga ovunque. I valori concreti dietro ogni alias, cioe il percorso della chiave, lo `user.name`
+e lo `user.email`, sono invece specifici della macchina e su un altro ambiente vanno riletti dal
+relativo `~/.ssh/config` senza inventarli.
 
 ## Protezione globale dal commit con identita sbagliata
 

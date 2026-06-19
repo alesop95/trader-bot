@@ -18,7 +18,10 @@ quali sono i TODO e i limiti d'ambiente. Si invoca la skill `sync-context` per v
 drift tra schede e codice, e si leggono solo le schede pertinenti al task, mai tutte insieme. Il
 work-log `.claude/memory/progress.md` e il registro `.claude/memory/decisions.md` forniscono la
 storia e le decisioni quando servono. Il materiale grezzo sotto `_notes/` si apre solo per
-verificare un requisito originale.
+verificare un requisito originale. Per una ripresa rapida esiste, quando presente,
+`_notes/RESUME-PROMPT.md`, privato e ignorato: riporta lo stato raggiunto e un prompt pronto da
+incollare. Va aggiornato alla fine di ogni sessione con il punto in cui si e arrivati, mentre lo
+stato canonico resta `.claude/memory/index.md`.
 
 ## Indice dei file satellite tracciati
 

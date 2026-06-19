@@ -1,14 +1,8 @@
 {
-  "servers": [
-    {
-      "name": "<nome-server>",
-      "command": "node",
-      "args": [
-        "./mcp/<entrypoint>.js"
-      ],
-      "env": {
-        "PROJECT_ROOT": "${workspaceFolder}"
-      }
+  "mcpServers": {
+    "code-context": {
+      "command": "npx",
+      "args": ["-y", "code-context-provider-mcp@latest"]
     }
-  ]
+  }
 }
