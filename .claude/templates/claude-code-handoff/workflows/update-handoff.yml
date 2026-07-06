@@ -1,0 +1,81 @@
+name: Aggiorna handoff Claude Code
+
+# Componente opzionale del pacchetto claude-code-handoff: si istanzia in
+# .github/workflows/update-handoff.yml solo se il progetto vive su GitHub e si vuole
+# l'aggiornamento anche senza una macchina locale che lanci tools/update-handoff.sh.
+#
+# La fonte (Cranot/claude-code-guide) si auto-aggiorna ~ogni 2 giorni: qui si controlla
+# a giorni alterni e si apre una pull request solo se c'e' davvero un cambiamento.
+# La ri-distillazione richiede il secret ANTHROPIC_API_KEY (consuma token API); senza
+# il secret il workflow registra nel log che un aggiornamento e' disponibile e si ferma,
+# senza aprire pull request inutili. La guida grezza finisce in _notes/, ignorata da git,
+# quindi la PR contiene solo il documento distillato e il file di stato.
+
+on:
+  schedule:
+    - cron: "0 4 */2 * *"   # 04:00 UTC, ogni 2 giorni
+  workflow_dispatch: {}      # esecuzione manuale dal tab Actions
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verifica se la fonte upstream e' cambiata
+        id: check
+        run: |
+          chmod +x tools/update-handoff.sh
+          set +e
+          ./tools/update-handoff.sh --check
+          rc=$?
+          set -e
+          if [ "$rc" -eq 10 ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          elif [ "$rc" -eq 0 ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Verifica upstream fallita (exit $rc)." >&2
+            exit "$rc"
+          fi
+
+      - name: Segnala aggiornamento disponibile senza API key
+        if: steps.check.outputs.available == 'true' && env.ANTHROPIC_API_KEY == ''
+        run: |
+          echo "Aggiornamento upstream disponibile, ma ANTHROPIC_API_KEY non e' configurato:"
+          echo "eseguire tools/update-handoff.sh in locale oppure /refresh-handoff in sessione."
+
+      - name: Scarica e ri-distilla l'handoff con Claude Code
+        if: steps.check.outputs.available == 'true' && env.ANTHROPIC_API_KEY != ''
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          ./tools/update-handoff.sh --force
+
+      - name: Apri pull request
+        if: steps.check.outputs.available == 'true' && env.ANTHROPIC_API_KEY != ''
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: |
+            .claude/context/claude-code-handoff.md
+            .claude/handoff-state.json
+          commit-message: "Aggiorna handoff Claude Code dalla fonte upstream"
+          title: "Aggiornamento handoff Claude Code"
+          body: |
+            Aggiornamento automatico da `Cranot/claude-code-guide`.
+
+            - `.claude/context/claude-code-handoff.md` ri-distillato alla versione upstream piu' recente.
+            - `.claude/handoff-state.json` allineato.
+
+            Rivedere il diff prima del merge: la ri-distillazione e' una corsa LLM e va
+            controllata come ogni contenuto generato. La guida grezza non e' nella PR
+            (vive in `_notes/`, ignorata): per consultarla, eseguire lo script in locale.
+          branch: auto/update-handoff
+          delete-branch: true

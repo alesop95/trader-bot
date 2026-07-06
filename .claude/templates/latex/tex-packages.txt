@@ -24,6 +24,11 @@ lm
 cm-super
 
 # Esempi opzionali da abilitare secondo il preambolo:
+#   psnfss             # \usepackage{times} o altri font PostScript classici (Helvetica, Palatino...)
+#   courier            # font Type1 Courier: SEMPRE insieme a psnfss se il documento usa anche
+#                      # \texttt in T1 (fontenc), altrimenti "Font ... not loadable: Metric (TFM)
+#                      # file not found" su pcrr8t — TinyTeX non lo include di default, a
+#                      # differenza di una TeX Live completa; osservato dal vivo nel pilota 2026-07-02
 #   babel-italian      # \usepackage[italian]{babel}
 #   hyphen-italian     # sillabazione italiana in pdflatex (vedi nota sotto)
 #   siunitx            # \usepackage{siunitx}

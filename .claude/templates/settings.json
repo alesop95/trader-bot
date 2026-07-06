@@ -17,7 +17,16 @@
       "Bash(git push:*)",
       "Bash(git reset --hard:*)",
       "Bash(git rebase:*)",
-      "Bash(git config --global:*)"
+      "Bash(git config --global:*)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/credentials)",
+      "Bash(rm -rf:*)"
+    ],
+    "ask": [
+      "Bash(npm publish:*)",
+      "Bash(docker push:*)"
     ]
   },
   "env": {

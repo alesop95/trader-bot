@@ -54,11 +54,18 @@ if (-not $Main) {
 
 Push-Location $ProjectRoot
 try {
-    if ($Clean)    { & $latexmk -c $Main; if ($LASTEXITCODE -ne 0) { throw "[build] latexmk -c fallito (exit $LASTEXITCODE)." }; return }
-    if ($CleanAll) { & $latexmk -C $Main; if ($LASTEXITCODE -ne 0) { throw "[build] latexmk -C fallito (exit $LASTEXITCODE)." }; return }
+    # -cd: latexmk cambia directory di lavoro in quella del file principale, cosi' il PDF e
+    # gli ausiliari finiscono accanto al sorgente (es. docs/diploma.pdf) invece che nella
+    # radice del progetto, dove pdflatex scriverebbe altrimenti per default quando $Main
+    # e' in una sottocartella (osservato dal vivo nel pilota 2026-07-03).
+    if ($Clean)    { & $latexmk -cd -c $Main; if ($LASTEXITCODE -ne 0) { throw "[build] latexmk -c fallito (exit $LASTEXITCODE)." }; return }
+    if ($CleanAll) { & $latexmk -cd -C $Main; if ($LASTEXITCODE -ne 0) { throw "[build] latexmk -C fallito (exit $LASTEXITCODE)." }; return }
     Write-Host "[build] Compilo $Main con latexmk (pdflatex) ..."
-    & $latexmk -pdf $Main
+    & $latexmk -cd -pdf $Main
     if ($LASTEXITCODE -ne 0) { throw "[build] Compilazione fallita (latexmk exit $LASTEXITCODE)." }
-    Write-Host "[build] Fatto: $([System.IO.Path]::ChangeExtension($Main, '.pdf'))"
+    $MainDir = Split-Path $Main -Parent
+    $OutName = [System.IO.Path]::GetFileNameWithoutExtension($Main) + '.pdf'
+    $OutPath = if ($MainDir) { Join-Path $MainDir $OutName } else { $OutName }
+    Write-Host "[build] Fatto: $OutPath"
 }
 finally { Pop-Location }

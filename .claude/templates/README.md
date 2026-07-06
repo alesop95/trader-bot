@@ -35,6 +35,15 @@ Anatomia di radice opzionale: README pubblico per GitHub, da istanziare su gate 
 templates/README-project.md    ->  <radice>/README.md                    (tracciato, opzionale)
 ```
 
+Anatomia di radice opzionale: template pubblico delle variabili d'ambiente, da istanziare se il
+progetto usa variabili d'ambiente o server MCP con token. Dichiara quali variabili servono, senza
+valori reali: la copia compilata `.env` resta locale, ignorata dallo snippet di `.gitignore` e
+negata in lettura all'agente dal `settings.json` di baseline.
+
+```
+templates/env.example          ->  <radice>/.env.example                 (tracciato, opzionale)
+```
+
 Anatomia di radice opzionale, da istanziare solo se il progetto integra un servizio esterno
 tramite un server MCP. Vive nella radice del progetto, accanto a `.claude`, mai sotto `.claude`,
 perché Claude Code scopre i server MCP solo dal `.mcp.json` di radice, in formato `mcpServers`.
@@ -87,6 +96,51 @@ file capitolo possono finire in `knowledge/sources/books/<slug>/`. Dettaglio in
 
 ```
 templates/book-to-skill/  ->  .claude/skills/book-digest/ (la skill); le skill-libro <slug>/ le genera book-digest
+```
+
+Pacchetto opzionale per il riferimento alle opzioni di Claude Code con auto-aggiornamento dalla
+guida community Cranot/claude-code-guide. Il documento distillato e lo stato sono tracciati, la
+fonte grezza scaricata resta in `_notes/` ignorata; il workflow GitHub Actions e' un componente
+opzionale nel pacchetto. La mappa di dettaglio e le note di onesta' sulla fonte stanno in
+`templates/claude-code-handoff/README.md`.
+
+```
+templates/claude-code-handoff/  ->  .claude/context/claude-code-handoff.md, .claude/commands/refresh-handoff.md,
+                                    tools/update-handoff.ps1|.sh (variante OS), .github/workflows/update-handoff.yml (opzionale)
+```
+
+Pacchetto opzionale dei profili di stack: un solo profilo per progetto, scelto al gate quando lo
+stack e' riconosciuto dai manifest, istanziato come regola modulare normativa con nome stabile.
+Complementare alla scheda descrittiva `STACK.md`. Dettaglio in `templates/stack-profiles/README.md`.
+
+```
+templates/stack-profiles/profiles/<profilo>.md  ->  .claude/rules/stack-profile.md
+```
+
+Pacchetto opzionale degli hook pronti all'uso, mai attivi dopo l'istanziazione: i file si copiano
+ma non fanno nulla finche' i blocchi scelti non vengono copiati a mano nella sezione `hooks` del
+`settings.json` del progetto, dal frammento della propria piattaforma. Dettaglio e note di
+sicurezza in `templates/hooks-starter/README.md`.
+
+```
+templates/hooks-starter/hooks/  ->  .claude/hooks/ (variante OS .ps1 o .sh; attivazione manuale via settings.json)
+```
+
+Pacchetto opzionale delle skill di sviluppo, da scegliere una per una al gate: `test-generator` e
+`mcp-tool-scaffold` non duplicano nulla, `code-review` e `security-review` si istanziano solo
+dichiarando la sovrapposizione con le skill native omonime. Dettaglio e nota sul naming in
+`templates/dev-skills/README.md`.
+
+```
+templates/dev-skills/skills/<skill>/  ->  .claude/skills/<skill>/
+```
+
+Pacchetto opzionale dei subagent di esempio, da scegliere uno per uno al gate: `code-reviewer`,
+`security-auditor`, `debugger`, `explorer` (quest'ultimo duplica in parte l'agente nativo Explore,
+la sovrapposizione si dichiara).
+
+```
+templates/agents/<agente>.md  ->  .claude/agents/<agente>.md
 ```
 
 Pacchetto opzionale per la resa dei diagrammi, da istanziare se il progetto contiene diagrammi

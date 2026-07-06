@@ -1,0 +1,65 @@
+name: Routine di progetto (automation-starter, su abbonamento)
+
+# Componente opzionale del pacchetto automation-starter: si istanzia in
+# .github/workflows/automation-routine.yml solo se il progetto vive su GitHub e si vuole una
+# routine headless senza tenere accesa una macchina locale che lanci tools/headless-run.sh.
+#
+# Autentica via CLAUDE_CODE_OAUTH_TOKEN, generato una tantum con "claude setup-token" da un
+# account con piano Team o Max e installato come secret del repository: la corsa consuma la
+# quota dell'abbonamento, non fatturazione a consumo dell'API. Non sostituire mai questo secret
+# con ANTHROPIC_API_KEY: quella via e' pay-per-token ed e' esplicitamente esclusa da questo
+# pacchetto, che copre solo cio' che resta incluso nell'abbonamento. Richiede inoltre che la
+# Claude GitHub App sia installata sul repository, perche' il token di abbonamento possa leggere
+# e scrivere sul checkout.
+#
+# Personalizzare automation-routine-prompt.txt con l'istruzione della routine (di default: far
+# eseguire la skill sync-context e riportare il drift delle schede di context/).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # ogni lunedi alle 06:00 UTC; adattare alla cadenza voluta
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+jobs:
+  routine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verifica presenza del token di abbonamento
+        run: |
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "Secret CLAUDE_CODE_OAUTH_TOKEN mancante." >&2
+            echo "Generarlo con 'claude setup-token' su un account Team o Max e registrarlo" >&2
+            echo "nei secret del repository. Non usare ANTHROPIC_API_KEY al suo posto: quella" >&2
+            echo "via e' a consumo ed e' esclusa da questo pacchetto." >&2
+            exit 1
+          fi
+
+      - name: Installa Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Esegue la routine in modalita headless
+        run: |
+          claude -p "$(cat .github/automation-routine-prompt.txt)" --output-format json --permission-mode acceptEdits --max-turns 12 > automation-output.json
+
+      - name: Apri pull request se ci sono modifiche
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Automazione: routine di progetto (automation-starter)"
+          title: "Aggiornamento automatico da routine di progetto"
+          body: |
+            Corsa headless della routine `automation-starter`, autenticata via
+            `CLAUDE_CODE_OAUTH_TOKEN` (quota di abbonamento Team/Max, nessuna fatturazione a
+            consumo). Rivedere il diff prima del merge: e' l'output di una corsa LLM, non un
+            commit umano.
+          branch: auto/automation-routine
+          delete-branch: true

@@ -49,12 +49,16 @@ if [ -z "$MAIN" ]; then
 fi
 
 cd "$PROJECT_ROOT"
+# -cd: latexmk cambia directory di lavoro in quella del file principale, cosi' il PDF e gli
+# ausiliari finiscono accanto al sorgente (es. docs/diploma.pdf) invece che nella radice del
+# progetto, dove pdflatex scriverebbe altrimenti per default quando $MAIN e' in una
+# sottocartella (osservato dal vivo nel pilota 2026-07-03).
 case "$MODE" in
-  clean)    "$LATEXMK" -c "$MAIN" ;;
-  cleanall) "$LATEXMK" -C "$MAIN" ;;
+  clean)    "$LATEXMK" -cd -c "$MAIN" ;;
+  cleanall) "$LATEXMK" -cd -C "$MAIN" ;;
   build)
     echo "[build] Compilo $MAIN con latexmk (pdflatex) ..."
-    "$LATEXMK" -pdf "$MAIN"
+    "$LATEXMK" -cd -pdf "$MAIN"
     echo "[build] Fatto: ${MAIN%.tex}.pdf"
     ;;
 esac

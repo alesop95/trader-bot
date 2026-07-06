@@ -1,0 +1,6 @@
+Esegui la skill sync-context di questo progetto per verificare il drift tra le schede di
+.claude/context/ e lo stato corrente del codice. Se trovi schede stale, applica solo gli edit
+chirurgici proposti dalla skill alle sezioni impattate, aggiorna last-verified-commit al commit
+corrente e aggiungi una voce in .claude/memory/progress.md con data, file toccati e motivo. Non
+inventare contenuto per le schede che non hai verificato. Al termine elenca in poche righe cosa
+hai aggiornato e cosa resta da rivedere a mano.

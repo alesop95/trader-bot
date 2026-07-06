@@ -1,0 +1,26 @@
+{
+  "_comment": "ESEMPIO (Windows) di sezione 'hooks' da fondere in .claude/settings.json per ATTIVARE gli hook del pacchetto hooks-starter. Copiare SOLO i blocchi desiderati: ogni hook si attiva da solo. Sostituire <CLAUDE_PROJECT_DIR> con il percorso assoluto della radice del progetto (es. E:\\\\mio-progetto), come per l'hook di wipe della sezione 15 di PROJECT-SYSTEM.md. Questo file non si istanzia mai cosi' com'e'. Timeout in secondi. Verificare la registrazione con /hooks.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_PROJECT_DIR>\\.claude\\hooks\\session-context.ps1\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_PROJECT_DIR>\\.claude\\hooks\\protect-sensitive-files.ps1\"", "timeout": 5 }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"<CLAUDE_PROJECT_DIR>\\.claude\\hooks\\secret-scan.ps1\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

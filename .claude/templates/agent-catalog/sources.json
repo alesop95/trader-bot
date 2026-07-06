@@ -1,0 +1,25 @@
+{
+  "_comment": "Registro delle fonti community di subagent fetchabili singolarmente. Ogni voce 'flat' e' un repository di file .md indipendenti, senza manifest di plugin, da cui si pesca un file alla volta con tools/fetch-community-agent. Le voci 'meta' sono indici curati di altre fonti, consultabili solo a mano: gli script le controllano per drift ma non ne elencano ne' ne scaricano il contenuto. Aggiungere una fonte flat qui e' l'unica modifica necessaria per renderla disponibile a list/fetch/check.",
+  "sources": [
+    {
+      "key": "0xfurai",
+      "name": "0xfurai/claude-code-subagents",
+      "type": "flat",
+      "repo": "0xfurai/claude-code-subagents",
+      "branch": "main",
+      "path": "agents",
+      "license": "MIT",
+      "description": "138 subagent 'expert' per singolo stack, linguaggio o framework (es. react-expert, python-expert, prisma-expert), un file Markdown per agente con frontmatter YAML nativo Claude Code, nessun manifest di plugin: la fonte stessa e' pensata per essere copiata a mano una voce alla volta in ~/.claude/agents/."
+    },
+    {
+      "key": "awesome-index",
+      "name": "hesreallyhim/awesome-claude-code",
+      "type": "meta",
+      "repo": "hesreallyhim/awesome-claude-code",
+      "branch": "main",
+      "path": null,
+      "license": "NOASSERTION",
+      "description": "Lista curata di riferimenti ad altri repository (skill, hook, slash-command, orchestratori di agent, plugin) per Claude Code: non e' essa stessa una fonte di subagent ma un indice da cui scoprire nuove fonti flat o a plugin. Si consulta manualmente all'URL del repository; check-agent-sources la controlla solo per sapere se e' cambiata da rivedere, list-community-agents non la elenca."
+    }
+  ]
+}

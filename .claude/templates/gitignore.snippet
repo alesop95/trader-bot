@@ -9,14 +9,28 @@ _notes/
 CLAUDE.local.md
 .claude/settings.local.json
 
-# Estratti temporanei dei .docx (cartelle scratch)
-_notes/.tmp-docx-*/
-.tmp-docx-*/
+# Segreti e materiale di credenziale: mai committati. Il template pubblico delle variabili
+# e' .env.example, tracciato; la copia compilata .env resta locale (sezione 6).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Estratti temporanei di documenti voluminosi (cartelle scratch e cache di doc-ingest)
+_notes/.tmp-doc-*/
+.tmp-doc-*/
 
 # Documenti Word grezzi (binari). Dichiarare qui le eventuali eccezioni curate, es:
 #   *.docx
 #   !docs/specifica-ufficiale.docx
 *.docx
+
+# I .pdf sorgente per doc-ingest restano di norma versionabili (spesso sono deliverable
+# legittimi): ignorarli con lo stesso pattern di *.docx solo se il progetto li tratta come
+# materiale grezzo da rigenerare, non come documento finale.
+#   *.pdf
+#   !docs/specifica-ufficiale.pdf
 
 # Ambiente materializzato (sezione 13): si versiona il manifesto, si ignora il derivato.
 # Python

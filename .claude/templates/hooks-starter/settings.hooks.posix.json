@@ -1,0 +1,26 @@
+{
+  "_comment": "ESEMPIO (Linux/macOS) di sezione 'hooks' da fondere in .claude/settings.json per ATTIVARE gli hook del pacchetto hooks-starter. Copiare SOLO i blocchi desiderati: ogni hook si attiva da solo. Questo file non si istanzia mai cosi' com'e'. Timeout in secondi. Verificare la registrazione con /hooks.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-context.sh\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-sensitive-files.sh\"", "timeout": 5 }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/secret-scan.sh\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}
