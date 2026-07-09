@@ -83,6 +83,8 @@ Sono ignorati, in `_notes/`, perché personali, narrativi o transitori, `DIARIO.
 
 Due scelte si discostano da una collocazione puramente privata e vanno tenute presenti. Lo `STACK.md` è il documento di recupero più importante e va tracciato, non confinato nel locale, perché un collega che clona deve vederlo. Il work-log di ingestione dei `.docx`, con le date di riconciliazione, non va in un file ignorato a parte ma confluisce in `memory/progress.md` tracciato, così che la data di allineamento sopravviva a un clone e non si duplichi il log.
 
+Parentesi opzionale, non parte del ciclo di default: alcuni progetti aggiungono sotto `context/` un terzo tipo di documento, distinto sia dalle schede di stato sia da `decisions.md`, quando chi ci lavora vuole anche imparare rileggendo le proprie decisioni architetturali. È un racconto evolutivo che contrappone, voce dopo voce, "com'era e perché era fragile" a "il salto di qualità e perché è meglio", con deep-dive che entrano nel codice reale. Non si assume mai per default, va deciso esplicitamente come la scelta del `README.md`, e la procedura completa vive nella skill `.claude/skills/studio-didattico/`.
+
 ---
 
 ## 4. Il motore di riconciliazione
