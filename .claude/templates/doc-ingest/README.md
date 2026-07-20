@@ -63,6 +63,14 @@ sintomo tipico di uno scan senza livello di testo; richiede il binario di sistem
 installato a parte, e se manca lo script segnala il file nell'indice invece di interrompere
 l'intera corsa.
 
+Esperienza reale da un progetto che ha usato il pacchetto su un corpus di libri di studio in gran
+parte fotocopiati o scansionati datati: il fallback OCR e' uscito a zero parole estratte, perche'
+l'OCR su scansioni di bassa qualita' e' spesso inaffidabile o rumoroso, non un problema di
+attivazione del flag. Quando serve solo l'anagrafica bibliografica di un libro (non il testo
+integrale), la via pratica alternativa e' la lettura visiva mirata di poche pagine di
+frontespizio/colophon, standardizzata nel pacchetto opzionale `book-bib-extract`, non un nuovo
+tentativo di OCR sull'intero corpus.
+
 ## Uso
 
 Dipendenza sempre richiesta: `markitdown` (`pip install markitdown`). Le due dipendenze opzionali

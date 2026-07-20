@@ -49,11 +49,18 @@ l'ancoraggio è rimandato al primo commit e non procedere al confronto.
 Per ciascuna scheda presente in `.claude/context/`:
 
 - Leggere `last-verified-commit` e `covers-paths` dal frontmatter (con `Read` se non già visibile sopra).
-- Eseguire `git diff --name-only <last-verified-commit>..HEAD -- <covers-paths>`, usando i `covers-paths` della scheda come argomenti dopo il `--`.
+- Se `covers-paths` è una lista vuota (`[]`), la scheda non è ancora mappata a nessuna area del
+  codice (tipicamente una scheda "da popolare" appena istanziata dal template): classificarla come
+  non applicabile al confronto di drift, senza eseguire alcun `git diff`. Un `git diff --name-only
+  <last-verified-commit>..HEAD --` senza percorsi dopo il `--` confronta l'intero repository, non
+  "niente": trattarlo come tale farebbe risultare stale ogni scheda non ancora popolata, anche se
+  nessuna area di sua competenza è mai stata definita.
+- Altrimenti eseguire `git diff --name-only <last-verified-commit>..HEAD -- <covers-paths>`, usando i `covers-paths` della scheda come argomenti dopo il `--`.
 - Classificare:
   - aggiornata: nessun file coperto è cambiato.
   - stale: almeno un file coperto è cambiato; mostrare la lista dei file all'utente.
   - obsoleta: i cambi includono rename o delete di moduli interi, oppure la scheda cita simboli o file che non esistono più (verificare con una ricerca dei nomi citati).
+  - non applicabile: `covers-paths` vuoto, vedi sopra.
 
 ### 2. Mostrare un report all'utente
 
@@ -87,7 +94,10 @@ ordine cronologico inverso.
 
 Anche se non cambiate, su conferma dell'utente bumpare `last-verified-commit` a HEAD come
 checkpoint, così il prossimo confronto parte da qui e non accumula rumore. Chiedere: "Le schede
-aggiornate sono ancora valide al commit attuale? Bumpare il last-verified?"
+aggiornate sono ancora valide al commit attuale? Bumpare il last-verified?" Le schede "non
+applicabile" (`covers-paths` vuoto) non hanno bisogno di questo bump: non c'è alcun confronto da
+cui far ripartire un checkpoint, restano semplicemente in attesa di ricevere `covers-paths` reali
+quando la scheda verrà popolata.
 
 ### 6. Caso obsoleto
 
