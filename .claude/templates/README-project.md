@@ -1,9 +1,6 @@
 # <nome progetto>
 
-> Template per il README pubblico della repository GitHub. Tracciato, radice del progetto,
-> fratello di CLAUDE.md. Destinato ai visitatori della repo e a chi clona per la prima volta,
-> non al team interno (che usa CLAUDE.md). Istanziare sostituendo i segnaposto tra parentesi
-> angolari e rimuovendo questa nota.
+> Template per il README pubblico della repository GitHub. Tracciato, radice del progetto, fratello di CLAUDE.md. Destinato ai visitatori della repo e a chi clona per la prima volta, non al team interno (che usa CLAUDE.md). Istanziare sostituendo i segnaposto tra parentesi angolari e rimuovendo questa nota.
 
 <una o due frasi che descrivono lo scopo del progetto in modo diretto e factual>
 

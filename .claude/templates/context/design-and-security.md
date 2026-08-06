@@ -9,8 +9,7 @@ last-verified-commit: <hash dell'ultima verifica o aggiornamento>
 
 # Design e sicurezza applicativa
 
-> Popolare leggendo il codice attuale. I diagrammi referenziati vivono in `diagrams/` in
-> corrispondenza uno a uno con i componenti descritti (sezione 7).
+> Popolare leggendo il codice attuale. I diagrammi referenziati vivono in `diagrams/` in corrispondenza uno a uno con i componenti descritti (sezione 7).
 
 ## Paradigmi di software design
 
@@ -18,8 +17,7 @@ last-verified-commit: <hash dell'ultima verifica o aggiornamento>
 
 ## Sicurezza applicativa
 
-<gestione di autenticazione e autorizzazione, validazione input, gestione dei segreti, superfici
-esposte e relative mitigazioni>
+<gestione di autenticazione e autorizzazione, validazione input, gestione dei segreti, superfici esposte e relative mitigazioni>
 
 ## Diagrammi
 

@@ -19,7 +19,6 @@ disable-model-invocation: true
 ## Istruzioni
 
 1. Riepiloga le modifiche entrate nel branch corrente
-2. Identifica se ci sono cambiamenti a CLAUDE.md o alla cartella `.claude/`
-   (indicare esplicitamente se il contesto di progetto è stato aggiornato)
+2. Identifica se ci sono cambiamenti a CLAUDE.md o alla cartella `.claude/` (indicare esplicitamente se il contesto di progetto è stato aggiornato)
 3. Segnala breaking changes nei file di configurazione o nei contratti API
 4. Suggerisci se è necessario aggiornare CLAUDE.md con nuove informazioni

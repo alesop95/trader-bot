@@ -24,8 +24,7 @@ description: >
 
 ## Istruzioni
 
-Il diff sopra è un riepilogo per file (`--stat`); per il dettaglio riga-per-riga di un file
-specifico eseguire su richiesta `git diff HEAD -- <percorso>`.
+Il diff sopra è un riepilogo per file (`--stat`); per il dettaglio riga-per-riga di un file specifico eseguire su richiesta `git diff HEAD -- <percorso>`.
 
 Sulla base dei dati sopra:
 1. Descrivere il lavoro in corso (branch + commit recenti)

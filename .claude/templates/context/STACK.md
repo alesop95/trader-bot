@@ -9,8 +9,7 @@ last-verified-commit: <hash dell'ultima verifica o aggiornamento>
 
 # Stack applicativo
 
-> Documento di recupero più importante: tracciato, perché un collega che clona deve vederlo.
-> Popolare leggendo il codice attuale, non inventare. Affinare `covers-paths` man mano.
+> Documento di recupero più importante: tracciato, perché un collega che clona deve vederlo. Popolare leggendo il codice attuale, non inventare. Affinare `covers-paths` man mano.
 
 ## Stack e runtime
 

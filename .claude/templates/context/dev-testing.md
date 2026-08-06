@@ -9,8 +9,7 @@ last-verified-commit: <hash dell'ultima verifica o aggiornamento>
 
 # Test di sviluppo
 
-> Popolare leggendo la configurazione reale dei test. La checklist operativa locale dei test
-> manuali vive invece in `_notes/TEST-CHECKLIST.md`, ignorata da git.
+> Popolare leggendo la configurazione reale dei test. La checklist operativa locale dei test manuali vive invece in `_notes/TEST-CHECKLIST.md`, ignorata da git.
 
 ## Test runner e comandi
 

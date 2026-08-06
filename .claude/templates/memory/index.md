@@ -1,8 +1,6 @@
 # Snapshot di sincronizzazione
 
-> Da leggere per primo a inizio sessione. Fotografa lo stato del progetto al commit di
-> riferimento e mappa ogni scheda al suo stato di verifica. È la fonte di verità su cosa è fatto,
-> non le spunte del diario.
+> Da leggere per primo a inizio sessione. Fotografa lo stato del progetto al commit di riferimento e mappa ogni scheda al suo stato di verifica. È la fonte di verità su cosa è fatto, non le spunte del diario.
 
 ## Stato
 

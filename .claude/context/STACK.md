@@ -14,9 +14,7 @@ last-verified-commit: 8a47d3039a88d6258bc44197ff3ea5189dd0f5b9
 
 ## Stack e runtime
 
-Linguaggio Python 3.12 (non 3.11). Package manager `uv` (astral-sh), che gestisce Python
-version pinning, virtual environment e lockfile in un unico tool, 10-100x più veloce di pip.
-File `uv.lock` versionato; nessun `requirements.txt`.
+Linguaggio Python 3.12 (non 3.11). Package manager `uv` (astral-sh), che gestisce Python version pinning, virtual environment e lockfile in un unico tool, 10-100x più veloce di pip. File `uv.lock` versionato; nessun `requirements.txt`.
 
 | Layer | Tecnologia | Versione minima |
 |---|---|---|
@@ -44,16 +42,13 @@ File `uv.lock` versionato; nessun `requirements.txt`.
 
 ## Alternative deliberatamente escluse
 
-`pip` / `pyenv` / `venv` sostituiti da `uv` — medesima interfaccia, molto più veloce e senza
-dipendenze di sistema per il Python version management.
+`pip` / `pyenv` / `venv` sostituiti da `uv` — medesima interfaccia, molto più veloce e senza dipendenze di sistema per il Python version management.
 
-`pandas-ta` (originale) sostituito da `pandas-ta-classic` — fork mantenuto, compatibile con uv,
-nessuna dipendenza C che blocca la build su ARM.
+`pandas-ta` (originale) sostituito da `pandas-ta-classic` — fork mantenuto, compatibile con uv, nessuna dipendenza C che blocca la build su ARM.
 
 `aiohttp` per health check sostituito da `FastAPI + uvicorn` — più robusto e testabile.
 
-Market order mai usati — sempre `LimitOrder` con prezzo aggressivo (last ±0.1%) per evitare
-slippage. Regola non negoziabile.
+Market order mai usati — sempre `LimitOrder` con prezzo aggressivo (last ±0.1%) per evitare slippage. Regola non negoziabile.
 
 `IBKR Pro` obbligatorio (no IBKR Lite, che vende order flow PFOF e non ha smart routing).
 
@@ -97,8 +92,4 @@ src/trading/
 
 ## Riferimenti a snippet chiave
 
-`src/trading/strategy/interfaces.py` — le 6 ABC e i dataclass `RawSignal`, `AllocatedSignal`
-`src/trading/strategy/implementations/ma_crossover.py:DividendFreeFilter` — universo EU/US curato
-`src/trading/broker/market_data.py:MarketDataManager._on_realtime_bar` — aggregazione 5s→5min
-`src/trading/db/repository.py:save_trade` — idempotenza su `ibkr_exec_id`
-`src/trading/risk/manager.py:RiskManager.validate` — gate ordini
+`src/trading/strategy/interfaces.py` — le 6 ABC e i dataclass `RawSignal`, `AllocatedSignal` `src/trading/strategy/implementations/ma_crossover.py:DividendFreeFilter` — universo EU/US curato `src/trading/broker/market_data.py:MarketDataManager._on_realtime_bar` — aggregazione 5s→5min `src/trading/db/repository.py:save_trade` — idempotenza su `ibkr_exec_id` `src/trading/risk/manager.py:RiskManager.validate` — gate ordini

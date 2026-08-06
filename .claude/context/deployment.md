@@ -23,9 +23,7 @@ last-verified-commit: 8a47d3039a88d6258bc44197ff3ea5189dd0f5b9
 **Non passare alla Fase 1 prima di:** 2 settimane paper trading + backtest out-of-sample positivo
 + tutte le checklist infra e bot completate (da `trading-bot-handoff-part2.md` §15).
 
-**Oracle Cloud (Fase 0/1)**: regione `us-ashburn-1` (Virginia) vicino ai server IBKR in NJ.
-IB Gateway via Docker con `platform: linux/amd64` per emulazione x86 su ARM (overhead ~30%
-CPU, accettabile per timeframe ≥5 minuti).
+**Oracle Cloud (Fase 0/1)**: regione `us-ashburn-1` (Virginia) vicino ai server IBKR in NJ. IB Gateway via Docker con `platform: linux/amd64` per emulazione x86 su ARM (overhead ~30% CPU, accettabile per timeframe ≥5 minuti).
 
 **Vultr NJ (Fase 2)**: `gnzsnz/ib-gateway-docker` nativo senza emulazione, latenza ~2-5ms.
 
@@ -43,8 +41,7 @@ Oracle Cloud / Vultr VM
 └── grafana     (Docker: grafana/grafana:latest)
 ```
 
-Ordine di avvio systemd (per deploy bare-metal alternativo):
-`PostgreSQL → Xvfb → IB Gateway (IBC) → Trading Bot`
+Ordine di avvio systemd (per deploy bare-metal alternativo): `PostgreSQL → Xvfb → IB Gateway (IBC) → Trading Bot`
 
 ## Comandi
 
@@ -103,23 +100,14 @@ Accesso a Grafana da remoto: `ssh -L 3000:localhost:3000 trader@VPS_IP`
 
 Non committare mai `.env`. Usare `/etc/trading/credentials.env` (permessi 600) in produzione.
 
-Variabili richieste: `IBKR_USERNAME`, `IBKR_PASSWORD`, `TRADING_MODE` (paper|live),
-`IBKR_PORT` (4001 paper / 4002 live), `IBKR_CLIENT_ID`, `IBKR_ACCOUNT` (es. U1234567),
-`DATABASE_URL`, `POSTGRES_PASSWORD`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`,
-`IBKR_FLEX_TOKEN`, `IBKR_FLEX_QUERY_ID`, `MAX_POSITION_SIZE_USD`, `MAX_DAILY_LOSS_USD`,
-`MAX_OPEN_POSITIONS`, `DEFAULT_STOP_LOSS_PCT`, `VNC_PASSWORD`, `GRAFANA_PASSWORD`.
+Variabili richieste: `IBKR_USERNAME`, `IBKR_PASSWORD`, `TRADING_MODE` (paper|live), `IBKR_PORT` (4001 paper / 4002 live), `IBKR_CLIENT_ID`, `IBKR_ACCOUNT` (es. U1234567), `DATABASE_URL`, `POSTGRES_PASSWORD`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `IBKR_FLEX_TOKEN`, `IBKR_FLEX_QUERY_ID`, `MAX_POSITION_SIZE_USD`, `MAX_DAILY_LOSS_USD`, `MAX_OPEN_POSITIONS`, `DEFAULT_STOP_LOSS_PCT`, `VNC_PASSWORD`, `GRAFANA_PASSWORD`.
 
 Esempio completo in `.env.example` (da creare nella radice del progetto, tracciato in git).
 
 ## Monitoring esterno
 
-UptimeRobot (gratuito, check ogni 5 minuti) su `http://VPS_IP:8080/health`.
-Alert Telegram quando HTTP ≠ 200 per 2 check consecutivi.
-Metriche Prometheus: `trading_pnl_daily_usd`, `trading_open_positions_count`,
-`trading_orders_total{status}`, `ibkr_connection_status`, `trading_daily_loss_usd`.
+UptimeRobot (gratuito, check ogni 5 minuti) su `http://VPS_IP:8080/health`. Alert Telegram quando HTTP ≠ 200 per 2 check consecutivi. Metriche Prometheus: `trading_pnl_daily_usd`, `trading_open_positions_count`, `trading_orders_total{status}`, `ibkr_connection_status`, `trading_daily_loss_usd`.
 
 ## Backup DB
 
-Cron job giornaliero alle 23:00 CET: `pg_dump | gzip → backups/trading_YYYYMMDD.sql.gz`.
-Retention 30 giorni locale. Upload opzionale su Cloudflare R2.
-Restore: `gunzip -c backup.sql.gz | psql -U trader trading`.
+Cron job giornaliero alle 23:00 CET: `pg_dump | gzip → backups/trading_YYYYMMDD.sql.gz`. Retention 30 giorni locale. Upload opzionale su Cloudflare R2. Restore: `gunzip -c backup.sql.gz | psql -U trader trading`.

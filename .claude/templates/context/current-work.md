@@ -10,9 +10,7 @@ stato: <nessuna feature attiva / in pianificazione / in corso / in verifica>
 
 # Lavoro in corso
 
-> La fonte di verità su cosa è fatto resta `memory/index.md` e il work-log, non le spunte di
-> questo file. Ogni feature si descrive con lo schema fisso sotto, così il lavoro pendente è
-> leggibile senza ricostruire il contesto da capo.
+> La fonte di verità su cosa è fatto resta `memory/index.md` e il work-log, non le spunte di questo file. Ogni feature si descrive con lo schema fisso sotto, così il lavoro pendente è leggibile senza ricostruire il contesto da capo.
 
 ## Feature: <nome feature>
 

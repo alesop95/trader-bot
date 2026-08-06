@@ -1,30 +1,12 @@
 # Pacchetti opzionali del sistema di progetto
 
-> Registro dei pacchetti opzionali che l'agente puo proporre quando inizializza o allinea un
-> progetto. Non e' un elenco di cose da installare sempre: ogni voce si offre con un gate
-> esplicito, in base al tipo di progetto, e si istanzia solo su conferma dell'utente. La skill
-> `init-project-system` e i due prompt consultano questo file per sapere cosa proporre.
+> Registro dei pacchetti opzionali che l'agente puo proporre quando inizializza o allinea un progetto. Non e' un elenco di cose da installare sempre: ogni voce si offre con un gate esplicito, in base al tipo di progetto, e si istanzia solo su conferma dell'utente. La skill `init-project-system` e i due prompt consultano questo file per sapere cosa proporre.
 
 ## Come si usa
 
-Al Passo 4 dell'inizializzazione e durante l'allineamento, l'agente legge questo registro, valuta
-quali pacchetti sono pertinenti al progetto secondo la colonna "quando offrirlo", e li propone uno
-per uno con una domanda esplicita, offrendo di istanziarli ora o di rimandarli come promemoria.
-Non assume mai: anche un pacchetto pertinente si attiva solo se l'utente accetta. Un pacchetto gia
-presente nel progetto non si reinstalla: se ne mostra la differenza e si chiede come procedere.
-Allo stesso modo, se il progetto fornisce gia quella capacita in proprio (per esempio implementa
-gia una propria knowledge base o un proprio sistema di grafo), il pacchetto non si propone come
-duplicato: al massimo si propone di allineare l'implementazione esistente allo standard.
-Quando un pacchetto viene attivato, l'agente mostra subito un recap d'uso, cioe i comandi e il
-flusso essenziali presi dal README del pacchetto, cosi l'utente sa come usarlo da subito.
+Al Passo 4 dell'inizializzazione e durante l'allineamento, l'agente legge questo registro, valuta quali pacchetti sono pertinenti al progetto secondo la colonna "quando offrirlo", e li propone uno per uno con una domanda esplicita, offrendo di istanziarli ora o di rimandarli come promemoria. Non assume mai: anche un pacchetto pertinente si attiva solo se l'utente accetta. Un pacchetto gia presente nel progetto non si reinstalla: se ne mostra la differenza e si chiede come procedere. Allo stesso modo, se il progetto fornisce gia quella capacita in proprio (per esempio implementa gia una propria knowledge base o un proprio sistema di grafo), il pacchetto non si propone come duplicato: al massimo si propone di allineare l'implementazione esistente allo standard. Quando un pacchetto viene attivato, l'agente mostra subito un recap d'uso, cioe i comandi e il flusso essenziali presi dal README del pacchetto, cosi l'utente sa come usarlo da subito.
 
-Per i pacchetti di tipo MCP server vale una regola aggiuntiva: si propone un massimo di tre o
-quattro server nuovi per sessione, verificando che il totale dei server connessi non superi sei.
-Ogni server espone tool che occupano token nel contesto a ogni turno, anche se non vengono usati.
-Si preferisce sempre l'implementazione ufficiale del vendor (GitHub per GitHub, Sentry per Sentry)
-rispetto a fork community non verificati: un audit pubblico ha trovato problemi di sicurezza nel
-66% dei server MCP scansionati. I server che recuperano contenuto web o documenti esterni sono
-vettori di prompt injection e vanno esaminati prima di concedere permessi di scrittura.
+Per i pacchetti di tipo MCP server vale una regola aggiuntiva: si propone un massimo di tre o quattro server nuovi per sessione, verificando che il totale dei server connessi non superi sei. Ogni server espone tool che occupano token nel contesto a ogni turno, anche se non vengono usati. Si preferisce sempre l'implementazione ufficiale del vendor (GitHub per GitHub, Sentry per Sentry) rispetto a fork community non verificati: un audit pubblico ha trovato problemi di sicurezza nel 66% dei server MCP scansionati. I server che recuperano contenuto web o documenti esterni sono vettori di prompt injection e vanno esaminati prima di concedere permessi di scrittura.
 
 ## Catalogo
 
@@ -93,12 +75,6 @@ vettori di prompt injection e vanno esaminati prima di concedere permessi di scr
 
 ## Aggiungere un pacchetto
 
-Un nuovo pacchetto si aggiunge con una riga in questo catalogo e, se e' a cartella, con una
-sottocartella sotto `templates/` che contiene un proprio `README.md` di istanziazione, sul modello
-di `templates/latex/`. La colonna "quando offrirlo" deve indicare un trigger concreto, cosi che il
-gate sappia quando proporlo senza assumere. I pacchetti che non sono cartelle, come `diagrams` e
-`code-context`, vivono come voci del catalogo e puntano ai file gia presenti sotto `templates/`.
+Un nuovo pacchetto si aggiunge con una riga in questo catalogo e, se e' a cartella, con una sottocartella sotto `templates/` che contiene un proprio `README.md` di istanziazione, sul modello di `templates/latex/`. La colonna "quando offrirlo" deve indicare un trigger concreto, cosi che il gate sappia quando proporlo senza assumere. I pacchetti che non sono cartelle, come `diagrams` e `code-context`, vivono come voci del catalogo e puntano ai file gia presenti sotto `templates/`.
 
-Il percorso completo per estendere il sistema, dalla ricerca dello strumento alla voce di catalogo
-fino alla validazione come case-study, e' descritto nella sezione "Come estendere il sistema" del
-`README.md` di radice.
+Il percorso completo per estendere il sistema, dalla ricerca dello strumento alla voce di catalogo fino alla validazione come case-study, e' descritto nella sezione "Come estendere il sistema" del `README.md` di radice.

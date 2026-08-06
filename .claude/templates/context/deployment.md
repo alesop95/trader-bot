@@ -9,8 +9,7 @@ last-verified-commit: <hash dell'ultima verifica o aggiornamento>
 
 # Deployment
 
-> Popolare leggendo la configurazione reale di infrastruttura e CI. Commit, push e deploy restano
-> operazioni manuali dell'utente.
+> Popolare leggendo la configurazione reale di infrastruttura e CI. Commit, push e deploy restano operazioni manuali dell'utente.
 
 ## Livelli
 

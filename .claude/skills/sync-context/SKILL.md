@@ -18,43 +18,22 @@ description: >
 !`git log --oneline --no-decorate -10`
 
 ### Snapshot e frontmatter delle schede
-Leggere con lo strumento Read: prima `.claude/memory/index.md` (snapshot), poi i file
-`.claude/context/*.md` (elencabili con Glob), estraendo dal frontmatter di ciascuna scheda
-`last-verified-commit` e `covers-paths`. Questi contenuti non si iniettano via comando di shell, per
-restare portabili tra Windows e Unix e per non dipendere da `cat`, `sed` o cicli `for` (che il
-controllo permessi blocca).
+Leggere con lo strumento Read: prima `.claude/memory/index.md` (snapshot), poi i file `.claude/context/*.md` (elencabili con Glob), estraendo dal frontmatter di ciascuna scheda `last-verified-commit` e `covers-paths`. Questi contenuti non si iniettano via comando di shell, per restare portabili tra Windows e Unix e per non dipendere da `cat`, `sed` o cicli `for` (che il controllo permessi blocca).
 
 ## Istruzioni operative
 
-Le schede tecniche tracciate vivono in `.claude/context/` (ad esempio `STACK.md`,
-`design-and-security.md`, `deployment.md`, `dev-testing.md`, `current-work.md`) e ognuna porta
-in testa un frontmatter con `covers-paths` e `last-verified-commit`. La skill scopre le schede
-da quella cartella, non da una lista fissa.
+Le schede tecniche tracciate vivono in `.claude/context/` (ad esempio `STACK.md`, `design-and-security.md`, `deployment.md`, `dev-testing.md`, `current-work.md`) e ognuna porta in testa un frontmatter con `covers-paths` e `last-verified-commit`. La skill scopre le schede da quella cartella, non da una lista fissa.
 
 ### 0. Primo ancoraggio dopo un init greenfield
 
-Prima del confronto di drift, gestire il caso del progetto appena inizializzato. Se una scheda
-porta `generated-from-commit` o `last-verified-commit` uguale al segnaposto `PENDING-FIRST-COMMIT`,
-significa che è stata creata in greenfield prima che esistesse un commit. In questo caso, quando
-il repository ha ora almeno un commit (`git rev-parse HEAD` riesce), sostituire il segnaposto con
-l'hash di `HEAD` in tutte le schede che lo portano, impostando sia `generated-from-commit` sia
-`last-verified-commit` a `HEAD`, e aggiornare il commit di riferimento in `memory/index.md` con lo
-stesso hash. Appendere una sola voce in `memory/progress.md` che registra l'ancoraggio iniziale,
-con data, hash e l'elenco delle schede ancorate. Da quel momento il confronto di drift dei passi
-successivi vale normalmente. Se invece il repository non ha ancora alcun commit, segnalare che
-l'ancoraggio è rimandato al primo commit e non procedere al confronto.
+Prima del confronto di drift, gestire il caso del progetto appena inizializzato. Se una scheda porta `generated-from-commit` o `last-verified-commit` uguale al segnaposto `PENDING-FIRST-COMMIT`, significa che è stata creata in greenfield prima che esistesse un commit. In questo caso, quando il repository ha ora almeno un commit (`git rev-parse HEAD` riesce), sostituire il segnaposto con l'hash di `HEAD` in tutte le schede che lo portano, impostando sia `generated-from-commit` sia `last-verified-commit` a `HEAD`, e aggiornare il commit di riferimento in `memory/index.md` con lo stesso hash. Appendere una sola voce in `memory/progress.md` che registra l'ancoraggio iniziale, con data, hash e l'elenco delle schede ancorate. Da quel momento il confronto di drift dei passi successivi vale normalmente. Se invece il repository non ha ancora alcun commit, segnalare che l'ancoraggio è rimandato al primo commit e non procedere al confronto.
 
 ### 1. Per ogni scheda, determinare lo stato
 
 Per ciascuna scheda presente in `.claude/context/`:
 
 - Leggere `last-verified-commit` e `covers-paths` dal frontmatter (con `Read` se non già visibile sopra).
-- Se `covers-paths` è una lista vuota (`[]`), la scheda non è ancora mappata a nessuna area del
-  codice (tipicamente una scheda "da popolare" appena istanziata dal template): classificarla come
-  non applicabile al confronto di drift, senza eseguire alcun `git diff`. Un `git diff --name-only
-  <last-verified-commit>..HEAD --` senza percorsi dopo il `--` confronta l'intero repository, non
-  "niente": trattarlo come tale farebbe risultare stale ogni scheda non ancora popolata, anche se
-  nessuna area di sua competenza è mai stata definita.
+- Se `covers-paths` è una lista vuota (`[]`), la scheda non è ancora mappata a nessuna area del codice (tipicamente una scheda "da popolare" appena istanziata dal template): classificarla come non applicabile al confronto di drift, senza eseguire alcun `git diff`. Un `git diff --name-only <last-verified-commit>..HEAD --` senza percorsi dopo il `--` confronta l'intero repository, non "niente": trattarlo come tale farebbe risultare stale ogni scheda non ancora popolata, anche se nessuna area di sua competenza è mai stata definita.
 - Altrimenti eseguire `git diff --name-only <last-verified-commit>..HEAD -- <covers-paths>`, usando i `covers-paths` della scheda come argomenti dopo il `--`.
 - Classificare:
   - aggiornata: nessun file coperto è cambiato.
@@ -78,32 +57,19 @@ Formato esempio:
 
 ### 3. Per ogni scheda stale, proporre il delta update
 
-Non rigenerare il file. Leggere `git diff <last-verified-commit>..HEAD -- <file_toccato>` per
-capire la modifica reale, individuare la sola sezione della scheda che descrive l'area cambiata,
-e proporre un edit chirurgico con `Edit` della sola sezione impattata. Non rifare la struttura
-della scheda.
+Non rigenerare il file. Leggere `git diff <last-verified-commit>..HEAD -- <file_toccato>` per capire la modifica reale, individuare la sola sezione della scheda che descrive l'area cambiata, e proporre un edit chirurgico con `Edit` della sola sezione impattata. Non rifare la struttura della scheda.
 
 ### 4. Dopo l'edit, aggiornare frontmatter e meta-stato
 
-Per ogni scheda effettivamente aggiornata: bumpare `last-verified-commit` al nuovo HEAD nel
-frontmatter, aggiornare la riga corrispondente nella tabella di stato in `.claude/memory/index.md`,
-e appendere una voce in `.claude/memory/progress.md` con data, commit, file toccati e motivo, in
-ordine cronologico inverso.
+Per ogni scheda effettivamente aggiornata: bumpare `last-verified-commit` al nuovo HEAD nel frontmatter, aggiornare la riga corrispondente nella tabella di stato in `.claude/memory/index.md`, e appendere una voce in `.claude/memory/progress.md` con data, commit, file toccati e motivo, in ordine cronologico inverso.
 
 ### 5. Schede aggiornate
 
-Anche se non cambiate, su conferma dell'utente bumpare `last-verified-commit` a HEAD come
-checkpoint, così il prossimo confronto parte da qui e non accumula rumore. Chiedere: "Le schede
-aggiornate sono ancora valide al commit attuale? Bumpare il last-verified?" Le schede "non
-applicabile" (`covers-paths` vuoto) non hanno bisogno di questo bump: non c'è alcun confronto da
-cui far ripartire un checkpoint, restano semplicemente in attesa di ricevere `covers-paths` reali
-quando la scheda verrà popolata.
+Anche se non cambiate, su conferma dell'utente bumpare `last-verified-commit` a HEAD come checkpoint, così il prossimo confronto parte da qui e non accumula rumore. Chiedere: "Le schede aggiornate sono ancora valide al commit attuale? Bumpare il last-verified?" Le schede "non applicabile" (`covers-paths` vuoto) non hanno bisogno di questo bump: non c'è alcun confronto da cui far ripartire un checkpoint, restano semplicemente in attesa di ricevere `covers-paths` reali quando la scheda verrà popolata.
 
 ### 6. Caso obsoleto
 
-Non bumpare in automatico. Avvisare che serve una rilettura più approfondita della sezione
-impattata, e proporre se aggiornarla mantenendo la struttura, marcarla come superata creando una
-nuova sezione di stato corrente, oppure rigenerarla da zero come ultimo ricorso.
+Non bumpare in automatico. Avvisare che serve una rilettura più approfondita della sezione impattata, e proporre se aggiornarla mantenendo la struttura, marcarla come superata creando una nuova sezione di stato corrente, oppure rigenerarla da zero come ultimo ricorso.
 
 ## Note
 
