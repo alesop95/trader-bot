@@ -159,11 +159,12 @@ Strumento per i passi manuali e visivi, da istanziare nel progetto quando lo svi
 templates/tools/latest-screenshot.ps1 ->  <radice>/tools/latest-screenshot.ps1  (tracciato, opzionale)
 ```
 
-Strumenti di igiene dell'account, non del progetto: agiscono sulla home dell'account Claude Code, non sul repository. Non si istanziano nella radice del progetto; restano nel bundle e si invocano da li, e `session-end-wipe.ps1` si installa nella home dell'account. Vedi PROJECT-SYSTEM.md sezione 15.
+Strumenti di igiene dell'account, non del progetto: agiscono sulla home dell'account Claude Code, non sul repository. Non si istanziano nella radice del progetto; restano nel bundle e si invocano da li, mentre `session-end-wipe.ps1` e il suo companion `scrub-claude-json.js` si installano insieme nella home dell'account. Vedi PROJECT-SYSTEM.md sezione 15.
 
 ```
 templates/tools/check-account-hygiene.ps1 ->  si esegue dal bundle al Passo 0   (verifica, non istanziato)
 templates/tools/session-end-wipe.ps1      ->  <CLAUDE_CONFIG_DIR>/hooks/session-end-wipe.ps1   (installato per-account)
+templates/tools/scrub-claude-json.js      ->  <CLAUDE_CONFIG_DIR>/hooks/scrub-claude-json.js   (installato per-account)
 ```
 
 ## Ancoraggio al primo commit
