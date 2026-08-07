@@ -244,9 +244,7 @@ done
 
 # Wipe totale: aggiunge gli store per-account effimeri e le cache di stato.
 # Preserva config, login, skill, plugin, hook e daemon.
-rm -rf "$CLAUDE_CONFIG_DIR"/{sessions,session-env,shell-snapshots,file-history,plans,tasks,paste-cache,backups,memory}/* \
-       "$CLAUDE_CONFIG_DIR"/{cache,jobs,ide,todos,statsig,telemetry}/* \
-       "$CLAUDE_CONFIG_DIR/history.jsonl" "$CLAUDE_CONFIG_DIR/mcp-needs-auth-cache.json"
+rm -rf "$CLAUDE_CONFIG_DIR"/{sessions,session-env,shell-snapshots,file-history,plans,tasks,paste-cache,backups,memory}/* "$CLAUDE_CONFIG_DIR"/{cache,jobs,ide,todos,statsig,telemetry}/* "$CLAUDE_CONFIG_DIR/history.jsonl" "$CLAUDE_CONFIG_DIR/mcp-needs-auth-cache.json"
 
 # Scratchpad temporanei, che stanno FUORI dalla home dell'account: una cartella per
 # slug di progetto, una sottocartella per sessione. Radice condivisa fra gli account.

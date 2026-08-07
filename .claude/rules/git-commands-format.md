@@ -6,6 +6,10 @@
 
 I comandi git restano sempre manuali dell'utente. Quando l'agente li presenta, li scrive in un formato immediatamente copiabile senza modifiche ne' su Windows PowerShell ne' su bash Linux: una riga per comando, nessuna sintassi specifica di un solo terminale, nessun heredoc multi-riga.
 
+Un comando non si spezza mai su piu' righe, per nessun motivo e a nessuna lunghezza. Non si usano caratteri di continuazione, ne' il backslash di bash, ne' il backtick di PowerShell, ne' il caret di cmd: sono specifici di una shell e rompono il copia-incolla sull'altra. Non si va a capo a mano per rientrare in una larghezza di colonna: l'avvolgimento a video e' compito del terminale, esattamente come per la prosa di un file Markdown, e una riga lunga incollata resta un comando solo mentre una riga spezzata a mano diventa due comandi rotti. Se l'elenco dei percorsi rende la riga scomoda, la soluzione non e' spezzarla ma accorciarla: si passa una cartella invece dei file che contiene, oppure si usa `git add -A` quando le modifiche da includere sono tutte quelle presenti, dichiarando nel testo che cosa entra nel commit. Questo vincolo vale sia per i comandi scritti in un file `.md` sia per quelli scritti direttamente in sessione nel terminale, e vale per ogni comando di shell che l'agente consegna all'utente perche' lo esegua a mano, non solo per quelli di git.
+
+Il vincolo va verificato, non solo dichiarato, perche' lo strumento `md-unwrap` per contratto non tocca il contenuto dei blocchi recintati: un comando spezzato dentro un blocco di codice non lo corregge nessuno. Il controllo e' `tools/lint-md-commands.py`, che percorre i blocchi di shell dei file Markdown e segnala continuazioni di riga, heredoc e comandi git che proseguono sulla riga seguente.
+
 ## Formato richiesto
 
 Ogni sessione di comandi git si presenta come due blocchi separati: uno per PowerShell (Windows) e uno per bash (Linux). I blocchi contengono le stesse operazioni nella stessa sequenza, adattate solo per le differenze di sintassi minime (che nella pratica di `git add`, `git commit -m` e `git push` sono quasi nessuna).
