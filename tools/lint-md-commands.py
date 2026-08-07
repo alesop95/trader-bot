@@ -95,7 +95,14 @@ def check_block(path, info, start, block):
         elif body.endswith('^'):
             out.append((path, idx, 'continuazione con caret cmd', body, True))
         if '<<' in body and re.search(r'<<-?\s*[\'"]?\w+', body):
-            out.append((path, idx, 'heredoc multi-riga', body, True))
+            # L'heredoc e' un costrutto delle shell POSIX: dentro un blocco bash e'
+            # la forma corretta di passare un testo a un comando, e non si puo'
+            # scrivere su una riga sola senza riscriverlo. Vale come errore solo
+            # dove non funzionerebbe affatto, cioe' in un blocco PowerShell. Chi
+            # copia solo la prima riga di un heredoc se ne accorge subito, perche'
+            # la shell resta in attesa: non e' il guasto silenzioso del comando
+            # spezzato da una continuazione.
+            out.append((path, idx, 'heredoc multi-riga', body, shell_ps))
         # Comando git che prosegue sulla riga dopo senza essere un nuovo comando.
         # Si segnala solo quando la riga seguente ha davvero la forma di una
         # continuazione, cioe' comincia con un'opzione oppure e' rientrata rispetto
