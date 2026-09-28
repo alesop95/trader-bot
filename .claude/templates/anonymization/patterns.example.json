@@ -1,0 +1,61 @@
+{
+  "_nota": "ESEMPIO. Questo file dichiara la FORMA attesa dal controllo, non il suo contenuto. Il file vero si chiama .anonymization-patterns.json, vive nel layer privato del progetto (per default _notes/, ignorato da git) e contiene i valori REALI da cercare: e' l'unico posto in cui quei valori possono stare, insieme alla mappa dei segnaposto. Copiare questo file, rinominarlo e sostituire ogni valore. Non tracciarlo mai.",
+  "_perche_fuori_dallo_script": "Un indirizzo IP ha una forma riconoscibile, un nome proprio no: e' un nome proprio solo se e' di qualcuno. Ne discende che l'elenco di cio' che va cercato e' specifico del progetto e non puo' vivere nello script, che invece e' tracciato. La separazione fra il controllo, pubblicabile, e cio' che il controllo cerca, privato, e' la proprieta' che rende lo strumento utilizzabile su un repository pubblico.",
+
+  "reti_documentali_ammesse": [
+    "203.0.113.",
+    "198.51.100.",
+    "192.0.2.",
+    "10.9.",
+    "127.0.0."
+  ],
+  "_reti_documentali_ammesse": "I blocchi riservati alla documentazione da RFC 5737, che non sono instradabili su Internet reale, piu' i blocchi privati scelti come segnaposto dal progetto e il loopback. Un indirizzo che comincia per uno di questi non viene segnalato: e' un segnaposto per costruzione.",
+
+  "ip_ammessi": [
+    "0.0.0.0",
+    "255.255.255.0",
+    "1.2.3.4"
+  ],
+  "_ip_ammessi": "Indirizzi singoli ammessi alla lettera: maschere di rete, indirizzi di ascolto su tutte le interfacce, indirizzi di esempio della documentazione di un fornitore.",
+
+  "prefissi_reali": [
+    "192.168.77.",
+    "172.20.5."
+  ],
+  "_prefissi_reali": "I prefissi REALI del progetto. Un riscontro su questi e' BLOCCANTE, perche' significa che un indirizzo vero e' finito in un file pubblicabile. E' la chiave piu' importante del file e va estesa ogni volta che si scopre un blocco reale non ancora elencato.",
+
+  "mac_ammessi_prefissi": [
+    "AA:BB:CC",
+    "00:00:00"
+  ],
+  "_mac_ammessi_prefissi": "Prefissi di indirizzo fisico ammessi, cioe' quelli dei segnaposto convenuti. Tutto il resto viene segnalato come indirizzo fisico reale.",
+
+  "email_ammesse": [
+    "info@example.com",
+    "supporto@example.com",
+    "autore@example.com"
+  ],
+  "_email_ammesse": "Caselle funzionali non personali e la casella dell'autore dei commit, che compare comunque nei metadati di ogni commit e anonimizzarla nella prosa non avrebbe alcun effetto protettivo. Le caselle che cominciano con un segnaposto convenuto (persona-, referente-, collaboratore-, consulente-, tirocinante-) sono ammesse automaticamente dallo script e non vanno elencate.",
+
+  "nomi_propri": [
+    "Nome Cognome",
+    "Cognome"
+  ],
+  "_nomi_propri": "Nomi e cognomi delle persone fisiche che compaiono nella materia del progetto: dipendenti, referenti di fornitori, collaboratori esterni. Un riscontro e' BLOCCANTE. La ricerca e' per sottostringa e senza distinzione fra maiuscole e minuscole, quindi un cognome corto puo' produrre falsi positivi: quelli si governano con la chiave seguente.",
+
+  "nomi_ammessi_in_contesto": [
+    "Esempio S.r.l. di Nome Cognome"
+  ],
+  "_nomi_ammessi_in_contesto": "Contesti in cui un nome proprio e' ammesso per decisione dichiarata, tipicamente la ragione sociale legale di una societa' che contiene il nome del titolare. Se una riga contiene uno di questi contesti, il riscontro sul nome viene taciuto. E' l'unica eccezione di contesto prevista, e va tenuta corta: piu' e' lunga, meno il controllo dice.",
+
+  "prefissi_telefonici": [
+    "0000",
+    "+00"
+  ],
+  "_prefissi_telefonici": "Prefissi da cui riconoscere un numero di telefono del progetto. Chiave FACOLTATIVA: se manca, lo script cerca il solo formato internazionale, che e' riconoscibile senza sapere nulla del progetto.",
+
+  "segreti_letterali": [
+    "sostituire-con-il-valore-di-un-segreto-gia-noto-e-da-non-pubblicare"
+  ],
+  "_segreti_letterali": "Valori letterali di segreti gia' noti, per intercettarne la ricomparsa in un file pubblicabile. Lo script NON stampa mai il valore trovato ma la sola etichetta, altrimenti il rapporto del controllo diventerebbe esso stesso una pubblicazione del segreto. Chiave FACOLTATIVA: questo controllo non sostituisce uno scanner di credenziali, che cerca per forma invece che per valore, e i due si usano insieme."
+}

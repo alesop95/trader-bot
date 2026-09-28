@@ -1,0 +1,2 @@
+# Le fixture sono confrontate byte per byte: git non deve toccare gli EOL.
+* -text

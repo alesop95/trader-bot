@@ -2,7 +2,7 @@
 
 > Documento di riferimento del pacchetto `learning-agent` (vedi `../README.md`). Integrato nel template il 2026-07-01 a partire dall'handoff originale dell'utente. È la fonte di verità per ogni scelta pedagogica e architetturale delle skill e degli agenti del pacchetto: in caso di dubbio interpretativo si consulta questo documento prima di improvvisare.
 >
-> Data ricerca: luglio 2026. Verifica sempre versioni e disponibilità dei repo prima di installare — i progetti community cambiano rapidamente.
+> Data ricerca: luglio 2026. Verifica sempre versioni e disponibilità dei repo prima di installare - i progetti community cambiano rapidamente.
 
 ---
 
@@ -16,9 +16,9 @@ Questo è un handoff di integrazione, non un tutorial. Alla creazione di un nuov
 
 Tre livelli disaccoppiati, così puoi sostituire ogni pezzo senza toccare gli altri:
 
-1. **Knowledge base (ingestione + retrieval)** — dove finiscono i tuoi .docx/.pdf/libri. Esposta come MCP server locale interrogabile. Qui riusi le tue tecniche esistenti di parsing token-efficient a monte dell'indicizzazione.
-2. **Motore di memoria dell'apprendimento (spaced repetition)** — traccia cosa hai imparato, cosa è "due", cosa fatichi a ricordare. Anki via MCP è lo standard de facto locale.
-3. **Livello di orchestrazione (agenti/skill)** — il "tutor" che pianifica la roadmap, spiega, interroga, adatta stile e tecniche. Vive in `.claude/` come skill + subagent + slash command.
+1. **Knowledge base (ingestione + retrieval)** - dove finiscono i tuoi .docx/.pdf/libri. Esposta come MCP server locale interrogabile. Qui riusi le tue tecniche esistenti di parsing token-efficient a monte dell'indicizzazione.
+2. **Motore di memoria dell'apprendimento (spaced repetition)** - traccia cosa hai imparato, cosa è "due", cosa fatichi a ricordare. Anki via MCP è lo standard de facto locale.
+3. **Livello di orchestrazione (agenti/skill)** - il "tutor" che pianifica la roadmap, spiega, interroga, adatta stile e tecniche. Vive in `.claude/` come skill + subagent + slash command.
 
 ```
 File (.docx/.pdf/libri)
@@ -37,28 +37,28 @@ Il livello 3 è l'unico obbligatorio per partire: puoi iniziare con la sola orch
 
 ### 2.1 Knowledge base / RAG locale
 
-- **knowledge-mcp** (olafgeibig) — MCP server che è una knowledge base locale con RAG ibrido vettoriale + grafo basato su LightRAG. Ingesta PDF, testo, Markdown, DOCX, fa chunking, estrae entità/relazioni e costruisce sia knowledge graph sia embedding. Espone la ricerca via FastMCP a client MCP (Claude Desktop, IDE). Richiede Python 3.12 e `uv`. È il candidato più forte per "libri e documenti come base di apprendimento" perché il grafo aiuta con topic strutturati (es. dipendenze concettuali di React). Repo: `github.com/olafgeibig/knowledge-mcp`.
-- **Local Knowledge RAG MCP** (patakuti) — ricerca semantica su documenti locali con embedding vettoriali; supporta più provider di embedding (OpenAI, Ollama, OpenAI-compatible). Adatto se vuoi restare 100% locale con Ollama.
-- **mcp-local-rag** (nkapila6) — RAG "primitivo" che gira interamente in locale, senza API key; pensato più per web search locale che per document store, ma include Agent Skills che insegnano a Claude a usarne i tool. Utile come fallback per colmare lacune della KB con ricerca fresca.
-- **DigitalOcean Knowledge Bases + MCP** — opzione gestita (non locale) se un domani vuoi hostare la KB fuori dalla macchina. Da tenere come alternativa, non come default.
+- **knowledge-mcp** (olafgeibig) - MCP server che è una knowledge base locale con RAG ibrido vettoriale + grafo basato su LightRAG. Ingesta PDF, testo, Markdown, DOCX, fa chunking, estrae entità/relazioni e costruisce sia knowledge graph sia embedding. Espone la ricerca via FastMCP a client MCP (Claude Desktop, IDE). Richiede Python 3.12 e `uv`. È il candidato più forte per "libri e documenti come base di apprendimento" perché il grafo aiuta con topic strutturati (es. dipendenze concettuali di React). Repo: `github.com/olafgeibig/knowledge-mcp`.
+- **Local Knowledge RAG MCP** (patakuti) - ricerca semantica su documenti locali con embedding vettoriali; supporta più provider di embedding (OpenAI, Ollama, OpenAI-compatible). Adatto se vuoi restare 100% locale con Ollama.
+- **mcp-local-rag** (nkapila6) - RAG "primitivo" che gira interamente in locale, senza API key; pensato più per web search locale che per document store, ma include Agent Skills che insegnano a Claude a usarne i tool. Utile come fallback per colmare lacune della KB con ricerca fresca.
+- **DigitalOcean Knowledge Bases + MCP** - opzione gestita (non locale) se un domani vuoi hostare la KB fuori dalla macchina. Da tenere come alternativa, non come default.
 
 **Nota sull'integrazione con il tuo parsing.** Il tuo pipeline di parsing token-efficient va *a monte* dell'ingestione: produci Markdown pulito/chunked e dai in pasto quello a knowledge-mcp invece dei PDF grezzi. Questo evita di pagare due volte in token (parsing + re-chunking) e ti lascia il controllo su come i libri vengono spezzati (per capitolo, per concetto, per lezione).
 
 ### 2.2 Spaced repetition / memoria
 
-- **anki-mcp-server** (ankimcp, `ankimcp.ai`) — il più completo. Gira in locale, nessuna telemetria; fa da proxy tra l'AI e il plugin AnkiConnect locale. Permette creazione/modifica note al volo, gestione deck, e sessioni di review conversazionali ("Aiutami a ripassare il mazzo di spagnolo"). Distingue tool di *review* da tool di *editing/gestione* deck.
-- **mcp-ankiconnect** (samefarrar, su PyPI) — minimale ma solido: `num_cards_due_today`, `get_due_cards`, `submit_reviews` (rating wrong/hard/good/easy). Install via `uv run --with mcp-ankiconnect mcp-ankiconnect`. Ottimo se vuoi solo il loop di ripasso senza feature extra.
-- **@arielbk/anki-mcp** (npm) e **scorzeth/anki-mcp-server** — alternative TypeScript; il primo supporta generazione cloze/da-PDF e paginazione per non saturare la context window.
+- **anki-mcp-server** (ankimcp, `ankimcp.ai`) - il più completo. Gira in locale, nessuna telemetria; fa da proxy tra l'AI e il plugin AnkiConnect locale. Permette creazione/modifica note al volo, gestione deck, e sessioni di review conversazionali ("Aiutami a ripassare il mazzo di spagnolo"). Distingue tool di *review* da tool di *editing/gestione* deck.
+- **mcp-ankiconnect** (samefarrar, su PyPI) - minimale ma solido: `num_cards_due_today`, `get_due_cards`, `submit_reviews` (rating wrong/hard/good/easy). Install via `uv run --with mcp-ankiconnect mcp-ankiconnect`. Ottimo se vuoi solo il loop di ripasso senza feature extra.
+- **@arielbk/anki-mcp** (npm) e **scorzeth/anki-mcp-server** - alternative TypeScript; il primo supporta generazione cloze/da-PDF e paginazione per non saturare la context window.
 
 Prerequisito comune: Anki desktop + add-on **AnkiConnect** (plugin id `2055492159`). Su macOS disabilita AppSleep per Anki per evitare lentezza.
 
 ### 2.3 Orchestrazione (Claude Code)
 
-- **Skills** — file Markdown con frontmatter YAML che caricano istruzioni solo quando invocati (costo token quasi nullo finché non servono). Il posto giusto per le "playbook" pedagogiche.
-- **Subagents** — istanze isolate con context window propria; l'output verboso (lettura file, retrieval) resta isolato e torna solo il riassunto. Ideali per delegare l'ingestione/retrieval pesante e tenere pulita la sessione principale.
-- **Slash commands** — entry a singolo file con autocomplete `/...` in terminale; buoni per innescare pipeline (es. `/learn`, `/review`, `/roadmap`).
-- **Agent Teams** (sperimentale, disattivo di default via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) — più istanze che si coordinano tra loro. Usare solo se vuoi tutor "multipli" che si sfidano (es. spiegatore + esaminatore + revisore). Costa molti più token: non è il default consigliato.
-- **Compilazione MCP → Skill** — tecnica citata dalla community per ridurre il consumo token dei tool MCP dell'80-98% impacchettandoli come skill. Da valutare una volta stabilizzati i tuoi MCP.
+- **Skills** - file Markdown con frontmatter YAML che caricano istruzioni solo quando invocati (costo token quasi nullo finché non servono). Il posto giusto per le "playbook" pedagogiche.
+- **Subagents** - istanze isolate con context window propria; l'output verboso (lettura file, retrieval) resta isolato e torna solo il riassunto. Ideali per delegare l'ingestione/retrieval pesante e tenere pulita la sessione principale.
+- **Slash commands** - entry a singolo file con autocomplete `/...` in terminale; buoni per innescare pipeline (es. `/learn`, `/review`, `/roadmap`).
+- **Agent Teams** (sperimentale, disattivo di default via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) - più istanze che si coordinano tra loro. Usare solo se vuoi tutor "multipli" che si sfidano (es. spiegatore + esaminatore + revisore). Costa molti più token: non è il default consigliato.
+- **Compilazione MCP → Skill** - tecnica citata dalla community per ridurre il consumo token dei tool MCP dell'80-98% impacchettandoli come skill. Da valutare una volta stabilizzati i tuoi MCP.
 
 Repo/community utili: `wshobson/agents` (marketplace multi-harness di plugin/agent/skill), `awesome-claude-code-agents`, la directory ufficiale plugin di Anthropic, e `knowledge-work-plugins` (plugin per knowledge worker in Cowork/Code).
 
@@ -104,12 +104,12 @@ Ruolo: genera prompt di *active recall* (non riconoscimento), valuta le risposte
 
 ## 4. Pedagogia contestuale: la tecnica si adatta al dominio
 
-Principio guida: **spaced repetition + active recall (testing effect)** sono la base trasversale valida ovunque — rivedere a intervalli crescenti batte il cramming (fino a ~200% di ritenzione a lungo termine a parità di tempo di studio), e auto-interrogarsi batte la rilettura passiva (Roediger & Karpicke, 2006). Ma *cosa* si mette nelle card e *come* si struttura la pratica cambia radicalmente per dominio.
+Principio guida: **spaced repetition + active recall (testing effect)** sono la base trasversale valida ovunque - rivedere a intervalli crescenti batte il cramming (fino a ~200% di ritenzione a lungo termine a parità di tempo di studio), e auto-interrogarsi batte la rilettura passiva (Roediger & Karpicke, 2006). Ma *cosa* si mette nelle card e *come* si struttura la pratica cambia radicalmente per dominio.
 
 Un limite noto da codificare nell'agente: la ritenzione di un item isolato **non** implica saperlo applicare in contesto. Quindi le review devono includere task di produzione/applicazione, non solo richiamo di definizioni.
 
 ### 4.1 Lingua straniera (es. spagnolo)
-- Unità di memoria: vocaboli, frasi, pattern di parole, pronuncia, regole grammaticali — molto materiale ad alto tasso di memorizzazione, terreno ideale per SRS.
+- Unità di memoria: vocaboli, frasi, pattern di parole, pronuncia, regole grammaticali - molto materiale ad alto tasso di memorizzazione, terreno ideale per SRS.
 - Regola pratica classica: meglio 10 esposizioni distribuite su 10 giorni che 100 nello stesso giorno.
 - Card: cloze, coppie L2→L1 e L1→L2, audio se disponibile, frasi in contesto (non parole isolate).
 - Pratica applicativa: produzione di frasi, mini-conversazioni, review "conversation-derived" (l'agente estrae da una conversazione libera gli errori e genera ripasso mirato, poi verifica con un mastery check).
@@ -141,7 +141,7 @@ Principio comune: **nessun approccio unico**; personalizzazione, pacing flessibi
 - **Chunking**: unità piccole e finite; una sezione o un paragrafo alla volta, non un capitolo intero.
 - **Pomodoro** (es. 25/5, ~30 min max a blocco) con pause di movimento; l'attività fisica migliora focus e cognizione.
 - **Supporto alle funzioni esecutive**: checklist, whiteboard/tracker visibile, scadenze esplicite per scaricare la working memory.
-- **Novità e sistemi personalizzati**: variare formato mantiene l'engagement; *body doubling* (studiare "in presenza" di qualcuno — l'agente può fare da presenza) aiuta l'avvio.
+- **Novità e sistemi personalizzati**: variare formato mantiene l'engagement; *body doubling* (studiare "in presenza" di qualcuno - l'agente può fare da presenza) aiuta l'avvio.
 - Feedback immediato e frequente; obiettivi brevi e visibili.
 
 ### 5.2 Spettro autistico
@@ -165,7 +165,7 @@ Principio comune: **nessun approccio unico**; personalizzazione, pacing flessibi
 
 ## 6. Onboarding di sessione (profilo learner)
 
-Alla prima sessione (o con `/profile`), l'agente raccoglie — idealmente con opzioni a bottoni, non testo libero — almeno:
+Alla prima sessione (o con `/profile`), l'agente raccoglie - idealmente con opzioni a bottoni, non testo libero - almeno:
 
 1. **Topic e obiettivo** (es. "React per lavoro", "spagnolo conversazionale per viaggio").
 2. **Categoria** (auto-inferita: lingua | programmazione | concettuale) → sceglie il template pedagogico (§4).
@@ -225,9 +225,9 @@ L'agente rilegge e aggiorna questo file a ogni sessione; è la fonte di verità 
 - knowledge-mcp (LightRAG): github.com/olafgeibig/knowledge-mcp
 - Local Knowledge RAG MCP: lobehub.com/mcp/patakuti-local-knowledge-rag-mcp
 - mcp-local-rag: github.com/nkapila6/mcp-local-rag
-- anki-mcp-server: github.com/ankimcp/anki-mcp-server — ankimcp.ai
+- anki-mcp-server: github.com/ankimcp/anki-mcp-server - ankimcp.ai
 - mcp-ankiconnect: pypi.org/project/mcp-ankiconnect
-- Claude Code — subagents/skills/hooks/agent teams: code.claude.com/docs
+- Claude Code - subagents/skills/hooks/agent teams: code.claude.com/docs
 - wshobson/agents (marketplace): github.com/wshobson/agents
 - cc-self-train (curriculum a dipendenze, pedagogia): arxiv.org/html/2604.17460v1
 - Evidenze active recall / spaced repetition: Roediger & Karpicke (2006); Khan Academy "Learn to Learn"

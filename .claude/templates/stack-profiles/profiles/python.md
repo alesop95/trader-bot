@@ -4,15 +4,15 @@
 
 ## Ambiente e tipi
 
-L'ambiente si gestisce con `uv` oppure con un venv classico, con le dipendenze pinnate nel manifesto versionato e l'ambiente materializzato ignorato, secondo la sezione 13 di `PROJECT-SYSTEM.md`. Type hints ovunque, con `mypy` o `pyright` puliti come condizione di merge. Formattazione e lint con ruff (o black per la sola formattazione, se il progetto lo usa gia').
+L'ambiente si gestisce con `uv` oppure con un venv classico, con le dipendenze pinnate nel manifesto versionato e l'ambiente materializzato ignorato, secondo la sezione 13 di `PROJECT-SYSTEM.md`. Type hints ovunque, con `mypy` o `pyright` puliti come condizione di merge. Formattazione e lint con ruff (o black per la sola formattazione, se il progetto lo usa già).
 
 ## Test
 
-I test girano con pytest. L'I/O esterno si isola nelle fixture, e i test unitari non toccano mai la rete: cio' che parla con l'esterno si mocka o si sposta nei test di integrazione, marcati come tali.
+I test girano con pytest. L'I/O esterno si isola nelle fixture, e i test unitari non toccano mai la rete: ciò che parla con l'esterno si mocka o si sposta nei test di integrazione, marcati come tali.
 
 ## Pipeline RAG
 
-Nei progetti RAG[^1] le quattro fasi, ingestion, indexing, retrieval e generation, restano moduli separati con confini espliciti, e le fonti recuperate si loggano sempre insieme alla risposta generata, cosi che ogni output sia riconducibile a cio' che lo ha fondato. Vale il principio della regola `token-economy`: il lavoro deterministico va in script, l'LLM si chiama solo per il salto semantico.
+Nei progetti RAG[^1] le quattro fasi, ingestion, indexing, retrieval e generation, restano moduli separati con confini espliciti, e le fonti recuperate si loggano sempre insieme alla risposta generata, così che ogni output sia riconducibile a ciò che lo ha fondato. Vale il principio della regola `token-economy`: il lavoro deterministico va in script, l'LLM si chiama solo per il salto semantico.
 
 ## Comandi tipici
 

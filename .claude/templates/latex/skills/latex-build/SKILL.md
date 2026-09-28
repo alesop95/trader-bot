@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 ## Premessa
 
-Questa skill non duplica logica: si appoggia ai file versionati del progetto. La fonte di verita' dell'ambiente e' il manifesto `tex-packages.txt` (sezione 13 di `.claude/PROJECT-SYSTEM.md`); la distribuzione TeX (TinyTeX) e' invece esterna al repository, installata user-local e condivisa fra i progetti, quindi non versionata. Gli script invocano i binari dell'ambiente per percorso, senza attivazione interattiva, cosi' il comportamento e' identico in locale e in CI.
+Questa skill non duplica logica: si appoggia ai file versionati del progetto. La fonte di verità dell'ambiente è il manifesto `tex-packages.txt` (sezione 13 di `.claude/PROJECT-SYSTEM.md`); la distribuzione TeX (TinyTeX) è invece esterna al repository, installata user-local e condivisa fra i progetti, quindi non versionata. Gli script invocano i binari dell'ambiente per percorso, senza attivazione interattiva, così il comportamento è identico in locale e in CI.
 
 Gli script non eseguono operazioni git: preparano e compilano soltanto. Commit e push restano manuali dell'utente.
 
@@ -23,7 +23,7 @@ Bootstrap dell'ambiente la prima volta, oppure dopo aver aggiunto una `\usepacka
 
 ### 1. Preparare l'ambiente dal manifesto
 
-Su Windows (Windows PowerShell 5.1, gia' presente di serie; con PowerShell 7+ funziona anche `pwsh`):
+Su Windows (Windows PowerShell 5.1, già presente di serie; con PowerShell 7+ funziona anche `pwsh`):
 
 ```
 powershell -ExecutionPolicy Bypass -File scripts\setup-tex.ps1
@@ -51,11 +51,11 @@ Su Unix/macOS:
 sh scripts/build.sh
 ```
 
-Se nella radice c'e' un solo `.tex` viene usato quello; altrimenti passare `-Main` / `--main <file.tex>`. La pulizia degli ausiliari e' `-Clean` / `--clean` (lascia il PDF) o `-CleanAll` / `--clean-all` (rimuove anche il PDF).
+Se nella radice c'è un solo `.tex` viene usato quello; altrimenti passare `-Main` / `--main <file.tex>`. La pulizia degli ausiliari è `-Clean` / `--clean` (lascia il PDF) o `-CleanAll` / `--clean-all` (rimuove anche il PDF).
 
 ### 3. Aggiungere un pacchetto
 
-Quando il documento introduce un nuovo pacchetto, aggiungerne il nome `tlmgr` al manifesto `tex-packages.txt` (una voce per riga), poi rieseguire lo script di setup: installa solo cio' che manca. Il manifesto resta la fonte riproducibile dell'ambiente.
+Quando il documento introduce un nuovo pacchetto, aggiungerne il nome `tlmgr` al manifesto `tex-packages.txt` (una voce per riga), poi rieseguire lo script di setup: installa solo ciò che manca. Il manifesto resta la fonte riproducibile dell'ambiente.
 
 ## Note di manutenzione
 

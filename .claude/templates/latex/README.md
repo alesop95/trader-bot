@@ -18,7 +18,7 @@ Aggiungere inoltre al `.gitignore` del progetto le esclusioni degli artefatti La
 
 ## Dopo l'istanziazione
 
-Adattare `tex-packages.txt` al preambolo reale del proprio `.tex` (aggiungere i pacchetti delle `\usepackage` non coperti dalla base). Poi eseguire `scripts/setup-tex.{ps1,sh}` per installare TinyTeX e i pacchetti, e `scripts/build.{ps1,sh}` per compilare. La procedura e' incapsulata nella skill `latex-build`. L'engine e' pdflatex, fissato in `.latexmkrc`: per documenti che richiedono fontspec/unicode-math passare a lualatex/xelatex modificando `.latexmkrc` e il manifesto.
+Adattare `tex-packages.txt` al preambolo reale del proprio `.tex` (aggiungere i pacchetti delle `\usepackage` non coperti dalla base). Poi eseguire `scripts/setup-tex.{ps1,sh}` per installare TinyTeX e i pacchetti, e `scripts/build.{ps1,sh}` per compilare. La procedura è incapsulata nella skill `latex-build`. L'engine è pdflatex, fissato in `.latexmkrc`: per documenti che richiedono fontspec/unicode-math passare a lualatex/xelatex modificando `.latexmkrc` e il manifesto.
 
 L'auto-rilevamento del file principale (`build.ps1`/`.sh` senza argomenti) cerca un solo `.tex` nella radice del progetto: se il documento vive altrove, per esempio `docs/relazione.tex`, va passato esplicitamente con `-Main docs\relazione.tex` (Windows) o `--main docs/relazione.tex` (Linux/macOS), path relativo alla radice. Verificato dal vivo (pilota 2026-07-02): la build passa senza altre modifiche.
 
@@ -30,4 +30,4 @@ La distribuzione TinyTeX (default `%APPDATA%\TinyTeX` su Windows, `~/.TinyTeX` s
 
 ## Attriti osservati dal vivo (pilota 2026-07-02)
 
-Su un TinyTeX gia' installato ma non aggiornato di recente, `tlmgr install <pacchetto>` puo' rifiutarsi con "tlmgr itself needs to be updated": va lanciato prima `tlmgr update --self`, che puo' restare silenzioso per una manciata di secondi prima di completare, poi si ripete il comando di installazione. Inoltre, un documento che unisce `psnfss`/`times` a `\texttt` su un preambolo `fontenc` T1 fallisce con "Font T1/pcr/.../not loadable: Metric (TFM) file not found" se manca il pacchetto `courier`: TinyTeX, a differenza di una TeX Live completa, non lo installa di default insieme a `psnfss`. Il manifesto base in `tex-packages.txt` documenta ora questa coppia.
+Su un TinyTeX già installato ma non aggiornato di recente, `tlmgr install <pacchetto>` può rifiutarsi con "tlmgr itself needs to be updated": va lanciato prima `tlmgr update --self`, che può restare silenzioso per una manciata di secondi prima di completare, poi si ripete il comando di installazione. Inoltre, un documento che unisce `psnfss`/`times` a `\texttt` su un preambolo `fontenc` T1 fallisce con "Font T1/pcr/.../not loadable: Metric (TFM) file not found" se manca il pacchetto `courier`: TinyTeX, a differenza di una TeX Live completa, non lo installa di default insieme a `psnfss`. Il manifesto base in `tex-packages.txt` documenta ora questa coppia.

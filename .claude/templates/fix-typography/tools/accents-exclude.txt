@@ -1,0 +1,29 @@
+## File esclusi dalla correzione degli accenti scritti con l'apostrofo.
+## Una riga per percorso, con il motivo dopo il cancelletto: un'esclusione senza
+## motivo viene rifiutata, perche' il senso di questo file e' costringere a
+## dichiarare la ragione invece di dimenticarla.
+##
+## Perche' questo file esiste (voce C-46, 2026-09-23). Il 2026-09-01 una passata di
+## fix-accents.py rovino' la scheda refactor-53, che contiene le grafie sbagliate COME
+## DATO. La scheda refactor-54 racconto' l'errore e concluse, giustamente, che una nota
+## in prosa non e' una guardia; poi mostro' un frammento di codice come rimedio, e quel
+## codice non atterro' mai. Per ventidue giorni il rimedio e' esistito solo nella scheda
+## che lo mostrava, che e' una condizione peggiore dell'assenza dichiarata.
+##
+## MISURATO prima di compilare questo elenco, e il risultato ha corretto l'assunzione di
+## partenza. Con lo strumento di oggi, che salta i blocchi recintati e i code span, le
+## due schede che parlano di queste grafie NON verrebbero modificate: le loro occorrenze
+## stanno tutte dentro apici inversi. L'assunzione "il file che parla della cosa e' a
+## rischio" era vera nel 2026-09-01 e oggi lo e' solo in parte. Da qui due conseguenze.
+## La prima: refactor-54 NON e' elencato, perche' escluderlo non restringerebbe niente e
+## una regola che non restringe niente comunica una protezione che non esiste.
+## La seconda: refactor-53 resta elencato, e non per simmetria. Ha una storia reale di
+## danno, dichiara nel proprio cappello di dover essere escluso, e la sua sicurezza di
+## oggi dipende INTERAMENTE dal fatto che ogni occorrenza resti dentro un apice inverso:
+## basta che chi lo modifica ne scriva una in prosa perche' il difetto torni. Il margine
+## e' largo una modifica, su un file che esiste per contenere quelle grafie.
+
+.claude/context/refactor-53-apostrofi-al-posto-degli-accenti.md # e' il file che quella passata rovino' e che dichiara nel cappello di dover essere escluso: oggi le sue occorrenze stanno tutte in apici inversi e sono gia' protette, ma basta scriverne una in prosa perche' il danno torni, su un file che esiste per contenerle
+.claude/rules/interaction-style.md # contiene cuggi', che e' una virgoletta di chiusura dentro una frase detta da una persona e NON un accento mancante: e' il falso positivo dichiarato nella regola stessa, ed e' l'unico file dei tre che lo strumento modificherebbe davvero
+.claude/context/refactor-24-vetrina-pubblica-da-dati-privati.md # stessa frase detta dallo stakeholder, "la chiamo 'cuggi'": convertirla riscriverebbe le parole di una persona, che e' il genere di contenuto che non si tocca
+.claude/memory/progress.md # riporta la stessa frase in tre punti, nelle voci datate che la registrarono: una voce di work-log era vera quel giorno e non si riscrive

@@ -8,7 +8,7 @@
 
 ## <sezione principale: stack / hardware / tecnologie>
 
-<descrizione diretta: cosa si usa e perche'>
+<descrizione diretta: cosa si usa e perché>
 
 ---
 
@@ -37,4 +37,4 @@
 ## Riferimenti
 
 - <link a documentazione ufficiale hardware/software>
-- <link a comunita' di riferimento o standard>
+- <link a comunità di riferimento o standard>

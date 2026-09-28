@@ -6,8 +6,8 @@ description: >
   temporale, lingue accettate, e le scelte architetturali che dipendono dal contesto specifico
   dell'utente (libreria Zotero esistente o da zero, output LaTeX o Word, livello di autonomia,
   abbonamenti istituzionali disponibili). Usare all'inizio di un nuovo topic di ricerca, prima di
-  invocare literature-search, e ogni volta che il progetto viene integrato in un contesto piu'
-  ampio con altri pacchetti gia' presenti.
+  invocare literature-search, e ogni volta che il progetto viene integrato in un contesto più
+  ampio con altri pacchetti già presenti.
 disable-model-invocation: true
 ---
 
@@ -17,9 +17,9 @@ Questa skill copre lo stadio 1 della pipeline a stadi (sezione 9, punto 1) e le 
 
 ## Domande da porre all'utente
 
-Se non gia' chiarite in conversazione, la skill pone esplicitamente le seguenti domande prima di procedere, senza assumere risposte di default.
+Se non già chiarite in conversazione, la skill pone esplicitamente le seguenti domande prima di procedere, senza assumere risposte di default.
 
-Qual e' il dominio disciplinare della ricerca, per calibrare quali database privilegiare (PubMed per biomedicina, DBLP per informatica, e cosi' via). Esiste gia' una libreria Zotero o JabRef da collegare, o si parte ex novo. Il progetto deve produrre output in LaTeX/Overleaf o in Word, perche' questo cambia quale MCP Zotero conviene attivare (vedi `../PACKAGES.md`, riga `zotero-mcp`). Quale livello di autonomia desidera l'utente: Claude propone sempre e aspetta conferma, oppure puo' procedere automaticamente su ricerca e verifica e chiedere conferma solo prima di scrivere il testo finale. Le nove modalita' di `corpus-analysis` vanno esposte come comandi espliciti o richiamate implicitamente quando Claude riconosce l'intento. A quali abbonamenti istituzionali a pagamento ha accesso l'utente, perche' determina quali fonti a pagamento configurare per prime. Se questo pacchetto va integrato in un progetto piu' ampio gia' esistente, quali altri pacchetti o moduli sono gia' presenti, per evitare sovrapposizioni con gestori di citazioni o skill di scrittura gia' definiti altrove.
+Qual è il dominio disciplinare della ricerca, per calibrare quali database privilegiare (PubMed per biomedicina, DBLP per informatica, e così via). Esiste già una libreria Zotero o JabRef da collegare, o si parte ex novo. Il progetto deve produrre output in LaTeX/Overleaf o in Word, perché questo cambia quale MCP Zotero conviene attivare (vedi `../PACKAGES.md`, riga `zotero-mcp`). Quale livello di autonomia desidera l'utente: Claude propone sempre e aspetta conferma, oppure può procedere automaticamente su ricerca e verifica e chiedere conferma solo prima di scrivere il testo finale. Le nove modalità di `corpus-analysis` vanno esposte come comandi espliciti o richiamate implicitamente quando Claude riconosce l'intento. A quali abbonamenti istituzionali a pagamento ha accesso l'utente, perché determina quali fonti a pagamento configurare per prime. Se questo pacchetto va integrato in un progetto più ampio già esistente, quali altri pacchetti o moduli sono già presenti, per evitare sovrapposizioni con gestori di citazioni o skill di scrittura già definiti altrove.
 
 ## Il prompt di scoping
 
@@ -27,7 +27,7 @@ Oltre alle domande di gate, la skill definisce con l'utente la domanda di ricerc
 
 ## Istruzioni custom da incollare nel progetto Claude
 
-Quando lo scope si materializza in un progetto dedicato di Claude.ai (una cartella "Progetti" per topic, secondo il pattern condiviso dall'utente via screenshot, account `@techwith.ram`, non parte del documento di riferimento originale del pacchetto), queste istruzioni custom vanno incollate nelle impostazioni del progetto una sola volta, sostituendo `[FIELD / TOPIC]` con il dominio disciplinare raccolto in questo stesso gate. Rendono operativo a livello di progetto lo stesso principio quote-first gia' imposto dalla regola `no-uncited-claims`, cosi' che ogni conversazione futura in quel progetto lo rispetti senza doverlo ripetere ogni volta.
+Quando lo scope si materializza in un progetto dedicato di Claude.ai (una cartella "Progetti" per topic, secondo il pattern condiviso dall'utente via screenshot, account `@techwith.ram`, non parte del documento di riferimento originale del pacchetto), queste istruzioni custom vanno incollate nelle impostazioni del progetto una sola volta, sostituendo `[FIELD / TOPIC]` con il dominio disciplinare raccolto in questo stesso gate. Rendono operativo a livello di progetto lo stesso principio quote-first già imposto dalla regola `no-uncited-claims`, così che ogni conversazione futura in quel progetto lo rispetti senza doverlo ripetere ogni volta.
 
 ```
 ROLE
@@ -61,8 +61,8 @@ CRITICAL RULES — FOLLOW THESE IN EVERY RESPONSE
    - Define jargon on first use — plain English.
 ```
 
-Il vincolo "solo dai paper caricati" imposto qui si applica dentro le conversazioni del progetto, dove Claude non ha modo di distinguere una fonte verificata da `citation-tracker` da un semplice upload dell'utente: resta comunque `citation-tracker`, non queste istruzioni custom, il meccanismo che decide se una fonte puo' entrare nel testo finale o nel `.bib`. Le due regole non sono in conflitto, coprono livelli diversi: questa e' la disciplina di citazione dentro una singola conversazione, quella e' la tripartizione verificata/da verificare/scartata a livello di intero progetto.
+Il vincolo "solo dai paper caricati" imposto qui si applica dentro le conversazioni del progetto, dove Claude non ha modo di distinguere una fonte verificata da `citation-tracker` da un semplice upload dell'utente: resta comunque `citation-tracker`, non queste istruzioni custom, il meccanismo che decide se una fonte può entrare nel testo finale o nel `.bib`. Le due regole non sono in conflitto, coprono livelli diversi: questa è la disciplina di citazione dentro una singola conversazione, quella è la tripartizione verificata/da verificare/scartata a livello di intero progetto.
 
 ## Output
 
-Le risposte si registrano in `research-vault/scope.md` (creato alla prima invocazione se assente), con una sezione per la domanda di ricerca e una tabella con le risposte alle domande di gate. Se il progetto usa gia' `.claude/context/current-work.md` per la feature attiva, lo scope vi si aggiunge come sezione dedicata invece di duplicare il file. Questo documento e' quello che `literature-search` e le altre skill leggono per sapere come operare in questo progetto specifico, invece di richiedere le stesse domande ogni volta.
+Le risposte si registrano in `research-vault/scope.md` (creato alla prima invocazione se assente), con una sezione per la domanda di ricerca e una tabella con le risposte alle domande di gate. Se il progetto usa già `.claude/context/current-work.md` per la feature attiva, lo scope vi si aggiunge come sezione dedicata invece di duplicare il file. Questo documento è quello che `literature-search` e le altre skill leggono per sapere come operare in questo progetto specifico, invece di richiedere le stesse domande ogni volta.

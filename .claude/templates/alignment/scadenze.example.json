@@ -1,0 +1,59 @@
+{
+  "_commento": "Registro delle affermazioni che invecchiano. Va tracciato: contiene date, cadenze e riferimenti a documenti, mai valori reali. Nessun importo, nessun identificativo d'ordine, nessun indirizzo, nessun nome di persona: l'esito di questo controllo finisce sotto gli occhi di chiunque guardi la sessione.",
+  "_regola": "Ogni affermazione dei file tracciati deve avere una verifica meccanica, una scadenza dichiarata dopo la quale torna a stato non verificata, oppure una marcatura esplicita di non verificabile con la domanda gia' scritta e la persona a cui porla. Non esiste un quarto caso: un'affermazione senza nessuna delle tre invecchia in silenzio.",
+  "_come_si_usa": "Le tre famiglie di voci nascono come array VUOTI, e le voci di esempio vivono accanto nelle chiavi che cominciano per _esempio, che lo strumento non legge. Sono percio' inerti: si copiano dentro l'array corrispondente quando si scrive la prima voce vera. La ragione e' che un registro appena copiato non deve produrre un rosso finto, e nemmeno un verde: finche' e' vuoto lo strumento lo dichiara vuoto.",
+  "revisione": 1,
+  "aggiornato": "AAAA-MM-GG",
+
+  "percorsi": {
+    "_commento": "L'anatomia del progetto. Ogni voce assente ricade sul valore predefinito dello strumento; una voce messa a null dichiara che quella cosa nel progetto non esiste, e l'invariante corrispondente si annuncia non applicabile invece di fallire.",
+    "schede": ".claude/context",
+    "stack": ".claude/context/STACK.md",
+    "decisioni": ".claude/memory/decisions.md",
+    "script": "scripts",
+    "estensioni_script": [".ps1", ".py", ".sh"],
+    "campi_firma": ["last-verified-commit", "last-verified"],
+    "registro_voci": null,
+    "richiami_cifre": [2, 3],
+    "marcatori_fallimento": null
+  },
+
+  "scadenze": [],
+  "freschezza": [],
+  "asserzioni_umane": [],
+
+  "_esempio_scadenza": {
+    "id": "ESEMPIO-LICENZA",
+    "cosa": "Licenza o abbonamento da cui dipende una fonte automatica del progetto",
+    "data": "2027-01-31",
+    "preavviso_giorni": 90,
+    "rompe": "Che cosa smette di funzionare il giorno dopo. Si scrive qui perche' una data senza la sua conseguenza non fa agire nessuno.",
+    "dove": "Il documento o la decisione che ne parla, cosi' che dalla riga si arrivi al contesto."
+  },
+
+  "_esempio_freschezza": {
+    "id": "ESEMPIO-MISURA",
+    "cosa": "Che cosa afferma quella misura, in una riga leggibile a video",
+    "percorso": "output/misura.json",
+    "cadenza_giorni": 7,
+    "campo_data": null,
+    "dove": "La regola o la decisione che fissa la cadenza. Il campo campo_data serve quando il file dichiara dentro di se' la data della misura, che e' piu' attendibile della sua data di modifica."
+  },
+
+  "_esempio_asserzione_umana": {
+    "id": "ESEMPIO-DOMANDA",
+    "afferma": "L'affermazione, scritta come la si troverebbe in un documento",
+    "stato": "Che cosa si sa oggi, con la data in cui lo si e' saputo",
+    "verificata_il": "2026-09-01",
+    "validita_giorni": 60,
+    "domanda": "La domanda esatta da porre quando la validita' scade. Si scrive adesso, perche' fra due mesi nessuno ricostruira' che cosa andava chiesto.",
+    "a_chi": "Il ruolo della persona che puo' rispondere",
+    "dove": "Il documento che porta l'affermazione"
+  },
+
+  "_esempio_marcatori_fallimento": {
+    "_commento": "Da mettere nel blocco percorsi se il progetto ha un'automazione che rinfresca le misure e che, fallendo, lascia un marcatore su disco. Serve perche' un'automazione che fallisce in silenzio produce fiducia mal riposta: l'eta' della misura da sola non dice che il rinfresco e' rotto.",
+    "cartella": "output",
+    "prefisso": ".refresh-fallito-"
+  }
+}

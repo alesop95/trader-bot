@@ -4,19 +4,19 @@
 
 ## Componenti e stato
 
-Componenti funzionali con hooks. Lo stato locale vive in `useState` o `useReducer`; quando il passaggio di prop attraversa piu' di due livelli si valuta un contesto o uno store, invece di accettare il prop drilling. Negli artifact destinati a claude.ai non si usano `localStorage` ne' `sessionStorage`, che li' non sono disponibili: lo stato resta in memoria.
+Componenti funzionali con hooks. Lo stato locale vive in `useState` o `useReducer`; quando il passaggio di prop attraversa più di due livelli si valuta un contesto o uno store, invece di accettare il prop drilling. Negli artifact destinati a claude.ai non si usano `localStorage` né `sessionStorage`, che lì non sono disponibili: lo stato resta in memoria.
 
 ## Data fetching e stati dell'interfaccia
 
 Ogni fetch gestisce esplicitamente i tre stati loading, error ed empty, senza lasciare che l'interfaccia li confonda con lo stato pieno. Gli errori mostrati all'utente sono utili e non tecnici; il dettaglio tecnico va nel log.
 
-## Accessibilita'
+## Accessibilità
 
-Le label sono associate ai controlli, i ruoli ARIA[^1] si usano dove la semantica nativa non basta, e il focus si gestisce esplicitamente nelle interazioni che spostano il contesto (dialoghi, navigazioni, notifiche). L'accessibilita' si verifica durante lo sviluppo, non a posteriori.
+Le label sono associate ai controlli, i ruoli ARIA[^1] si usano dove la semantica nativa non basta, e il focus si gestisce esplicitamente nelle interazioni che spostano il contesto (dialoghi, navigazioni, notifiche). L'accessibilità si verifica durante lo sviluppo, non a posteriori.
 
 ## Test
 
-Con Testing Library si testa il comportamento visibile all'utente, non l'implementazione: si interroga il DOM per ruolo e testo, non per classi o struttura interna, cosi i test sopravvivono ai refactor.
+Con Testing Library si testa il comportamento visibile all'utente, non l'implementazione: si interroga il DOM per ruolo e testo, non per classi o struttura interna, così i test sopravvivono ai refactor.
 
 ## Prima di committare
 

@@ -1,0 +1,29 @@
+# Modello delle variabili per ambiente (GUIDA.md, pratica "Configurazione separata dal
+# codice"; fonti F01, F08). Solo nomi e significato, mai valori reali. Se ne ricava un file
+# per ambiente, per esempio .env.produzione e .env.staging, entrambi esclusi da git.
+#
+# Criterio (F01, fattore III): il codice deve poter diventare pubblico in qualunque momento
+# senza esporre credenziali. Tutto cio' che cambia fra un ambiente e l'altro sta qui.
+
+# Identita' dell'ambiente: solo per etichettare log e metriche, mai per cambiare la logica.
+AMBIENTE=
+
+# Origine pubblica e indirizzi di ritorno dell'autenticazione, diversi per ambiente.
+SITE_ORIGIN=
+AUTH_REDIRECT_URI=
+
+# Registrazione presso il fornitore di identita': una per ambiente (caso C4).
+AUTH_CLIENT_ID=
+AUTH_CLIENT_SECRET=
+JWT_SECRET=
+
+# Base dati propria dell'ambiente.
+DATABASE_URL=
+
+# Servizi esterni: in prova un'istanza di prova o un finto dichiarato, mai la produzione.
+POSTA_SMTP_HOST=
+SERVIZIO_ESTERNO_URL=
+SERVIZIO_ESTERNO_FINTO=
+
+# Rete: indirizzo su cui pubblicare le porte. In prova 127.0.0.1 o un indirizzo preciso.
+EDGE_BIND=

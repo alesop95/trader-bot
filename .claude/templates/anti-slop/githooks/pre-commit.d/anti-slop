@@ -1,0 +1,50 @@
+#!/bin/sh
+# Passo del pre-commit dei commit manuali, pacchetto anti-slop. Esamina i soli file in stage
+# che contengono prosa o un'interfaccia, e stampa nel terminale di chi committa le segnalazioni
+# di lint-prosa.py e lint-ui.py. Avvisa e non blocca, sempre: i segni sono indizi da rileggere
+# e non errori, e le fonti stesse avvertono che nessun rilevatore dimostra che un testo sia
+# generato (docs/anti-slop/GUIDA.md). Gli strumenti leggono il file nell'albero di lavoro, che
+# di norma coincide con la versione in stage.
+#
+# Si installa copiandolo in .githooks/pre-commit.d/ di un progetto che usa l'hook pre-commit di
+# readme-sync, o richiamandolo da un hook proprio.
+
+root=$(git rev-parse --show-toplevel)
+py="${PYTHON_CMD:-}"
+if [ -z "$py" ]; then
+    for candidate in python3 python; do
+        if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys' >/dev/null 2>&1; then
+            py="$candidate"
+            break
+        fi
+    done
+fi
+[ -n "$py" ] || exit 0
+
+trova() {
+    for cartella in tools .claude/templates/anti-slop/tools; do
+        if [ -f "$root/$cartella/$1" ]; then
+            printf '%s/%s/%s' "$root" "$cartella" "$1"
+            return 0
+        fi
+    done
+    return 1
+}
+
+cd "$root" || exit 0
+
+prosa=$(git diff --cached --name-only --diff-filter=ACM -- '*.md' '*.markdown' '*.txt')
+if [ -n "$prosa" ] && strumento=$(trova lint-prosa.py); then
+    echo "anti-slop: segni di testo generato nei file in stage (avviso, non blocca)"
+    git diff --cached --name-only --diff-filter=ACM -z -- '*.md' '*.markdown' '*.txt' \
+        | xargs -0 "$py" "$strumento"
+fi
+
+ui=$(git diff --cached --name-only --diff-filter=ACM -- '*.html' '*.htm' '*.css' '*.scss' '*.jsx' '*.tsx' '*.vue' '*.svelte' '*.astro')
+if [ -n "$ui" ] && strumento=$(trova lint-ui.py); then
+    echo "anti-slop: tratti di interfaccia generica nei file in stage (avviso, non blocca)"
+    git diff --cached --name-only --diff-filter=ACM -z -- '*.html' '*.htm' '*.css' '*.scss' '*.jsx' '*.tsx' '*.vue' '*.svelte' '*.astro' \
+        | xargs -0 "$py" "$strumento"
+fi
+
+exit 0

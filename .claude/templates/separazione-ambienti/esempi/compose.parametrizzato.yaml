@@ -1,0 +1,44 @@
+# Forma R2, variante sempre accesa (GUIDA.md, asse R; fonte F24).
+# Un solo file serve produzione e staging. Il nome del progetto separa da solo container,
+# volumi e rete; i valori predefiniti riproducono esattamente la produzione, cosi' che la
+# parametrizzazione non cambi niente finche' non la si usa. Verifica prima di adottarla:
+#   docker compose config > prima.txt   (sul file originale)
+#   docker compose config > dopo.txt    (su questo file, senza variabili impostate)
+# e i due file devono coincidere.
+#
+# Uso:
+#   docker compose --env-file .env.produzione up -d
+#   docker compose --env-file .env.staging -p <progetto>-staging up -d
+
+name: ${COMPOSE_PROJECT_NAME:-progetto}
+
+services:
+  edge:
+    image: caddy:2
+    ports:
+      # In produzione 80 e 443; in staging per esempio 8080 e 8443. Il prefisso d'indirizzo
+      # evita di pubblicare su tutte le interfacce, che e' il predefinito di Docker (F37).
+      - "${EDGE_BIND:-0.0.0.0}:${EDGE_HTTP_PORT:-80}:80"
+      - "${EDGE_BIND:-0.0.0.0}:${EDGE_HTTPS_PORT:-443}:443"
+    environment:
+      # Obbligatoria: senza, Compose si ferma invece di partire con un'origine sbagliata.
+      SITE_ORIGIN: ${SITE_ORIGIN:?manca SITE_ORIGIN}
+    depends_on: [app]
+
+  app:
+    build: ../app
+    env_file:
+      # Un file di segreti per ambiente: identita', base dati e chiavi separate (F08).
+      - ${ENV_FILE:-.env.produzione}
+
+  db:
+    image: postgres:16
+    env_file:
+      - ${ENV_FILE:-.env.produzione}
+    volumes:
+      # Il volume prende il prefisso del nome del progetto: progetto_dati e
+      # progetto-staging_dati sono due volumi distinti senza scriverlo a mano.
+      - dati:/var/lib/postgresql/data
+
+volumes:
+  dati:

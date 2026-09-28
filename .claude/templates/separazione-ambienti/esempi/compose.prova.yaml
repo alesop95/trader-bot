@@ -1,0 +1,37 @@
+# Forma R2, variante a richiesta (GUIDA.md, asse R; fonti F24, F37).
+# File indipendente, non un'aggiunta al file di produzione: nome, rete, volumi, porte e
+# configurazione propri. Spento per default, si accende per provare e si spegne dopo:
+#   docker compose -f compose.prova.yaml up -d --build
+#   docker compose -f compose.prova.yaml down
+#
+# Rischio da presidiare (caso C4): questo stack e quello di produzione si costruiscono dalle
+# stesse cartelle. La produzione si ricostruisce solo con la branch principale in uscita.
+
+name: servizio-prova          # nome fisso: non puo' collidere con la produzione per distrazione
+
+services:
+  app:
+    build: ../app
+    ports:
+      # Solo la macchina stessa raggiunge la prova. Per aprirla ad alcuni client si usa un
+      # indirizzo preciso, mai il predefinito, che pubblica su tutte le interfacce (F37).
+      - "127.0.0.1:4443:443"
+    env_file:
+      # Registrazione presso il fornitore di identita', segreti e indirizzi di ritorno propri.
+      - .env.prova
+    networks: [prova]
+
+  db:
+    image: postgres:16
+    env_file: [.env.prova]
+    volumes:
+      # Parte vuoto (forma D0): un servizio che al primo avvio chiede di creare
+      # l'amministratore non e' rotto, sta leggendo questo volume.
+      - dati-prova:/var/lib/postgresql/data
+    networks: [prova]
+
+networks:
+  prova: {}
+
+volumes:
+  dati-prova: {}

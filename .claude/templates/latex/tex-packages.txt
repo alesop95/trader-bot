@@ -1,9 +1,9 @@
-# Manifesto dei pacchetti LaTeX (template) — sezione 13 di PROJECT-SYSTEM.md.
+# Manifesto dei pacchetti LaTeX (template) - sezione 13 di PROJECT-SYSTEM.md.
 # Istanziare in radice come tex-packages.txt e ADATTARE al preambolo reale del proprio .tex:
 # una voce per riga col nome del pacchetto tlmgr; righe vuote e con # ignorate. tlmgr risolve
 # da solo le dipendenze, quindi elencare solo i pacchetti di primo livello.
 #
-# Base consigliata (build pdflatex + documento tecnico tipico). Togliere cio' che non serve,
+# Base consigliata (build pdflatex + documento tecnico tipico). Togliere ciò che non serve,
 # aggiungere i pacchetti delle proprie \usepackage non presenti.
 
 # Strumento di build
@@ -27,7 +27,7 @@ cm-super
 #   psnfss             # \usepackage{times} o altri font PostScript classici (Helvetica, Palatino...)
 #   courier            # font Type1 Courier: SEMPRE insieme a psnfss se il documento usa anche
 #                      # \texttt in T1 (fontenc), altrimenti "Font ... not loadable: Metric (TFM)
-#                      # file not found" su pcrr8t — TinyTeX non lo include di default, a
+#                      # file not found" su pcrr8t - TinyTeX non lo include di default, a
 #                      # differenza di una TeX Live completa; osservato dal vivo nel pilota 2026-07-02
 #   babel-italian      # \usepackage[italian]{babel}
 #   hyphen-italian     # sillabazione italiana in pdflatex (vedi nota sotto)

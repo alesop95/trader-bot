@@ -3,7 +3,7 @@
 """
 doc-ingest.py - Ingestione deterministica e incrementale di un corpus documentale
 (.pdf, .docx, .pptx, .xlsx, .html) in una cache Markdown locale, a zero consumo di
-token: l'estrazione e' interamente locale, nessuna chiamata LLM.
+token: l'estrazione è interamente locale, nessuna chiamata LLM.
 
 Cammina ricorsivamente una cartella sorgente, converte ogni documento supportato in
 Markdown e scrive il risultato in una cache che rispecchia la struttura di cartelle
@@ -11,12 +11,12 @@ della sorgente. Un manifest a content-hash (sha256) evita di riconvertire i file
 invariati tra una corsa e l'altra. Al termine rigenera _INDEX.md: lo scheletro di
 Livello 1 della disclosure progressiva descritta in ../../rules/token-economy.md,
 con titolo, albero delle intestazioni, conteggi (parole, tabelle, immagini) e stato
-di ciascun documento, cosi che un agente possa decidere cosa leggere per intero senza
+di ciascun documento, così che un agente possa decidere cosa leggere per intero senza
 aprire l'intero corpus.
 
 Motore di default: markitdown (MIT). Con --engine docling si usa Docling sui soli
 .pdf per i layout complessi (tabelle, multi-colonna) dove markitdown degrada; e una
-dipendenza opzionale, importata solo se il flag e' passato. Con --ocr si tenta il
+dipendenza opzionale, importata solo se il flag è passato. Con --ocr si tenta il
 fallback OCR via pytesseract sui PDF scansionati senza testo estraibile; richiede il
 binario di sistema tesseract-ocr, anch'esso opzionale.
 
@@ -41,7 +41,7 @@ from pathlib import Path
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".pptx", ".xlsx", ".html", ".htm"}
 MANIFEST_NAME = ".manifest.json"
 INDEX_NAME = "_INDEX.md"
-OCR_MIN_CHARS = 200  # sotto questa soglia di testo estratto, un .pdf e' sospetto scan
+OCR_MIN_CHARS = 200  # sotto questa soglia di testo estratto, un .pdf è sospetto scan
 
 
 # --- hashing e manifest ------------------------------------------------------
@@ -93,7 +93,7 @@ def convert_with_ocr(path):
     except ImportError:
         raise RuntimeError(
             "Il flag --ocr richiede 'pytesseract' e 'pdf2image' "
-            "(pip install pytesseract pdf2image) piu' il binario di sistema "
+            "(pip install pytesseract pdf2image) più il binario di sistema "
             "tesseract-ocr, non trovati nell'ambiente corrente."
         )
     pages = convert_from_path(str(path))
@@ -101,7 +101,7 @@ def convert_with_ocr(path):
 
 
 def convert_file(path, engine, ocr):
-    """Ritorna (markdown, nota). nota e' None o un avviso non bloccante."""
+    """Ritorna (markdown, nota). nota è None o un avviso non bloccante."""
     ext = path.suffix.lower()
     if engine == "docling" and ext == ".pdf":
         text = convert_with_docling(path)
@@ -208,7 +208,7 @@ def run(source_dir, cache_dir, engine, ocr, force):
         else:
             try:
                 text, note = convert_file(path, engine, ocr)
-            except Exception as exc:  # qualunque libreria di conversione puo' fallire
+            except Exception as exc:  # qualunque libreria di conversione può fallire
                 print(f"[errore] {source_rel}: {exc}", file=sys.stderr)
                 counts["errore"] += 1
                 continue

@@ -1,0 +1,101 @@
+# =============================================================================
+#  Configurazione Codex CLI di riferimento — versionata, nessun valore reale
+#
+#  Copiata in ogni radice <PROFILO_UTENTE>\.codex-account<N>\config.toml da
+#  scripts\Installa-Codex.ps1. E' la fonte di verita': una radice si ricostruisce
+#  da qui, non si copia da un'altra macchina.
+#
+#  Documentazione: docs\10_CODEX_CLI_E_WORKSPACE_OPENAI.md, sezione 3.4.
+#  Validata con `codex --strict-config doctor` su codex-cli 0.155.1.
+#
+#  ORDINE DEL FILE, da non alterare: in TOML ogni chiave scritta dopo
+#  l'intestazione di una tabella appartiene a quella tabella. Le chiavi di primo
+#  livello stanno quindi TUTTE in cima, prima della prima intestazione, e le
+#  tabelle seguono. Invertire l'ordine non produce un errore di sintassi ma una
+#  configurazione diversa da quella che sembra scritta.
+# =============================================================================
+
+# --- Chiavi di primo livello ------------------------------------------------
+# Perimetro di esecuzione. Corrisponde alla whitelist dell'altro agente da
+# terminale: le operazioni sicure sono ammesse, quelle verso l'esterno restano
+# manuali. Commit, push e deploy non sono mai automatici.
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+# --- Prevenzione ------------------------------------------------------------
+# Evitare di scrivere e' preferibile a pulire dopo: non dipende dal momento in
+# cui qualcosa viene eseguito, quindi non ha finestre scoperte.
+
+[history]
+persistence = "none"
+
+[analytics]
+enabled = false
+
+[otel]
+exporter = "none"
+log_user_prompt = false
+
+# --- Memoria nascosta: spenta esplicitamente --------------------------------
+# Il principio e' quello del sistema di progetto portabile: l'unica memoria
+# legittima e' quella versionata dentro la cartella di progetto. Una memoria per
+# utente, non ispezionabile e fuori dal repository, non e' una variante di quel
+# principio ma la sua negazione.
+# Il flag risulta gia' `false` per default in codex-cli 0.155.1, ma si fissa qui
+# perche' un default puo' cambiare con un aggiornamento senza che nessuno se ne
+# accorga, ed e' precisamente il tipo di cambiamento che non emette errori.
+
+[features]
+memories = false
+
+# --- Isolamento per progetto ------------------------------------------------
+# Codex non partiziona per progetto: la separazione si ottiene sul filesystem,
+# vincolando una sessione alla propria cartella di lavoro. `writable_roots` vuoto
+# significa "nessuna radice scrivibile oltre al workspace corrente", quindi una
+# sessione aperta su un progetto non raggiunge gli altri.
+#
+# Verifica empirica del 2026-09-21, su Windows 11:
+#   DIMOSTRATO  la sandbox e' realmente applicata. Una scrittura fuori perimetro
+#               fallisce con UnauthorizedAccessException del sistema operativo,
+#               non con un messaggio dell'applicazione. Di conseguenza la voce
+#               `sandbox backend disabled` della diagnosi NON significa assenza
+#               di protezione, ed e' fuorviante.
+#   NON DIMOSTRATO  quale radice risulti scrivibile durante una sessione reale.
+#               Il sottocomando `codex sandbox` blocca ogni scrittura, compresa
+#               la cartella corrente, anche forzando `-s workspace-write`, quindi
+#               non e' il banco di prova adatto: va verificato dentro una sessione
+#               vera su un progetto vero.
+
+[sandbox_workspace_write]
+writable_roots = []
+network_access = false
+
+# --- Sandbox di Windows -----------------------------------------------------
+# Variante CON privilegi di amministratore, la piu' isolata. L'alternativa
+# `unelevated` non chiede elevazione ma e' dichiarata da Codex stesso come
+# `higher risk if prompt injected`.
+#
+# STORIA, che serve a non rifare l'indagine. Per un giorno questa variante ha
+# generato una richiesta di elevazione UAC a ripetizione, al punto da impedire
+# di lavorare. La causa NON era la configurazione: il servizio della sandbox
+# elevata proveniva dall'APP DESKTOP di Codex, mentre la CLI npm porta con se'
+# un proprio installatore di servizio; versioni diverse, e la CLI tentava di
+# sostituire quello dell'app a ogni sessione. Disinstallata l'app desktop il
+# conflitto e' sparito e `elevated` e' tornata usabile, al costo di una singola
+# elevazione la prima volta, per installare il servizio della CLI.
+#
+# Se i popup tornassero, la domanda da porsi e' quindi "esistono due
+# installazioni dello stesso componente?", non "la configurazione e' giusta?".
+#
+# Questa chiave la scrive anche Codex nella radice quando si sceglie la sandbox
+# alla prima sessione. Sta qui perche' senza di essa `Installa-Codex.ps1 -Forza`
+# la cancellerebbe, riportando la radice allo stato non configurato e facendo
+# ripartire la richiesta a ogni sessione. E' accaduto davvero.
+#
+# AVVERTENZA GENERALE: `-Forza` sostituisce l'intero file, e Codex usa il
+# config.toml anche per proprio stato (per esempio blocchi `[tui.*]`). Cio' che
+# l'agente ha scritto da se' viene perso.
+
+[windows]
+sandbox = "unelevated"

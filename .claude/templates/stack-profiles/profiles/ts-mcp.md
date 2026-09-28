@@ -4,11 +4,11 @@
 
 ## Stile del linguaggio
 
-TypeScript in strict mode. Vietato l'`any` implicito: si preferiscono tipi espliciti e, dove il tipo non e' noto al confine, `unknown` seguito da narrowing. Moduli ESM, con le estensioni negli import dove il target le richiede. Gli errori non si lanciano mai come stringhe: si usano classi Error tipizzate oppure un Result-type, e il fallimento e' sempre un valore gestibile, mai un'eccezione anonima.
+TypeScript in strict mode. Vietato l'`any` implicito: si preferiscono tipi espliciti e, dove il tipo non è noto al confine, `unknown` seguito da narrowing. Moduli ESM, con le estensioni negli import dove il target le richiede. Gli errori non si lanciano mai come stringhe: si usano classi Error tipizzate oppure un Result-type, e il fallimento è sempre un valore gestibile, mai un'eccezione anonima.
 
 ## Disciplina dei tool MCP
 
-Ogni tool del server ha nome in snake_case e una description orientata al consumo da parte di un LLM, perche' la description e' cio' che il modello legge per decidere se e come usare il tool: va scritta per quel lettore, non solo per un umano. Gli input si validano con zod, o con uno JSON Schema equivalente, prima dell'esecuzione. Gli handler non lasciano mai uscire un'eccezione non gestita verso il client: gli errori sono strutturati e informativi, mai stack trace grezzi. Gli effetti collaterali di un tool si dichiarano nella sua description, e dove possibile i tool si progettano idempotenti. Ogni tool ha almeno tre test: input valido, input non valido, errore a runtime.
+Ogni tool del server ha nome in snake_case e una description orientata al consumo da parte di un LLM, perché la description è ciò che il modello legge per decidere se e come usare il tool: va scritta per quel lettore, non solo per un umano. Gli input si validano con zod, o con uno JSON Schema equivalente, prima dell'esecuzione. Gli handler non lasciano mai uscire un'eccezione non gestita verso il client: gli errori sono strutturati e informativi, mai stack trace grezzi. Gli effetti collaterali di un tool si dichiarano nella sua description, e dove possibile i tool si progettano idempotenti. Ogni tool ha almeno tre test: input valido, input non valido, errore a runtime.
 
 ## Comandi tipici
 

@@ -2,16 +2,16 @@
 
 Script deterministico, nessuna chiamata LLM. Da rilanciare a ogni aggiornamento del registro
 JSON (per esempio dopo ogni libro confermato da book-bib-extract), non come generazione una
-tantum. Il titolo mostrato in tabella viene letto dal .bib reale quando la voce e' gia' stata
+tantum. Il titolo mostrato in tabella viene letto dal .bib reale quando la voce è già stata
 scritta (bib_entry_written: true); altrimenti si usa il nome del file sorgente come segnaposto,
-perche' il registro non conserva il titolo prima della conferma umana.
+perché il registro non conserva il titolo prima della conferma umana.
 
 Uso:
     py -3 tools/render-bib-registry.py [--registry _notes/book-bib-registry.json]
                                         [--bib bib/references.bib]
                                         [--out _notes/book-bib-registry.md]
 
-Il percorso di default di --bib e' un segnaposto generico: nei progetti con uno split
+Il percorso di default di --bib è un segnaposto generico: nei progetti con uno split
 pubblico/privato del contenuto (per esempio un manoscritto in una cartella ignorata da git)
 va passato esplicitamente il percorso reale del .bib del progetto.
 """

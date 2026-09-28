@@ -1,0 +1,30 @@
+#!/bin/sh
+# commit-msg dei commit manuali: attua la sezione "Messaggio di commit" della regola
+# .claude/rules/git-commands-format.md, che vale per ogni commit del progetto e per ogni agente,
+# Claude Code o Codex, e anche per i commit fatti a mano.
+#
+# Rifiuta due cose, e sono le sole che la regola rende verificabili meccanicamente:
+#   1. qualunque attribuzione a un agente: righe Co-Authored-By e firme "Generated with";
+#      i commit portano soltanto l'identita' git locale dell'utente;
+#   2. un oggetto piu' lungo di 72 caratteri.
+# Non corregge il messaggio: lo rifiuta dicendo perche', e il commit si rifa'.
+set -eu
+
+file="$1"
+
+# Le righe di commento che git aggiunge nell'editor non fanno parte del messaggio.
+if grep -v '^#' "$file" | grep -qiE '^[[:space:]]*co-authored-by:|generated with .*claude|generated with .*codex|noreply@anthropic\.com|noreply@openai\.com'; then
+    echo "commit-msg: il messaggio contiene un'attribuzione a un agente (Co-Authored-By o firma generata)." >&2
+    echo "commit-msg: la regola git-commands-format.md la vieta: toglierla e rifare il commit." >&2
+    exit 1
+fi
+
+oggetto="$(grep -v '^#' "$file" | grep -m1 -v '^[[:space:]]*$' || true)"
+# wc -m conta i caratteri e non i byte, cosi' le lettere accentate valgono uno.
+lunghezza="$(printf '%s' "$oggetto" | LC_ALL=C.UTF-8 wc -m 2>/dev/null | tr -d ' ')"
+if [ -n "$lunghezza" ] && [ "$lunghezza" -gt 72 ]; then
+    echo "commit-msg: l'oggetto e' di $lunghezza caratteri, la regola ne ammette al massimo 72." >&2
+    exit 1
+fi
+
+exit 0

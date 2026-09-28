@@ -4,7 +4,7 @@
 
 ## Workflow come artefatti versionati
 
-I workflow n8n sono JSON e si trattano come artefatti versionati: si esportano nel repository, si rivedono nei diff come qualsiasi codice, e le modifiche fatte nell'editor visuale si riportano nel repository prima di considerarle concluse. Un workflow che esiste solo nell'istanza n8n e non nel repository non e' recuperabile da un clone e viola il principio di recuperabilita' totale del sistema.
+I workflow n8n sono JSON e si trattano come artefatti versionati: si esportano nel repository, si rivedono nei diff come qualsiasi codice, e le modifiche fatte nell'editor visuale si riportano nel repository prima di considerarle concluse. Un workflow che esiste solo nell'istanza n8n e non nel repository non è recuperabile da un clone e viola il principio di recuperabilità totale del sistema.
 
 ## Credenziali
 
@@ -16,4 +16,4 @@ I nodi custom seguono la struttura di pacchetto di n8n, con le cartelle `nodes/`
 
 ## Documentazione dei flussi
 
-Ogni workflow con effetti verso l'esterno documenta nel `CLAUDE.md`, o nella scheda di contesto pertinente, il trigger che lo avvia, i nodi critici e i side-effect esterni: webhook esposti, chiamate API, scritture su sistemi terzi. Un workflow di automazione e' codice che gira da solo, e cio' che fa da solo dev'essere leggibile senza aprire l'editor.
+Ogni workflow con effetti verso l'esterno documenta nel `CLAUDE.md`, o nella scheda di contesto pertinente, il trigger che lo avvia, i nodi critici e i side-effect esterni: webhook esposti, chiamate API, scritture su sistemi terzi. Un workflow di automazione è codice che gira da solo, e ciò che fa da solo dev'essere leggibile senza aprire l'editor.

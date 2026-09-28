@@ -1,10 +1,20 @@
 {
   "_comment": "ESEMPIO (Linux/macOS) di sezione 'hooks' da fondere in .claude/settings.json per ATTIVARE gli hook del pacchetto hooks-starter. Copiare SOLO i blocchi desiderati: ogni hook si attiva da solo. Questo file non si istanzia mai cosi' com'e'. Timeout in secondi. Verificare la registrazione con /hooks.",
+  "_gruppi": "I sette hook si dividono in due famiglie. Quelli di CICLO (apertura-sessione, md-unwrap-auto, pre-commit-checks, chiusura-sessione) rendono automatico cio' che altrimenti dipende dal ricordarsene, ed e' consigliato attivarli tutti e quattro insieme, perche' coprono i quattro momenti del ciclo di lavoro. Quelli di DIFESA (protect-sensitive-files, secret-scan) intercettano una scrittura o un commit pericolosi. session-context sta a se': stampa lo stato, mentre apertura-sessione lo confronta con quello registrato, e i due si sommano senza pestarsi.",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-context.sh\"", "timeout": 10 }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-context.sh\"", "timeout": 10 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/apertura-sessione.sh\"", "timeout": 20 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/md-unwrap-auto.sh\"", "timeout": 15 }
         ]
       }
     ],
@@ -18,7 +28,15 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/secret-scan.sh\"", "timeout": 10 }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/secret-scan.sh\"", "timeout": 10 },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-checks.sh\"", "timeout": 60 }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/chiusura-sessione.sh\"", "timeout": 15 }
         ]
       }
     ]

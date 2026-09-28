@@ -1,0 +1,9 @@
+## File esclusi dalla normalizzazione dei trattini.
+## Una riga per percorso, con il motivo dopo il cancelletto: un'esclusione senza
+## motivo viene rifiutata, perché il senso di questo file è costringere a
+## dichiarare la ragione invece di dimenticarla.
+
+.claude/templates/docx-to-docs/docx-to-md.py # la sua tabella di sostituzione contiene questi caratteri per poterli rimuovere dai documenti convertiti: normalizzarli qui lo renderebbe cieco
+.claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md # documento di riferimento copiato da fonte esterna, che per la regola di stile mantiene la formattazione originale
+.claude/skills/humanizer/SKILL.md # skill di terze parti che cerca i segni della scrittura automatica: contiene il trattino en COME DATO, cioe' come il carattere che istruisce a cercare, e normalizzarlo la renderebbe cieca proprio su quel segno
+.claude/settings.local.json # il carattere compare dentro una regola di permesso registrata, cioe' dentro il testo di un comando gia' autorizzato: riscriverlo cambierebbe la regola invece di correggere della prosa

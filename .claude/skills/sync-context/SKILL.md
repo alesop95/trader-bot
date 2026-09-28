@@ -14,11 +14,18 @@ description: >
 ### Branch corrente
 !`git branch --show-current`
 
+### Stato dell'albero di lavoro e altri alberi
+!`git status --short` !`git worktree list`
+
 ### Commit recenti
 !`git log --oneline --no-decorate -10`
 
 ### Snapshot e frontmatter delle schede
 Leggere con lo strumento Read: prima `.claude/memory/index.md` (snapshot), poi i file `.claude/context/*.md` (elencabili con Glob), estraendo dal frontmatter di ciascuna scheda `last-verified-commit` e `covers-paths`. Questi contenuti non si iniettano via comando di shell, per restare portabili tra Windows e Unix e per non dipendere da `cat`, `sed` o cicli `for` (che il controllo permessi blocca).
+
+## Le due cecità del motore, che fanno parte del contratto
+
+Il confronto che segue misura il drift fra commit, e per questo dichiara allineato ciò che non sa vedere. Le sue cecità sono due e si dichiarano nel rapporto invece di lasciarle implicite. La prima è il lavoro non committato: una scheda risulta aggiornata rispetto a HEAD anche quando decine di file coperti sono modificati nell'albero di lavoro, quindi se `git status --short` qui sopra non è vuoto il rapporto lo dice in testa, con il numero dei file e le schede che li coprono. La seconda è la branch: il motore confronta la memoria con la storia della branch corrente, e non può sapere che la memoria del progetto viva più avanti in un altro albero. Se `git worktree list` elenca più di un albero, prima del confronto si verifica con `python tools/verifica-ripresa.py`, o a mano con `git diff --stat HEAD...<branch> -- .claude/memory`, che la memoria di questo albero sia quella autorevole; se non lo è, il rapporto si apre con il percorso dell'albero autorevole e `memory/index.md` e `memory/progress.md` non si aggiornano da qui, come prescrive la norma `skills/alberi-di-lavoro/RIFERIMENTO.md`.
 
 ## Istruzioni operative
 
@@ -77,3 +84,4 @@ Non bumpare in automatico. Avvisare che serve una rilettura più approfondita de
 - Se una scheda porta ancora `PENDING-FIRST-COMMIT`, eseguire prima il passo 0 di primo ancoraggio: quel segnaposto va sostituito con l'hash di HEAD al primo commit, non trattato come drift.
 - Se HEAD coincide con tutti i `last-verified-commit`, rispondere con un singolo messaggio di allineamento, senza azioni.
 - Se il branch corrente è diverso dal `generated-from-branch` di una scheda, avvisare l'utente che il confronto può risultare rumoroso.
+- Un rapporto di allineamento completo vale solo con l'albero di lavoro pulito e con la memoria autorevole: in caso contrario il messaggio di allineamento nomina la cecità che resta, invece di dichiarare un allineamento che il motore non può vedere.

@@ -4,11 +4,11 @@ richiesta da `.claude/skills/book-bib-extract/SKILL.md`.
 Motivo per cui non si usa il mirror Markdown di tools/doc-ingest.py per questo scopo: molti
 corpus di libri di studio (specie fotocopie o scansioni datate) sono PDF scansionati senza
 livello di testo nativo, quindi il mirror Markdown (via markitdown) esce vuoto anche con
---ocr attivo, perche' l'OCR su scansioni di bassa qualita' e' spesso inaffidabile o rumoroso;
+--ocr attivo, perché l'OCR su scansioni di bassa qualità è spesso inaffidabile o rumoroso;
 la verifica visiva sulle pagine renderizzate resta il percorso pratico per bib_status.
 
 Convenzione di output: 3 pagine per libro (frontespizio, verso, colophon) sono quasi sempre
-sufficienti; si puo' alzare --pages per libri con colophon piu' in profondita'.
+sufficienti; si può alzare --pages per libri con colophon più in profondità.
 
 Uso:
     py -3 tools/extract-titlepages.py LIBRO.pdf --slug nome-slug --out CARTELLA_DEST

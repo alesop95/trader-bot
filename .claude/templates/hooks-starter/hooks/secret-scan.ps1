@@ -4,6 +4,15 @@
 # negato (i commit restano manuali dell'utente), quindi questo hook e' difesa in profondita'
 # per i progetti che allentano quel deny. I commit manuali dell'utente NON passano di qui: per
 # coprirli serve un hook nativo di git (core.hooksPath), vedi README del pacchetto.
+#
+# Perimetro, e cosa NON copre. Questo hook guarda il solo diff in stage, che e' la scelta
+# giusta per il suo compito: un segreto lo si introduce, e va fermato quando lo si
+# introduce. Ne discende pero' che un residuo GIA' PRESENTE nel repository gli e'
+# invisibile per costruzione, perche' nessun commit successivo lo riporta in stage. Per
+# quella meta' del problema serve un controllo che passi il perimetro intero a ogni
+# esecuzione: e' il pacchetto `anonymization`, che cerca anche una categoria diversa,
+# cioe' i dati che identificano persone e infrastrutture invece delle credenziali. I due
+# si usano insieme e nessuno dei due sostituisce l'altro.
 # Blocco = exit 2 con motivo su stderr. NON attivo finche' non registrato nel settings.json.
 
 $ErrorActionPreference = "SilentlyContinue"

@@ -1,0 +1,48 @@
+#!/bin/sh
+# Pre-commit dei commit manuali. Prima tiene allineate le sezioni generate del README, compito
+# del pacchetto readme-sync; poi esegue in ordine gli script di .githooks/pre-commit.d/, con cui
+# altri pacchetti aggiungono il proprio passo senza modificare questo file, che git ammette uno
+# solo. Uno script di quella cartella che esce diverso da zero ferma il commit; uno che vuole
+# soltanto avvisare esce zero. Non mette mai file in stage.
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+
+python_cmd=""
+for candidate in python3 python; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys' >/dev/null 2>&1; then
+        python_cmd="$candidate"
+        break
+    fi
+done
+
+bundle=""
+script="$root/tools/sync-readme.py"
+if [ ! -f "$script" ]; then
+    script="$root/.claude/templates/readme-sync/tools/sync-readme.py"
+    bundle="--bundle"
+fi
+
+if [ -f "$root/README.md" ] && [ -f "$script" ]; then
+    if [ -z "$python_cmd" ]; then
+        echo "sync-readme: Python non trovato; installarlo prima del commit" >&2
+        exit 1
+    fi
+    if ! "$python_cmd" "$script" --root "$root" --write $bundle; then
+        echo "sync-readme: correggere gli errori del README prima del commit" >&2
+        exit 1
+    fi
+    if ! git diff --quiet -- README.md; then
+        echo "sync-readme: README aggiornato o diverso dall'indice; rivederlo e aggiungerlo di nuovo allo stage" >&2
+        exit 1
+    fi
+    "$python_cmd" "$script" --root "$root" --check $bundle
+fi
+
+# Gli script si eseguono con sh e non per bit di esecuzione, perché su Windows quel bit non
+# viaggia con il clone e uno script ignorato in silenzio è il modo peggiore di fallire.
+for passo in "$root"/.githooks/pre-commit.d/*; do
+    [ -f "$passo" ] || continue
+    case "$passo" in *.sample) continue ;; esac
+    PYTHON_CMD="$python_cmd" sh "$passo" || exit 1
+done

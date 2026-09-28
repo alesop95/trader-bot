@@ -1,0 +1,2 @@
+Marcatore letto da md-unwrap: le fixture di test sono materiale di confronto
+byte per byte e non vanno mai riscritte da una corsa dello strumento.

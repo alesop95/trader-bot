@@ -1,0 +1,76 @@
+# Voci aperte del progetto, fonte unica della roadmap operativa.
+#
+# Questo file contiene solo ciò che una macchina non può dedurre: quale lavoro resta, dove vive e
+# perché. Lo stato misurabile (commit, distanza delle schede da HEAD, esito dei controlli) non si
+# scrive qui: lo misura tools/roadmap.py a ogni esecuzione, così la lista non può invecchiare come
+# invecchia qualunque elenco tenuto a mano.
+#
+# Si copia in tools/roadmap-items.yml e si adatta. Le tre sezioni di configurazione in testa sono
+# tutte facoltative: un progetto che non le dichiara ottiene la sola lista delle voci.
+
+titolo: Roadmap operativa di <nome progetto>
+
+# Cartella delle schede che portano un frontmatter con `last-verified-commit`, per misurarne la
+# distanza da HEAD. Si omette se il progetto non usa quella convenzione.
+cartella-schede: .claude/context
+
+# Controlli eseguiti a ogni invocazione. Exit 0 significa in ordine. Il filtro facoltativo
+# `solo-file-tracciati` legge dall'uscita i percorsi segnalati e considera in ordine il caso in cui
+# nessuno di essi sia tracciato da git: serve agli strumenti che segnalano anche i file ignorati.
+# La chiave è il nome con cui una sonda può riferirsi a questo controllo.
+controlli:
+  - nome: convenzione Markdown
+    chiave: mdunwrap
+    comando: python tools/md-unwrap.py --check .
+    filtro: solo-file-tracciati
+    rimedio: python tools/md-unwrap.py <file>
+
+# Comando di verifica dei link, eseguito solo con --link-check perché va in rete. Si dichiara per
+# piattaforma, e la ragione non è cosmetica: uno script di shell invocato da Python non eredita la
+# shell della sessione ma quella che il sistema risolve per prima, che su Windows è la bash di WSL
+# e non quella di Git, con percorsi e interprete diversi. Si omette del tutto se il progetto non ha
+# link da verificare.
+verifica-link:
+  windows: powershell -NoProfile -File scripts/check-links.ps1
+  posix: bash scripts/check-links.sh
+
+# I quattro livelli sono il costo, non l'importanza, ed è la scelta che rende la lista utilizzabile
+# davvero: si apre in cima e si chiude qualcosa, invece di leggere per intero un elenco ordinato per
+# gravità dove la prima voce richiede una settimana.
+livelli:
+  0: "Minuti, nessuna decisione da prendere"
+  1: "Mezz'ora, ancora nessuna decisione di contenuto"
+  2: "Sessione dedicata, decisione di contenuto dell'utente"
+  3: "Fuori da questo repository, ma è da qui che dipende il resto"
+
+# Campi di una voce. `id` è stabile e non si riusa, perché una voce chiusa e tolta lascia il suo
+# numero libero e riassegnarlo rende illeggibile ogni riferimento passato. `livello` è il costo.
+# `dove` è il repository, che nei progetti con satelliti non è sempre questo. `sonda` è facoltativa
+# e dice alla macchina come stabilire da sola se la voce è ancora aperta.
+#
+# Sonde disponibili, implementate in tools/roadmap.py:
+#   <chiave>            aperta se il controllo con quella chiave non è in ordine
+#   presente:FILE:REGEX aperta se la regex compare nel file
+#   assente:FILE:REGEX  aperta se la regex NON compare nel file
+#
+# Una voce senza sonda resta aperta finché qualcuno non la toglie da questo file, ed è il caso
+# normale: la maggior parte del lavoro non è rilevabile da una regex. La sonda si mette dove il
+# difetto ha una traccia testuale, perché è lì che una lista tenuta a mano mente più a lungo.
+
+voci:
+  - id: 1
+    livello: 0
+    dove: <questo repository>
+    titolo: Esempio di voce meccanica, con sonda
+    stato: Descrizione di che cosa non va oggi, al presente, senza cronaca.
+    passo: Il comando o l'azione che la chiude, in una riga.
+    fonte: "percorso/del/file che la ospita"
+    sonda: "presente:percorso/del/file:testo che sparisce quando e risolta"
+
+  - id: 2
+    livello: 2
+    dove: <questo repository>
+    titolo: Esempio di voce che richiede una decisione
+    stato: Perché non si può chiudere da soli, e quale informazione manca.
+    passo: La domanda da porre, non la risposta da indovinare.
+    fonte: "percorso/del/file"
