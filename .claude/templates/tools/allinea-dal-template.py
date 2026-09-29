@@ -11,22 +11,33 @@ locale, con le fini riga normalizzate a LF, e lo si cerca fra tutti i blob che
 quel percorso ha avuto nella storia del template, rinomine comprese. Se lo si
 trova, il file locale e una versione del template mai modificata qui, e
 aggiornarlo non perde niente. Se non lo si trova, il file e stato modificato
-localmente: si sceglie come base la versione storica piu vicina e si tenta un
-merge a tre vie con `git merge-file`. Un merge pulito si puo applicare; uno con
-conflitti si lascia alla persona, con il file dei conflitti scritto a parte.
+localmente: si tenta un merge a tre vie con `git merge-file` su una base che va
+indovinata, perche l'antenato vero non e osservabile.
+
+Una base indovinata sbaglia in silenzio, e in due direzioni opposte. Se e piu
+recente dell'antenato vero, la differenza base->testa non contiene la correzione
+che il file locale non ha, e quella correzione non arriva a nessuno. Se e piu
+vecchia, contiene l'aggiunta di un paragrafo che il file locale ha gia, e il
+merge ne scrive due copie. Nessuno dei due casi produce un conflitto, quindi il
+risultato del merge si misura invece di crederlo: quante righe della testa non
+consegna e quante ne duplica. Se la base piu vicina per contenuto non supera la
+verifica si provano le altre versioni candidate; se nessuna la supera si guarda
+se il file abbia righe proprie, per decidere fra SUPERATO e CONFLITTO.
 
 Esiti per file:
   UGUALE      contenuto identico alla testa del template
   NUOVO       presente nel template, assente nel progetto: si copia
   VECCHIO     versione storica intatta del template: si aggiorna
-  ADATTATO    modificato localmente e contiene gia tutte le modifiche del
-              template: e una personalizzazione del progetto, non si tocca
-  SUPERATO    non coincide con nessuna versione storica, ma ogni sua riga compare
-              in qualcuna: e una copia anteriore alla storia registrata, senza
-              contenuto proprio, e si aggiorna. Si elenca perche una riga tolta
-              di proposito nel progetto tornerebbe
-  MERGE       modificato localmente, merge a tre vie pulito: si applica
-  CONFLITTO   modificato localmente, merge con conflitti: a mano
+  ADATTATO    modificato localmente, contiene gia tutte le modifiche del
+              template e non ne perde nessuna: e una personalizzazione del
+              progetto, non si tocca
+  SUPERATO    ogni sua riga compare in qualche versione storica e nessuna base
+              produce un merge verificato: e una copia anteriore alla storia
+              registrata, senza contenuto proprio, e si aggiorna alla testa. Si
+              elenca perche una riga tolta di proposito nel progetto tornerebbe
+  MERGE       modificato localmente, merge a tre vie pulito e verificato: si applica
+  CONFLITTO   modificato localmente, nessuna base produce un merge verificato e il
+              file ha righe proprie da salvare: a mano
   SPOSTATO    il template lo ha rinominato; la copia locale era intatta o si
               fonde pulita nella destinazione: si scrive la destinazione e,
               con --rimuovi, si toglie l'origine
@@ -55,6 +66,7 @@ La fine riga di un file esistente si conserva quando lo si riscrive.
 from __future__ import annotations
 
 import argparse
+import collections
 import difflib
 import hashlib
 import json
@@ -159,15 +171,71 @@ def gestito(p: str) -> bool:
     return len(parti) > 2 and parti[1] == "skills" and parti[2] in SKILL_SISTEMA
 
 
-def base_piu_vicina(template: Path, candidati: set[str], locale: bytes) -> bytes | None:
-    migliore, punteggio = None, -1.0
+def basi_ordinate(template: Path, candidati: set[str], locale: bytes) -> list[str]:
+    """Le versioni storiche dalla piu vicina per contenuto alla piu lontana."""
     righe = locale.decode("utf-8", errors="replace").splitlines()
-    for oid in candidati:
-        c = lf(leggi_blob(template, oid))
-        r = difflib.SequenceMatcher(None, righe, c.decode("utf-8", errors="replace").splitlines(), autojunk=False).quick_ratio()
-        if r > punteggio:
-            migliore, punteggio = c, r
-    return migliore
+    def somiglianza(oid: str) -> float:
+        c = lf(leggi_blob(template, oid)).decode("utf-8", errors="replace").splitlines()
+        return difflib.SequenceMatcher(None, righe, c, autojunk=False).quick_ratio()
+    return sorted(candidati, key=somiglianza, reverse=True)
+
+
+MARCATORI = ("<<<<<<< ", "||||||| ", "=======", ">>>>>>> ")
+
+
+def conta_righe(dati: bytes) -> collections.Counter:
+    """Le righe non vuote, senza i marcatori che git merge-file inserisce."""
+    return collections.Counter(r for r in dati.decode("utf-8", errors="replace").splitlines()
+                               if r.strip() and not r.startswith(MARCATORI))
+
+
+def verifica_merge(locale: bytes, testa_dati: bytes, unito: bytes) -> tuple[int, int]:
+    """Quante righe della testa il risultato non consegna, e quante ne duplica.
+
+    Sono le due firme di una base sbagliata, e nessuna delle due produce un
+    conflitto: una base piu recente dell'antenato vero lascia fuori dalla
+    differenza base->testa una correzione che il file locale non ha, una base
+    piu vecchia ci mette dentro l'aggiunta di un paragrafo che il file locale
+    ha gia. Misurate come differenze di multinsiemi di righe, quindi cieche a
+    uno spostamento e sensibili a una perdita o a un raddoppio, che e quello
+    che serve qui."""
+    L, T, R = conta_righe(locale), conta_righe(testa_dati), conta_righe(unito)
+    perse = sum(v - R.get(k, 0) for k, v in T.items() if R.get(k, 0) < v)
+    duplicate = sum(R[k] - max(L.get(k, 0), T.get(k, 0)) for k in R
+                    if R[k] > max(L.get(k, 0), T.get(k, 0)))
+    return perse, duplicate
+
+
+def nota_verifica(perse: int, duplicate: int, anteriori: int) -> str:
+    """Dice perche il merge non e stato creduto, in modo che l'uscita resti leggibile."""
+    parti = []
+    if perse:
+        parti.append(f"{perse} righe della testa che il merge non consegna")
+    if duplicate:
+        parti.append(f"{duplicate} righe che il merge duplicherebbe")
+    if anteriori:
+        parti.append(f"{anteriori} righe anteriori alla storia del template, comuni ad altri progetti")
+    return "; ".join(parti)
+
+
+def fondi(template: Path, candidati: set[str], locale: bytes, testa_dati: bytes):
+    """Il primo merge verificato fra le basi candidate, altrimenti il meno peggio.
+
+    Restituisce (unito, conflitti, perse, duplicate, verificato). La base piu
+    vicina per contenuto e solo la prima ipotesi: quando passa la verifica, e
+    il caso normale, si e pagato un solo `git merge-file`. Quando non passa si
+    scorrono le altre, perche una base che perde una correzione o ne duplica
+    un'altra non e una base, per quanto somigli."""
+    migliore = None
+    for oid in basi_ordinate(template, candidati, locale):
+        unito, n = merge3(locale, lf(leggi_blob(template, oid)), testa_dati)
+        perse, duplicate = verifica_merge(locale, testa_dati, unito)
+        if n == 0 and not perse and not duplicate:
+            return unito, n, perse, duplicate, True
+        punteggio = (n > 0, perse + duplicate, n)
+        if migliore is None or punteggio < migliore[0]:
+            migliore = (punteggio, (unito, n, perse, duplicate, False))
+    return migliore[1]
 
 
 _righe_cache: dict[frozenset, set[str]] = {}
@@ -251,27 +319,28 @@ def main():
                 voce["esito"] = "UGUALE"
             elif blob_id(loc) in storici:
                 voce["esito"], voce["_dati"] = "VECCHIO", t
+            elif not storici:
+                voce["esito"] = "CONFLITTO"; voce["nota"] = "nessuna base storica"
             else:
-                base = base_piu_vicina(tpl, storici, loc) if storici else None
-                if base is None:
-                    voce["esito"] = "CONFLITTO"; voce["nota"] = "nessuna base storica"
+                unito, n, perse, duplicate, ok = fondi(tpl, storici, loc, t)
+                if ok and unito == loc:
+                    voce["esito"] = "ADATTATO"
+                elif ok:
+                    voce["esito"], voce["_dati"] = "MERGE", unito
                 else:
-                    unito, n = merge3(loc, base, t)
-                    if n == 0 and unito == loc:
-                        voce["esito"] = "ADATTATO"
-                    elif n == 0:
-                        voce["esito"], voce["_dati"] = "MERGE", unito
+                    # nessuna base produce un merge verificato: se il file non ha righe
+                    # davvero sue, e una copia anteriore alla storia registrata e si
+                    # prende la testa del template
+                    rp = righe_proprie(tpl, storici, loc, tpl_rel)
+                    if rp[1]:
+                        voce["esito"], voce["_dati"] = "SUPERATO", t
+                        voce["nota"] = nota_verifica(perse, duplicate, len(rp[0]))
                     else:
-                        # il merge non basta: se il file non ha righe davvero sue, e una copia
-                        # anteriore alla storia registrata e si prende la testa del template
-                        rp = righe_proprie(tpl, storici, loc, tpl_rel)
-                        if rp[1]:
-                            voce["esito"], voce["_dati"] = "SUPERATO", t
-                            if rp[0]:
-                                voce["nota"] = f"{len(rp[0])} righe anteriori alla storia del template, comuni ad altri progetti"
-                        else:
-                            voce["esito"], voce["_dati_conflitto"], voce["conflitti"] = "CONFLITTO", unito, n
-                            voce["righe_proprie"] = rp[0]
+                        voce["esito"], voce["_dati_conflitto"] = "CONFLITTO", unito
+                        voce["righe_proprie"] = rp[0]
+                        if n:
+                            voce["conflitti"] = n
+                        voce["nota"] = nota_verifica(perse, duplicate, 0)
         esiti.append(voce)
 
     # 1. file della testa del template nel perimetro
@@ -297,15 +366,19 @@ def main():
             if blob_id(loc) in storici:
                 voce["esito"], voce["_dati"] = "SPOSTATO", t
             else:
-                unito, n = merge3(loc, base_piu_vicina(tpl, storici, loc), t)
-                rp = righe_proprie(tpl, storici, loc, dst) if n else ([], False)
-                if n == 0:
+                unito, n, perse, duplicate, ok = fondi(tpl, storici, loc, t)
+                rp = righe_proprie(tpl, storici, loc, dst) if not ok else ([], False)
+                if ok:
                     voce["esito"], voce["_dati"], voce["nota"] = "SPOSTATO", unito, "copia locale estesa, fusa pulita"
                 elif rp[1]:
-                    voce["esito"], voce["_dati"], voce["nota"] = "SPOSTATO", t, "copia anteriore alla storia del template"
+                    voce["esito"], voce["_dati"] = "SPOSTATO", t
+                    voce["nota"] = "copia anteriore alla storia del template; " + nota_verifica(perse, duplicate, len(rp[0]))
                 else:
-                    voce["esito"], voce["_dati_conflitto"], voce["conflitti"] = "CONFLITTO", unito, n
+                    voce["esito"], voce["_dati_conflitto"] = "CONFLITTO", unito
                     voce["righe_proprie"] = rp[0]
+                    if n:
+                        voce["conflitti"] = n
+                    voce["nota"] = nota_verifica(perse, duplicate, 0)
             # la destinazione e gia valutata al passo 1 come NUOVO: la sostituisce questa voce
             esiti[:] = [e for e in esiti if not (e["file"] == dst and e["esito"] == "NUOVO")]
             esiti.append(voce)
@@ -362,7 +435,8 @@ def main():
             out = prj / (e["file"] + ".conflitto")
             if a.applica:
                 out.write_bytes(e["_dati_conflitto"])
-                e["nota"] = f"conflitti in {out.relative_to(prj).as_posix()}"
+                dove = f"esito del merge in {out.relative_to(prj).as_posix()}"
+                e["nota"] = f"{e['nota']}; {dove}" if e.get("nota") else dove
 
     # rapporto
     ordine = ["CONFLITTO", "SUPERATO", "MERGE", "SPOSTATO", "RIMOSSO", "VECCHIO", "NUOVO", "ADATTATO", "LOCALE", "UGUALE"]
