@@ -42,6 +42,8 @@ Esiti per progetto:
   clone-del-template   condivide il commit radice con il template. Saltato
   operazione-in-corso  merge, rebase, cherry-pick o revert a meta
   head-staccato        nessuna branch in uscita
+  escluso              elencato in _notes/allineamento/esclusi.txt del template,
+                       per decisione del proprietario. Saltato finche non si toglie
   albero-sporco        modifiche non committate: si misura ma non si scrive, cosi
                        l'allineamento non si mescola a lavoro in corso
   errore-strumento     lo strumento non ha potuto misurare (codice 2)
@@ -218,6 +220,22 @@ function Prove-Strumenti([string]$prj, $esitiPrima) {
   return [pscustomobject]@{ provati = $provati; falliti = $falliti }
 }
 
+# Progetti esclusi dalla passata per decisione del proprietario, finche non la ritira: una
+# riga per percorso, con il motivo dopo il cancelletto. Vive in _notes/ del template perche
+# i percorsi sono della macchina, come il registro, e non si versiona.
+$fileEsclusi = Join-Path $base 'esclusi.txt'
+$esclusi = @{}
+if (Test-Path -LiteralPath $fileEsclusi) {
+  foreach ($r in (Get-Content -LiteralPath $fileEsclusi -Encoding UTF8)) {
+    $t = $r.Trim()
+    if (-not $t -or $t.StartsWith('#')) { continue }
+    $parti = $t -split '#', 2
+    $percorso = $parti[0].Trim().TrimEnd([char]92, [char]47).Replace([string][char]47, [string][char]92)
+    $motivo = if ($parti.Count -gt 1) { $parti[1].Trim() } else { 'senza motivo' }
+    $esclusi[$percorso.ToLowerInvariant()] = $motivo
+  }
+}
+
 $registro = @{}
 if (Test-Path -LiteralPath $fileRegistro) {
   try { (Leggi-Json $fileRegistro).PSObject.Properties | ForEach-Object { $registro[$_.Name] = $_.Value } }
@@ -250,7 +268,8 @@ try {
     $prj = $p.FullName.TrimEnd('\')
     $o = [pscustomobject]@{ nome = $p.Name; percorso = $prj; slug = ($prj -replace '[:\\/]+', '--').Trim('-'); stato = $null; sporco = $false; c = $null; avvisi = @() }
     $dotgit = Join-Path $prj '.git'
-    if (-not (Test-Path -LiteralPath $dotgit)) { $o.stato = 'non-git' }
+    if ($esclusi.ContainsKey($prj.ToLowerInvariant())) { $o.stato = 'escluso'; $o.avvisi += 'escluso: ' + $esclusi[$prj.ToLowerInvariant()] }
+    elseif (-not (Test-Path -LiteralPath $dotgit)) { $o.stato = 'non-git' }
     elseif ((Test-Path -LiteralPath $dotgit -PathType Leaf) -and -not $IncludiAlberi) { $o.stato = 'albero-secondario' }
     else {
       $radiciPrj = @(Invoca-Git $prj rev-list --max-parents=0 HEAD)
@@ -362,7 +381,7 @@ try {
   [System.IO.File]::WriteAllText($fileRegistro, ($registro | ConvertTo-Json -Depth 5), $utf8)
   Log ''
   Log (($progetti | Group-Object stato | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Count)" }) -join '  ')
-  $SALTATI = @('clone-del-template', 'albero-secondario')
+  $SALTATI = @('clone-del-template', 'albero-secondario', 'escluso')
   $finali = @('allineato', 'applicato', 'da-allineare') + $SALTATI
   $saltati = @($progetti | Where-Object { $SALTATI -contains $_.stato })
   if ($saltati) { Log ''; Log 'Saltati per costruzione, nessuna azione:'; $saltati | ForEach-Object { Log "  $($_.percorso)  ($($_.stato))" } }

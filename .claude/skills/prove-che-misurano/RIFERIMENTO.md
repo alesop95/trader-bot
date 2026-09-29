@@ -58,6 +58,20 @@ Caso osservato: un'interfaccia di persistenza con semantica di *fusione*, dove u
 
 La domanda da porsi prima di fermarsi al carico: fra quello che consegno e l'effetto che voglio, c'è qualcosa che interpreta? Se sì, la prova va scritta al livello dove quell'interpretazione è osservabile, non a quello che ci sta sopra.
 
+## Un'asserzione di assenza passa anche per la ragione sbagliata
+
+Provare che una cosa c'è e provare che una cosa non c'è non sono simmetrici, e la differenza è il genere di errore che ciascuna ammette. Un'asserzione di presenza fallisce se il selettore è sbagliato, quindi un selettore sbagliato si manifesta subito. Un'asserzione di assenza **passa** se il selettore è sbagliato, perché un selettore che non sa cercare non trova niente, esattamente come non trova niente quando la cosa è stata davvero rimossa. I due casi producono lo stesso verde e non sono distinguibili guardandolo.
+
+Il caso che ha insegnato la regola. Una sezione di interfaccia mostrava una ripartizione per categoria che i dati non popolavano più, e fu rimossa; la prova che ne fissava la rimozione cercava l'etichetta con una corrispondenza **esatta** sul testo dell'elemento. La rimozione però era stata applicata in un punto e non nell'altro, e nel punto rimasto l'etichetta veniva resa insieme al proprio valore, cioè come `Etichetta 50` invece che come `Etichetta`. Il testo completo di quell'elemento non è mai uguale alla stringa cercata, quindi la ricerca esatta non lo trovava e la prova dichiarava assente una sezione ancora presente. È rimasta verde per due settimane, con un nome che affermava per esteso ciò che non stava verificando.
+
+Due prescrizioni, e la seconda vale anche quando la prima è stata rispettata.
+
+**Un'asserzione di assenza si accompagna sempre a una di presenza che usa lo stesso selettore.** Se la prova cerca l'etichetta in una regione e la vuole assente, deve esistere accanto una prova che la stessa ricerca la trova dove c'è: senza, nessuno sa se quel selettore sappia trovare. È l'applicazione diretta della non vacuità al caso dell'assenza, che non si può verificare reintroducendo il difetto perché il difetto è proprio ciò che si sta cercando di non avere.
+
+**L'assenza si asserisce su una regione delimitata, non sull'intero schermo.** "Da nessuna parte" è quasi sempre più di quanto si voglia dire, e paradossalmente è più fragile: circoscrivere la ricerca al riquadro che deve averla persa costringe a nominare quel riquadro, e nominarlo fa emergere che gli altri esistono. La prova che ha fallito qui asseriva sull'intera schermata, ed è esattamente per questo che non si è accorta di parlare del riquadro sbagliato.
+
+Corollario sul nome. Una prova il cui nome dice più di quanto il corpo verifica è peggio della sua assenza, perché chi legge l'elenco dei nomi la conta come copertura acquisita. Quando il corpo non può essere allargato subito, si stringe il nome.
+
 ## Quando una verifica manuale smentisce una prova verde
 
 Succede, ed è successo due volte in due giorni nello stesso progetto. La reazione corretta non è correggere il sintomo ma capire perché la prova non l'aveva visto, e scrivere quella ragione dove la leggerà chi scriverà la prossima prova. Un difetto trovato a mano dopo una suite verde è un difetto *della suite* oltre che del codice, e ignorare la seconda metà garantisce la ripetizione.
