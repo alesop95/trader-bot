@@ -50,20 +50,27 @@ Esiti per progetto:
   allineato            niente da fare rispetto al commit corrente del template
   incompleto           scritto, ma la seconda misura trova ancora file da trattare
   fuori-perimetro      scritto, ma e cambiato un file fuori da .claude/, tools/,
-                       docs/: niente si annulla da solo, decide la persona
+                       docs/ e CLAUDE.md: niente si annulla da solo, decide la persona
 
 Solo a verifica passata si scrive nel progetto .claude/allineamento-template.json,
 che dichiara a quale commit e a quale albero .claude del template la struttura
 del progetto corrisponde.
 
-Avvisi, che non bloccano: skill con RIFERIMENTO.md presenti ma non nominate nel
-CLAUDE.md del progetto, cioe norme che nessuna riga di innesco carica; carico
-degli instruction file oltre la soglia secondo misura-istruzioni.py.
+Le righe di innesco delle skill con RIFERIMENTO.md mancanti nel CLAUDE.md del
+progetto sono un esito azionabile, INNESCO, e con -Applica lo strumento le scrive
+prendendole da templates/CLAUDE.md: e il solo punto in cui l'allineamento tocca
+CLAUDE.md, e solo per aggiungere righe. Un file che il progetto ha risolto a mano
+si registra con allinea-dal-template.py --risolto <percorso> e resta ADATTATO
+finche il template non lo cambia di nuovo.
+
+Avvisi, che non bloccano: skill con RIFERIMENTO.md presenti ma non nominate come
+skill nel CLAUDE.md, se l'innesco non e stato scritto; carico degli instruction
+file oltre la soglia secondo misura-istruzioni.py.
 
 Il registro vive in _notes/allineamento/registro.json del template, ignorato da
 git perche contiene percorsi di progetti; ogni corsa lascia accanto log, rapporti
 JSON e righe del consenso. Commit e push restano manuali, progetto per progetto;
-righe di innesco, memoria e conflitti si chiudono con una sessione nel progetto.
+memoria e conflitti veri si chiudono con una sessione nel progetto.
 
 Codici di uscita: 0 tutto allineato o applicato, 1 qualche progetto da guardare,
 2 guardia iniziale fallita.
@@ -148,7 +155,7 @@ $fileComuni = Join-Path $dirCorsa 'righe-comuni.json'
 
 function Log([string]$riga) { Write-Host $riga; [System.IO.File]::AppendAllText($fileLog, $riga + "`r`n", $utf8) }
 
-$AZIONABILI = 'CONFLITTO', 'SUPERATO', 'MERGE', 'VECCHIO', 'NUOVO', 'SPOSTATO', 'RIMOSSO'
+$AZIONABILI = 'CONFLITTO', 'SUPERATO', 'MERGE', 'VECCHIO', 'NUOVO', 'SPOSTATO', 'RIMOSSO', 'INNESCO'
 function Leggi-Json([string]$f) { Get-Content -LiteralPath $f -Raw -Encoding UTF8 | ConvertFrom-Json }
 function Conta($esiti) {
   $c = @{}; foreach ($k in $AZIONABILI + 'ADATTATO', 'LOCALE', 'UGUALE') { $c[$k] = 0 }
@@ -157,7 +164,7 @@ function Conta($esiti) {
   return $c
 }
 function Misura([string]$prj, [string]$json, [switch]$Scrivi) {
-  $a = @($strumento, '--template', $tpl, '--progetto', $prj, '--json', $json)
+  $a = @($strumento, '--template', $tpl, '--progetto', $prj, '--json', $json, '--innesco')
   if (Test-Path -LiteralPath $fileComuni) { $a += '--righe-comuni', $fileComuni }
   if ($Scrivi) { $a += '--applica', '--rimuovi' }
   $out = & python @a 2>&1
@@ -301,7 +308,7 @@ try {
           $json2 = Join-Path $dirCorsa "$($o.slug).dopo.json"
           $codice2 = Misura $prj $json2
           $fuori = @(Invoca-Git $prj status --porcelain | ForEach-Object { $_.Substring(3).Trim('"') } |
-            Where-Object { $_ -notmatch '^(\.claude|tools|docs)/' })
+            Where-Object { $_ -notmatch '^(\.claude|tools|docs)/' -and $_ -ne 'CLAUDE.md' })
           if ($codice -ge 2 -or $codice2 -ge 2 -or -not (Test-Path -LiteralPath $json2)) { $o.stato = 'errore-strumento' }
           else {
             $c2 = Conta (Leggi-Json $json2)
@@ -333,7 +340,7 @@ try {
 
         $claudeMd = Join-Path $prj 'CLAUDE.md'
         $testo = if (Test-Path -LiteralPath $claudeMd) { Get-Content -LiteralPath $claudeMd -Raw -Encoding UTF8 } else { '' }
-        $senza = @($skillNorme | Where-Object { (Test-Path -LiteralPath (Join-Path $prj ".claude\skills\$_")) -and ($testo -notmatch [regex]::Escape($_)) })
+        $senza = @($skillNorme | Where-Object { (Test-Path -LiteralPath (Join-Path $prj ".claude\skills\$_")) -and ($testo -notmatch [regex]::Escape('`' + $_ + '`')) })
         if ($senza) { $o.avvisi += 'innesco mancante nel CLAUDE.md: ' + ($senza -join ', ') }
         if (Test-Path -LiteralPath $misura) {
           $mis = & python $misura --root $prj 2>&1

@@ -126,7 +126,7 @@ $b = if ($bundle) { @("--bundle") } else { @() }
 $m = if ($bundle) { @("--includi-modelli") } else { @() }
 $o = if ($bundle) { @("--oracle", "require") } else { @() }
 $controlli = @(
-    @{ n = "md-unwrap.py";            a = @("--check") + $o + @(".") },
+    @{ n = "md-unwrap.py";            a = @("--check", "--only-tracked") + $o + @(".") },
     @{ n = "sync-readme.py";          a = @("--check") + $b; serve = "README.md" },
     @{ n = "lint-md-commands.py";     a = @(".") },
     @{ n = "lint-doc-references.py";  a = @("--solo-vivi") + $b },

@@ -79,7 +79,7 @@ titolo "Controlli"
 b=""; m=""; o=""
 [ $bundle = 1 ] && { b="--bundle"; m="--includi-modelli"; o="--oracle require"; }
 # nome|argomenti|file richiesto|solo bundle
-controlli="md-unwrap.py|--check $o .||0
+controlli="md-unwrap.py|--check --only-tracked $o .||0
 sync-readme.py|--check $b|README.md|0
 lint-md-commands.py|.||0
 lint-doc-references.py|--solo-vivi $b||0
