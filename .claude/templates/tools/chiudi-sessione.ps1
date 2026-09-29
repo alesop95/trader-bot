@@ -220,6 +220,17 @@ if (-not $haOrigin) {
 }
 
 # ---------------------------------------------------------------------------------------------
+# Sul template, una modifica a .claude/ si propaga ai progetti solo con la passata di
+# allinea-tutti: lo si ricorda qui, dopo il push, invece di affidarlo alla memoria.
+if ($bundle) {
+    $ps = Trova "passata-in-sospeso.py"
+    if ($ps -and $python) {
+        Titolo "Propagazione ai progetti"
+        & $python $ps | ForEach-Object { Write-Host "   $_" }
+    }
+}
+
+# ---------------------------------------------------------------------------------------------
 Titolo "Impronta di ripresa"
 $vr = Trova "verifica-ripresa.py"
 if ($vr -and $python) {

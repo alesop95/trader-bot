@@ -339,6 +339,7 @@ try {
         }
 
         $claudeMd = Join-Path $prj 'CLAUDE.md'
+        if (-not (Test-Path -LiteralPath $claudeMd)) { $claudeMd = Join-Path $prj '.claude\CLAUDE.md' }
         $testo = if (Test-Path -LiteralPath $claudeMd) { Get-Content -LiteralPath $claudeMd -Raw -Encoding UTF8 } else { '' }
         $senza = @($skillNorme | Where-Object { (Test-Path -LiteralPath (Join-Path $prj ".claude\skills\$_")) -and ($testo -notmatch [regex]::Escape('`' + $_ + '`')) })
         if ($senza) { $o.avvisi += 'innesco mancante nel CLAUDE.md: ' + ($senza -join ', ') }

@@ -309,6 +309,17 @@ class Innesco(BaseDelMerge):
         self.assertNotIn(b"\n\n", testo.replace(b"\r\n", b"\r"), "fine riga CRLF non conservata")
         self.assertEqual(self.corri(), [], "la seconda corsa non deve riscrivere")
 
+    def test_claude_md_sotto_la_cartella_claude(self):
+        """blog-alessio tiene il CLAUDE.md in .claude/: la prima corsa del 2026-09-29 lo
+        dava per assente e lasciava il progetto senza innesco."""
+        f = self.prj / ".claude/CLAUDE.md"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text("# p\n\n## Apprendimenti recenti\n", encoding="utf-8", newline="\n")
+        esiti = self.corri()
+        self.assertEqual([e["file"] for e in esiti], [".claude/CLAUDE.md"], self.uscita)
+        self.assertIn("skill `prove-che-misurano`.", f.read_text(encoding="utf-8"))
+        self.assertFalse((self.prj / "CLAUDE.md").exists())
+
     def test_indice_esistente_si_completa(self):
         f = self.prj / "CLAUDE.md"
         f.write_text("# p\n\nNorme caricate su richiesta, formulate dal progetto.\n\n- Mia riga: skill `prove-che-misurano`.\n\n## Vincoli di team\n",

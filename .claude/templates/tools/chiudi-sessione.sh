@@ -150,6 +150,13 @@ else
     ok "HEAD e remoto coincidono su '$ramo' (${locale:0:7})"
 fi
 
+# Sul template, una modifica a .claude/ si propaga ai progetti solo con la passata di
+# allinea-tutti: lo si ricorda qui, dopo il push, invece di affidarlo alla memoria.
+if [ $bundle = 1 ] && [ -n "$python" ] && [ -f .claude/templates/tools/passata-in-sospeso.py ]; then
+    titolo "Propagazione ai progetti"
+    "$python" .claude/templates/tools/passata-in-sospeso.py | sed 's/^/   /'
+fi
+
 titolo "Impronta di ripresa"
 vr="$(trova verifica-ripresa.py)"
 if [ -n "$vr" ] && [ -n "$python" ]; then

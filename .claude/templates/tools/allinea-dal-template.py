@@ -351,8 +351,10 @@ def innesco(template: Path, prj: Path, skill: list[str]) -> tuple[bytes | None, 
     se il progetto ne ha già uno, altrimenti prima della sezione degli
     apprendimenti recenti o dei vincoli di team, che il modello mette subito
     dopo l'indice, altrimenti in coda."""
-    f = prj / "CLAUDE.md"
-    if not f.is_file():
+    # Claude Code legge il CLAUDE.md di progetto sia in radice sia sotto .claude/, e
+    # blog-alessio lo tiene nel secondo posto: cercarlo solo in radice lo dava per assente
+    f = next((c for c in (prj / "CLAUDE.md", prj / ".claude" / "CLAUDE.md") if c.is_file()), None)
+    if f is None:
         return None, [], "CLAUDE.md assente"
     modello = (template / ".claude/templates/CLAUDE.md").read_text(encoding="utf-8").replace("\r\n", "\n").split("\n")
     intro = next((r for r in modello if r.startswith("Norme caricate su richiesta")), None)
@@ -619,7 +621,8 @@ def main():
                         and p.split("/")[2] in SKILL_SISTEMA})
         dati, mancanti, dove = innesco(tpl, prj, skill)
         if dati is not None:
-            esiti.append({"file": "CLAUDE.md", "template": ".claude/templates/CLAUDE.md", "esito": "INNESCO",
+            nome = "CLAUDE.md" if (prj / "CLAUDE.md").is_file() else ".claude/CLAUDE.md"
+            esiti.append({"file": nome, "template": ".claude/templates/CLAUDE.md", "esito": "INNESCO",
                           "skill": mancanti, "nota": f"righe per {', '.join(mancanti)}, {dove}", "_dati": dati})
 
     # applicazione
