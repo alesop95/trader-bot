@@ -43,6 +43,9 @@ DEFAULT_EXCLUDES = (
 RE_EOL = re.compile(r'(\r\n|\n|\r)\Z')
 RE_FENCE = re.compile(r'^(`{3,}|~{3,})(.*)$')
 RE_ATX = re.compile(r'^#{1,6}(?:[ \t].*)?$')
+# Riquadro di MkDocs (admonition e details): `!!! tipo`, `??? tipo`, `???+ tipo`.
+# Non è CommonMark, quindi l'oracolo di rendering non lo vede: va riconosciuto qui.
+RE_ADMONITION = re.compile(r'^(?:!!!|\?\?\?\+?)[ \t]+\S')
 RE_TBREAK = re.compile(r'^(?:\*[ \t]*){3,}$|^(?:-[ \t]*){3,}$|^(?:_[ \t]*){3,}$')
 RE_SETEXT = re.compile(r'^(?:=+|-+)[ \t]*$')
 RE_BQ_CHAIN = re.compile(r'^(?: {0,3}>[ \t]?)+')
@@ -86,7 +89,7 @@ HTML_KINDS = ('html-raw', 'html-comment', 'html-pi', 'html-decl', 'html-cdata', 
 # continuazione. `html-standalone` (tipo 7) e `code-indent` non interrompono un
 # paragrafo secondo CommonMark, quindi non sono qui.
 BLOCK_STARTERS = frozenset(
-    ('fence', 'atx', 'tbreak', 'list', 'bq', 'linkdef', 'label-text', 'table-delim') + HTML_KINDS
+    ('fence', 'atx', 'tbreak', 'list', 'bq', 'linkdef', 'label-text', 'table-delim', 'admonition') + HTML_KINDS
 )
 
 
@@ -151,6 +154,8 @@ def block_kind(s: str) -> str:
         return 'html-block'
     if RE_ATX.match(s):
         return 'atx'
+    if RE_ADMONITION.match(s):
+        return 'admonition'
     if RE_TBREAK.match(s):
         return 'tbreak'
     if s.lstrip().startswith('>'):
@@ -307,6 +312,8 @@ class Scanner:
                 # separa due blocchi e non si attraversa.
                 self.emit(i, i + 1)
                 i += 1
+            elif kind == 'admonition':
+                i = self.consume_admonition(i, bq, base)
             elif kind == 'linkdef':
                 i = self.consume_linkdef(i, bq, s)
             elif kind == 'label-text':
@@ -399,6 +406,32 @@ class Scanner:
             j += 1
         self.emit(i, last_code + 1)
         return last_code + 1
+
+    def consume_admonition(self, i: int, bq: bool, base: int) -> int:
+        """Riquadro MkDocs: il titolo e il corpo rientrato restano verbatim.
+
+        MkDocs riconosce il corpo solo se resta rientrato sotto il titolo; unirlo
+        al titolo, o il titolo al paragrafo precedente, fa sparire il riquadro
+        senza che il rendering CommonMark se ne accorga.
+        """
+        j = i + 1
+        last = i
+        while j < self.n:
+            body = self.lines[j][0]
+            if bq:
+                m = RE_BQ_CHAIN.match(body)
+                if not m:
+                    break
+                body = body[m.end():]
+            if is_blank(body):
+                j += 1
+                continue
+            if measure_indent(body) - base < 4:
+                break
+            last = j
+            j += 1
+        self.emit(i, last + 1)
+        return last + 1
 
     def consume_linkdef(self, i: int, bq: bool, s: str) -> int:
         """Definizione di link di riferimento: riga a sé, più l'eventuale

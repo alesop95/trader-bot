@@ -90,6 +90,18 @@ La prescrizione che ne discende è minima e costa una riga. Chi scrive una seque
 
 Il criterio per riconoscere il passo discriminante, quando la sequenza la si sta scrivendo: è quello che *modifica lo stato da cui il codice deriva il risultato*, non quello che ripete l'operazione osservata. Un passo che ripete l'operazione precedente con un nome diverso aggiunge fiducia e non aggiunge informazione, ed è utile dirlo, perché a quel punto chi esegue può anche saltarlo consapevolmente invece di saltare l'altro per stanchezza.
 
+### Marcare il passo non basta: vanno nominati il luogo dell'osservazione e la precondizione sul dato
+
+Aggiunto dopo che la prescrizione qui sopra è stata applicata e la verifica è **comunque** fallita, in due modi diversi nella stessa esecuzione. Il passo discriminante era marcato, chi eseguiva ha seguito la lista alla lettera e in buona fede, e due passi su quattro non hanno esercitato niente.
+
+Il primo modo è il luogo. La sequenza diceva di cambiare un valore e poi di osservarlo in una certa schermata, e in quell'interfaccia **lo stesso nome compariva due volte**: come voce di menu e come riquadro dentro un'altra schermata. Il difetto viveva solo nel riquadro; la voce di menu era uno dei punti che leggevano già correttamente. Chi eseguiva ha guardato quella, ha visto numeri giusti, e ha concluso che la correzione funzionasse. La conclusione era vera e la prova non c'entrava.
+
+Il secondo modo è la precondizione sul dato. Un passo chiedeva di modificare un record e di osservare uno contatore derivato, ma il contatore per costruzione somma solo i record in un certo stato. Il record scelto non era in quello stato, quindi il contatore **non si sarebbe mosso nemmeno a codice corretto**: la prova sarebbe risultata negativa per una ragione che non ha niente a che vedere con il difetto. Un passo che può fallire per il motivo sbagliato è peggio di un passo assente, perché produce una diagnosi.
+
+Ne discende che una casella di una sequenza manuale porta tre cose e non una. Il gesto, cioè che cosa fare. Il **luogo**, cioè dove si guarda il risultato, disambiguato quando l'interfaccia riusa lo stesso nome. E la **precondizione**, cioè quale proprietà deve avere il dato su cui si opera perché il passo eserciti davvero il codice, scritta accanto al passo e non in una premessa che chi esegue ha letto dieci minuti prima.
+
+Il criterio per scriverla, quando la sequenza la si sta redigendo: si prova a immaginare un'esecuzione che segue ogni parola della casella e che tuttavia non toccherebbe il difetto. Se quell'esecuzione esiste, alla casella manca il luogo o la precondizione.
+
 ## Un avviso che ricompare sempre uguale smette di essere un avviso
 
 Riguarda l'uscita degli strumenti di controllo, ed è la ragione per cui un controllo può esistere, funzionare, e non proteggere più niente.
