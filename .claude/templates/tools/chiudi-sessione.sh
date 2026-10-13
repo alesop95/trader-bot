@@ -150,7 +150,16 @@ if [ $haorigin = 0 ]; then nota "nessun remoto 'origin': push saltato, il commit
 elif ! git rev-parse -q --verify HEAD >/dev/null; then nota "nessun commit sul ramo: niente da pushare"
 else
     # Destinazione esplicita: un upstream diverso da origin non deve deviare la chiusura.
-    git push -u origin "HEAD:refs/heads/$ramo" || { echo "Push fallito: l'impronta non si registra finche' il remoto non e' allineato."; exit 1; }
+    # Un push caduto sulla rete non e' un push rifiutato: si ritenta, con attese
+    # crescenti, prima di dichiarare fallita la chiusura.
+    spinto=0
+    for attesa in 5 15 0; do
+        if git push -u origin "HEAD:refs/heads/$ramo"; then spinto=1; break; fi
+        [ "$attesa" = "0" ] && break
+        nota "push caduto, ritento fra $attesa secondi"
+        sleep "$attesa"
+    done
+    [ "$spinto" = "1" ] || { echo "Push fallito: l'impronta non si registra finche' il remoto non e' allineato."; exit 1; }
     locale="$(git rev-parse HEAD)"
     remoto="$(git ls-remote --exit-code origin "refs/heads/$ramo")" || { ko "verifica del ramo remoto fallita"; exit 1; }
     remoto="${remoto%%[[:space:]]*}"

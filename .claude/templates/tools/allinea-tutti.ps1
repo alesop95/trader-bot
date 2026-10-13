@@ -73,6 +73,12 @@ Avvisi, che non bloccano: skill con RIFERIMENTO.md presenti ma non nominate come
 skill nel CLAUDE.md, se l'innesco non e stato scritto; carico degli instruction
 file oltre la soglia secondo misura-istruzioni.py.
 
+La scoperta guarda il primo livello di ogni radice: un progetto annidato piu' in
+basso, per esempio D:\gruppo\progetto, si raggiunge solo con -Profondita 1. E una
+cartella che ha .claude ma non .claude/PROJECT-SYSTEM.md non e istanziata, quindi
+la passata non la tratta; non resta pero' invisibile, perche a fine corsa viene
+elencata a parte, da istanziare o da escludere.
+
 Il registro vive in _notes/allineamento/registro.json del template, ignorato da
 git perche contiene percorsi di progetti; ogni corsa lascia accanto log, rapporti
 JSON e righe del consenso. Commit e push restano manuali, progetto per progetto;
@@ -338,6 +344,30 @@ try {
       Where-Object { $Escludi -notcontains $_.Name }
   }
   $trovati = @($trovati | Sort-Object FullName -Unique)
+
+  # Una cartella che ha .claude ma non .claude/PROJECT-SYSTEM.md e' invisibile a
+  # questa passata, e lo resta in silenzio: non essendo istanziata non entra nel
+  # registro, quindi nessun conteggio la nomina e nessuno si accorge che il
+  # template non la raggiunge. Misurato il 2026-10-13 sulle due radici: nove
+  # progetti su nove di D:\ erano coperti, ma dodici cartelle con .claude e senza
+  # PROJECT-SYSTEM.md non erano mai comparse in nessuna corsa, e una di esse
+  # aveva una sessione di agente viva. Si elencano a fine corsa senza toccarle,
+  # perche' inizializzarle o escluderle e' una decisione del proprietario.
+  $parziali = foreach ($r in $Radici) {
+    if (-not (Test-Path -LiteralPath $r)) { continue }
+    $gci = @{ LiteralPath = $r; Directory = $true; ErrorAction = 'SilentlyContinue' }
+    if ($Profondita -gt 0) { $gci['Recurse'] = $true; $gci['Depth'] = $Profondita }
+    Get-ChildItem @gci |
+      Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName '.claude') } |
+      Where-Object { -not (Test-Path -LiteralPath (Join-Path $_.FullName '.claude\PROJECT-SYSTEM.md')) } |
+      Where-Object { $_.FullName.TrimEnd('\') -ne $tpl } |
+      Where-Object { $_.FullName -notmatch '\\\.claude\\' } |
+      Where-Object { -not $esclusi.ContainsKey($_.FullName.TrimEnd('\').ToLowerInvariant()) } |
+      Where-Object { -not $Solo -or $Solo -contains $_.Name } |
+      Where-Object { $Escludi -notcontains $_.Name }
+  }
+  $parziali = @($parziali | Sort-Object FullName -Unique)
+
   if (-not $trovati) { Log 'nessun progetto istanziato trovato'; $esito = 0; return }
 
   # --- fase 1: guardie e prima misura -----------------------------------------
@@ -476,6 +506,12 @@ try {
   if ($saltati) { Log ''; Log 'Saltati per costruzione, nessuna azione:'; $saltati | ForEach-Object { Log "  $($_.percorso)  ($($_.stato))" } }
   $amano = @($progetti | Where-Object { $finali -notcontains $_.stato })
   if ($amano) { Log ''; Log 'Da guardare a mano:'; $amano | ForEach-Object { Log "  $($_.percorso)  ($($_.stato))" } }
+  if ($parziali) {
+    Log ''
+    Log 'Hanno .claude ma non .claude/PROJECT-SYSTEM.md: la passata non li vede'
+    $parziali | ForEach-Object { Log "  $($_.FullName)" }
+    Log '  si istanziano con la skill init-project-system, oppure si elencano in _notes/allineamento/esclusi.txt per non rivederli'
+  }
   $applicati = @($progetti | Where-Object { $_.stato -eq 'applicato' })
   if ($applicati) { Log ''; Log 'Applicati, da rileggere con git diff e committare a mano:'; $applicati | ForEach-Object { Log "  $($_.percorso)" } }
   Log ''
