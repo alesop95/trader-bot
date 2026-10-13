@@ -56,7 +56,7 @@ Un file risolto a mano si registra con --risolto <percorso> in
 .claude/allineamento-risolti.json, versionato nel progetto, insieme al blob della
 testa contro cui e stato risolto: resta ADATTATO finché il template non lo cambia.
 
-Perimetro: .claude/PROJECT-SYSTEM.md, .claude/rules/, le skill del sistema
+Perimetro: .claude/PROJECT-SYSTEM.md, .claude/rules/, .claude/norme/, le skill del sistema
 elencate in SKILL_SISTEMA, .claude/templates/ e gli strumenti istanziati sotto
 tools/ del progetto il cui nome corrisponde a un unico file */tools/<nome>
 del template (solo codice: i file di dati istanziati restano del progetto), le
@@ -186,7 +186,7 @@ def gestito(p: str) -> bool:
         return False
     if p == ".claude/PROJECT-SYSTEM.md":
         return True
-    if p.startswith(".claude/rules/") or p.startswith(".claude/templates/"):
+    if p.startswith(".claude/rules/") or p.startswith(".claude/norme/") or p.startswith(".claude/templates/"):
         return True
     return len(parti) > 2 and parti[1] == "skills" and parti[2] in SKILL_SISTEMA
 

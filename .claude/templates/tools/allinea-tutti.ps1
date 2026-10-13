@@ -44,8 +44,12 @@ Esiti per progetto:
   head-staccato        nessuna branch in uscita
   escluso              elencato in _notes/allineamento/esclusi.txt del template,
                        per decisione del proprietario. Saltato finche non si toglie
-  albero-sporco        modifiche non committate: si misura ma non si scrive, cosi
-                       l'allineamento non si mescola a lavoro in corso
+  albero-sporco        modifiche non committate su almeno uno dei file che questa
+                       passata riscriverebbe: si misura ma non si scrive, cosi
+                       l'allineamento non si mescola a lavoro in corso. Un albero
+                       sporco altrove non ferma niente e lascia solo un avviso,
+                       perche la ragione della guardia e' tenere leggibile il
+                       git diff dei file allineati, non l'igiene del progetto
   errore-strumento     lo strumento non ha potuto misurare (codice 2)
   conflitti            modifiche locali che non si fondono da sole: a mano
   da-allineare         pronto; con -Applica diventa applicato
@@ -93,7 +97,8 @@ param(
   [int]$Profondita = 0,
   [int]$Consenso = 3,
   [switch]$IncludiAlberi,
-  [switch]$ConsentiTemplateSporco
+  [switch]$ConsentiTemplateSporco,
+  [switch]$Autotest
 )
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Continue'
@@ -175,6 +180,43 @@ function Misura([string]$prj, [string]$json, [switch]$Scrivi) {
   return $codice
 }
 
+# L'albero sporco, e perche' la domanda giusta non e' "ci sono modifiche" ma "ci sono
+# modifiche DOVE scrivo".
+#
+# La guardia esisteva per una ragione sola: dopo una passata il proprietario rilegge con
+# git diff i soli file che l'allineamento ha scritto, e un lavoro in corso sugli stessi
+# file rende quel diff illeggibile. Finche' la guardia ha guardato l'albero intero ha pero'
+# fermato anche chi aveva modifiche altrove, dove non c'era niente da confondere. Misurato
+# il 2026-10-13 sulla passata del giorno prima: dei sette progetti fermati, sei avevano zero
+# file in comune fra lo sporco e cio' che la passata avrebbe scritto, e il settimo ne aveva
+# uno. Sei progetti su sette rimandavano l'allineamento per un conflitto che non esisteva.
+function Sporchi([string]$prj) {
+  $out = @()
+  foreach ($r in @(Invoca-Git $prj status --porcelain)) {
+    if ($r.Length -lt 4) { continue }
+    $p = $r.Substring(3).Trim()
+    # Una rinomina si scrive "vecchio -> nuovo": conta la destinazione, che e' il file su disco.
+    if ($p -match ' -> ') { $p = ($p -split ' -> ')[-1] }
+    $out += $p.Trim('"').Replace('\', '/')
+  }
+  return , @($out)
+}
+
+function Collisione($esitiPrima, $sporchi) {
+  # Un CONFLITTO non viene scritto, quindi non puo' mescolarsi a niente; gli altri esiti
+  # azionabili si', RIMOSSO compreso, perche' la passata gira con --rimuovi.
+  $scritti = @($esitiPrima | Where-Object { $AZIONABILI -contains $_.esito -and $_.esito -ne 'CONFLITTO' } |
+    ForEach-Object { $_.file })
+  $out = @()
+  foreach ($s in $sporchi) {
+    foreach ($f in $scritti) {
+      # Una cartella non tracciata compare come "cartella/": vale per tutto cio' che sta sotto.
+      if ($f -eq $s -or ($s.EndsWith('/') -and $f.StartsWith($s))) { $out += $f; break }
+    }
+  }
+  return , @($out | Sort-Object -Unique)
+}
+
 # Prove interne degli strumenti che l'allineamento ha appena riscritto.
 #
 # Perche' esiste: le verifiche gia' presenti dicono che i file scritti sono quelli attesi e che
@@ -208,13 +250,20 @@ function Prove-Strumenti([string]$prj, $esitiPrima) {
     $src = Get-Content -LiteralPath $f -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
     $flag = $null
     if ($src -match '--self-test') { $flag = '--self-test' } elseif ($src -match '--autotest') { $flag = '--autotest' }
-    if (-not $flag) { continue }
+    # Uno strumento senza prova interna si prova almeno a caricare, con --help. Misurato il
+    # 2026-10-13 sulla passata del giorno prima: dei 24 strumenti riscritti nei 25 progetti
+    # applicati, nessuno dichiarava --self-test o --autotest, quindi questo passo riportava
+    # "0 provati" su una passata che aveva riscritto 24 file di codice. --help non esercita il
+    # comportamento, ma un file troncato o con un import rotto cade qui e in nessun altro punto
+    # della passata.
+    if (-not $flag) { $flag = '--help' }
     $out = & python $f $flag 2>&1
     $codice = $LASTEXITCODE
     $testo = ($out | Out-String)
     [System.IO.File]::AppendAllText($fileLog, "--- prova interna $($e.file) $flag (uscita $codice)`r`n" + $testo + "`r`n", $utf8)
     if ($codice -eq 0) { $provati++ }
     elseif ($testo -match 'unrecognized arguments|invalid choice|not recognized') { }
+    elseif ($flag -eq '--help' -and $testo -notmatch 'Traceback') { }
     else { $falliti += $e.file }
   }
   return [pscustomobject]@{ provati = $provati; falliti = $falliti }
@@ -234,6 +283,34 @@ if (Test-Path -LiteralPath $fileEsclusi) {
     $motivo = if ($parti.Count -gt 1) { $parti[1].Trim() } else { 'senza motivo' }
     $esclusi[$percorso.ToLowerInvariant()] = $motivo
   }
+}
+
+# Prove interne della guardia dell'albero sporco. Sono qui e non in tests/ perche'
+# esercitano due funzioni di questo script e non il suo giro completo: il giro completo
+# ha per bersaglio decine di repository veri, queste due domande no.
+if ($Autotest) {
+  $rossi = 0
+  function Caso([string]$nome, $atteso, $ottenuto) {
+    $a = @($atteso) -join '|'; $o = @($ottenuto) -join '|'
+    if ($a -eq $o) { Write-Host "ok   $nome" } else { $script:rossi++; Write-Host "ROSSO $nome"; Write-Host "      atteso  $a"; Write-Host "      ottenuto $o" }
+  }
+  $esitiFinti = @(
+    [pscustomobject]@{ file = '.claude/rules/uno.md'; esito = 'VECCHIO' },
+    [pscustomobject]@{ file = '.claude/skills/attrezzo/SKILL.md'; esito = 'NUOVO' },
+    [pscustomobject]@{ file = 'tools/vecchio.py'; esito = 'RIMOSSO' },
+    [pscustomobject]@{ file = '.claude/rules/due.md'; esito = 'CONFLITTO' },
+    [pscustomobject]@{ file = '.claude/rules/tre.md'; esito = 'UGUALE' }
+  )
+  Caso 'lo sporco sugli stessi file e una collisione' @('.claude/rules/uno.md') (Collisione $esitiFinti @('.claude/rules/uno.md', 'docs/altro.md'))
+  Caso 'lo sporco altrove non e una collisione' @() (Collisione $esitiFinti @('docs/altro.md', 'src/app.py', '.claude/memory/progress.md'))
+  Caso 'un file in conflitto non viene scritto, quindi non collide' @() (Collisione $esitiFinti @('.claude/rules/due.md'))
+  Caso 'un file che resta uguale non viene scritto, quindi non collide' @() (Collisione $esitiFinti @('.claude/rules/tre.md'))
+  Caso 'un file da rimuovere collide se e sporco' @('tools/vecchio.py') (Collisione $esitiFinti @('tools/vecchio.py'))
+  Caso 'una cartella non tracciata copre cio che sta sotto' @('.claude/skills/attrezzo/SKILL.md') (Collisione $esitiFinti @('.claude/skills/attrezzo/'))
+  Write-Host ''
+  Write-Host "$(6 - $rossi) casi superati su 6"
+  Remove-Item -LiteralPath $blocco -Force -ErrorAction SilentlyContinue
+  exit $(if ($rossi) { 1 } else { 0 })
 }
 
 $registro = @{}
@@ -266,7 +343,7 @@ try {
   # --- fase 1: guardie e prima misura -----------------------------------------
   $progetti = foreach ($p in $trovati) {
     $prj = $p.FullName.TrimEnd('\')
-    $o = [pscustomobject]@{ nome = $p.Name; percorso = $prj; slug = ($prj -replace '[:\\/]+', '--').Trim('-'); stato = $null; sporco = $false; c = $null; avvisi = @() }
+    $o = [pscustomobject]@{ nome = $p.Name; percorso = $prj; slug = ($prj -replace '[:\\/]+', '--').Trim('-'); stato = $null; sporco = $false; sporchi = @(); c = $null; avvisi = @() }
     $dotgit = Join-Path $prj '.git'
     if ($esclusi.ContainsKey($prj.ToLowerInvariant())) { $o.stato = 'escluso'; $o.avvisi += 'escluso: ' + $esclusi[$prj.ToLowerInvariant()] }
     elseif (-not (Test-Path -LiteralPath $dotgit)) { $o.stato = 'non-git' }
@@ -281,7 +358,8 @@ try {
       }
     }
     if (-not $o.stato) {
-      $o.sporco = @(Invoca-Git $prj status --porcelain).Count -gt 0
+      $o.sporchi = Sporchi $prj
+      $o.sporco = $o.sporchi.Count -gt 0
       if ((Misura $prj (Join-Path $dirCorsa "$($o.slug).1.json")) -ge 2) { $o.stato = 'errore-strumento' }
     }
     $o
@@ -320,13 +398,24 @@ try {
         $esitiPrima = Leggi-Json $json
         $o.c = Conta $esitiPrima
         $o.stato = if ($o.c.azionabili -eq 0) { 'allineato' } elseif ($o.c.CONFLITTO -gt 0) { 'conflitti' } else { 'da-allineare' }
-        if ($o.sporco -and $o.stato -ne 'allineato') { $o.stato = 'albero-sporco' }
+        $collisi = @()
+        if ($o.sporco -and $o.stato -ne 'allineato') {
+          $collisi = Collisione $esitiPrima $o.sporchi
+          if ($collisi) {
+            $o.stato = 'albero-sporco'
+            $o.avvisi += 'lavoro in corso sui file da allineare: ' + ($collisi -join ', ')
+          }
+          else { $o.avvisi += "albero sporco in $($o.sporchi.Count) file, nessuno fra quelli che questa passata scrive" }
+        }
 
         if ($Applica -and $o.stato -eq 'da-allineare') {
           $codice = Misura $prj $json -Scrivi
           $json2 = Join-Path $dirCorsa "$($o.slug).dopo.json"
           $codice2 = Misura $prj $json2
-          $fuori = @(Invoca-Git $prj status --porcelain | ForEach-Object { $_.Substring(3).Trim('"') } |
+          # Cio' che era gia' sporco prima della scrittura non e' opera di questa passata:
+          # senza questa sottrazione un progetto con lavoro in corso fuori dal perimetro
+          # verrebbe marcato fuori-perimetro per modifiche che non ha fatto l'allineamento.
+          $fuori = @((Sporchi $prj) | Where-Object { $o.sporchi -notcontains $_ } |
             Where-Object { $_ -notmatch '^(\.claude|tools|docs)/' -and $_ -ne 'CLAUDE.md' })
           if ($codice -ge 2 -or $codice2 -ge 2 -or -not (Test-Path -LiteralPath $json2)) { $o.stato = 'errore-strumento' }
           else {

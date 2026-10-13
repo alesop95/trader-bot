@@ -261,3 +261,9 @@ Quando un file viene disegnato dall'applicazione con un motore e guardato durant
 ## Una correzione si chiude nominando la causa, non il sintomo
 
 Un sintomo può avere due cause, e una correzione chiusa sul sintomo dichiara chiusa anche quella che non ha toccato. Caso osservato: "la figura mostrava lo sfondo all'interno" è stato segnato come risolto dopo aver riempito una delle due regioni vuote. L'altra, aperta da un altro tracciato, è rimasta così per due mesi e mezzo mentre il registro diceva che il difetto non c'era più. La chiusura va scritta sulla causa tolta, cioè quale elemento e quale regola, perché è la sola forma che chi rilegge può confrontare con ciò che vede ancora.
+
+## Prima di togliere un doppione, si verifica che lo sia
+
+Due schermate che mostrano gli stessi numeri con le stesse etichette sembrano un doppione, e togliere la seconda sembra un'operazione senza rischio. Non lo è finché non si è controllato che contino **lo stesso insieme con lo stesso criterio**. Caso osservato: una scheda da smantellare aveva un riepilogo delle risposte identico a quello del cruscotto, quattro numeri con gli stessi nomi. Il cruscotto contava tutti gli invitati, la scheda solo quelli che potevano rispondere, e la differenza erano persone che per costruzione restano "in attesa" per sempre. Togliere la scheda avrebbe tolto l'unico posto in cui si leggeva quante risposte mancavano davvero. La decisione di smantellarla non lo nominava, perché a vista era un doppione. Il controllo costa una lettura delle due espressioni che producono i numeri, e il rimedio è decidere con chi usa i dati quale criterio tenere e dove mostrare l'altro.
+
+Lo stesso vale nell'altra direzione, quando si sposta un blocco in una schermata che ha già qualcosa di simile: prima si guarda che cosa la destinazione mostra già, e si porta solo la parte che le manca, completando l'elemento che c'è invece di affiancargliene un secondo che ripete metà del primo.

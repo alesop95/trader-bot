@@ -448,5 +448,65 @@ class InnescoDiUnaSkillOpzionale(Innesco):
         self.assertNotIn("`attrezzo`", f.read_text(encoding="utf-8"), self.uscita)
 
 
+class RiferimentoEsteso(BaseDelMerge):
+    """.claude/norme/<nome>.md tiene il caso osservato che giustifica la regola
+    omonima, e sta fuori da .claude/rules/ perche' Claude Code carica all'avvio
+    tutto cio' che trova li' dentro. Il perimetro dell'allineamento lo tratta
+    pero' come rules/, cioe' lo installa anche dove manca, e la ragione e' che
+    la regola propagata ci punta: un rimando a un file assente costa a chi legge
+    piu' di quanto sarebbe costato non averlo scritto. e' la differenza con una
+    skill opzionale, che si aggiorna e non si installa perche' nessuno la
+    nomina finche' il gate dei pacchetti non la sceglie."""
+
+    NORMA = ".claude/norme/norma.md"
+    VECCHIA = "il caso, prima stesura\n"
+    TESTA = "il caso, con la misura rifatta\n"
+
+    def scrivi_tpl(self, testo: str):
+        f = self.tpl / self.NORMA
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(testo, encoding="utf-8", newline="\n")
+
+    def setUp(self):
+        super().setUp()
+        self.scrivi_tpl(self.VECCHIA)
+        self.commit(["norma"], "c1: la regola e il suo riferimento esteso")
+        self.scrivi_tpl(self.TESTA)
+        self.commit(["norma"], "testa: il riferimento esteso corretto")
+
+    def corri(self) -> dict:
+        rapporto = self.base / "rapporto.json"
+        r = subprocess.run([sys.executable, str(STRUMENTO), "--template", str(self.tpl),
+                            "--progetto", str(self.prj), "--json", str(rapporto), "--applica"],
+                           capture_output=True, text=True)
+        self.assertIn(r.returncode, (0, 1), r.stderr)
+        self.uscita = r.stdout + r.stderr
+        return {e["file"]: e for e in json.loads(rapporto.read_text(encoding="utf-8"))}
+
+    def test_arriva_dove_manca(self):
+        voce = self.corri()[self.NORMA]
+        self.assertEqual(voce["esito"], "NUOVO", self.uscita)
+        self.assertEqual((self.prj / self.NORMA).read_text(encoding="utf-8"), self.TESTA)
+
+    def test_copia_vecchia_si_aggiorna(self):
+        f = self.prj / self.NORMA
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(self.VECCHIA, encoding="utf-8", newline="\n")
+        voce = self.corri()[self.NORMA]
+        self.assertEqual(voce["esito"], "VECCHIO", self.uscita)
+        self.assertEqual(f.read_text(encoding="utf-8"), self.TESTA)
+
+    def test_una_aggiunta_locale_non_viene_sovrascritta(self):
+        """Il riferimento esteso e' il posto dove un progetto annota il proprio caso:
+        se l'allineamento lo trattasse come un file da riscrivere, quel caso sparirebbe
+        alla prima passata e nessuno se ne accorgerebbe."""
+        f = self.prj / self.NORMA
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(self.VECCHIA + PROPRIA + "\n", encoding="utf-8", newline="\n")
+        voce = self.corri()[self.NORMA]
+        self.assertIn(voce["esito"], ("MERGE", "CONFLITTO"), self.uscita)
+        self.assertIn(PROPRIA, f.read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()

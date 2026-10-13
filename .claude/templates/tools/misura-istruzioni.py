@@ -29,6 +29,7 @@ import sys
 
 LIMITE_PIATTAFORMA = 150000   # soglia oltre la quale Claude Code avvisa all'avvio
 SOGLIA_PROGETTO = 100000      # guardia sulla sola parte versionata, lascia margine alla parte utente
+TETTO_FILE = 15000            # quanto puo' pesare una sola regola sempre attiva: il 15% della guardia
 
 RE_FENCE = re.compile(r'^\s*(`{3,}|~{3,})')
 RE_IMPORT = re.compile(r'(?<![\w`/])@([A-Za-z0-9_~./\\-]+)')
@@ -148,7 +149,7 @@ def fmt(n):
     return '{:,}'.format(n).replace(',', '.')
 
 
-def stampa(titolo, voci, radice):
+def stampa(titolo, voci, radice, tetto=None):
     print(titolo)
     if not voci:
         print('  (nessuno)')
@@ -161,8 +162,95 @@ def stampa(titolo, voci, radice):
             mostra = os.path.relpath(path, radice)
         except ValueError:
             mostra = path
+        if tetto and n > tetto and nota != 'paths: non pesa':
+            nota = (nota + ' ' if nota else '') + '[oltre il tetto per file]'
         print('  %9s  %-54s %s' % (fmt(n), mostra, nota))
     return totale
+
+
+def oltre_il_tetto(voci, tetto):
+    """(regole, indici) che sforano il tetto per file, separati perche' la prima lista
+    fallisce e la seconda avvisa soltanto.
+
+    La distinzione non e' una concessione ma il criterio della sezione 24 applicato due
+    volte. Una regola sotto .claude/rules/ e' propagata dal template e si divide secondo
+    un criterio noto, cioe' prescrizione nel file sempre attivo e prova in .claude/norme/,
+    quindi il tetto su di essa e' un controllo che si puo' sempre soddisfare. Un CLAUDE.md
+    lungo e' invece materiale del progetto: lo si segnala a chi lo possiede, non lo si
+    rifiuta da qui."""
+    regole, indici = [], []
+    for path, n, nota in sorted(voci, key=lambda v: -v[1]):
+        if nota == 'paths: non pesa' or n <= tetto:
+            continue
+        norm = path.replace(os.sep, '/')
+        (regole if '/.claude/rules/' in norm else indici).append((norm, n))
+    return regole, indici
+
+
+def autotest():
+    """Prove interne: ogni caso differisce dal suo gemello per una proprieta' sola.
+
+    La domanda a cui rispondono e' quella della skill prove-che-misurano: se il tetto per
+    file sparisse, o se tornasse a valere anche dove non deve, quale di questi casi
+    cadrebbe? Per questo ogni coppia tiene fermo tutto tranne la proprieta' in esame."""
+    import shutil
+    import subprocess
+    import tempfile
+
+    io = __import__('io')
+    base = tempfile.mkdtemp(prefix='misura-istruzioni-')
+    esiti = []
+
+    def prepara(claude_md, regole):
+        """regole: lista di (nome, caratteri, frontmatter_paths)."""
+        shutil.rmtree(base, ignore_errors=True)
+        os.makedirs(os.path.join(base, '.claude', 'rules'))
+        with io.open(os.path.join(base, 'CLAUDE.md'), 'w', encoding='utf-8', newline='') as fh:
+            fh.write('x' * claude_md)
+        for nome, quanti, paths in regole:
+            testa = '---\npaths:\n  - "**/*.py"\n---\n' if paths else ''
+            with io.open(os.path.join(base, '.claude', 'rules', nome), 'w', encoding='utf-8', newline='') as fh:
+                fh.write(testa + 'y' * (quanti - len(testa)))
+
+    def corri(*extra):
+        p = subprocess.run([sys.executable, os.path.abspath(__file__), '--root', base] + list(extra),
+                           capture_output=True, text=True, encoding='utf-8', errors='replace')
+        return p.returncode, (p.stdout or '') + (p.stderr or '')
+
+    def caso(nome, atteso_codice, atteso_testo, *extra):
+        codice, testo = corri(*extra)
+        ok = codice == atteso_codice and (atteso_testo in testo if atteso_testo else True)
+        esiti.append((ok, nome, codice, atteso_codice))
+        print('%-4s %s' % ('ok' if ok else 'ROSSO', nome))
+        if not ok:
+            print('     uscita %s, attesa %s' % (codice, atteso_codice))
+            if atteso_testo and atteso_testo not in testo:
+                print('     testo atteso assente: %r' % atteso_testo)
+
+    prepara(1000, [('pesante.md', 15001, False)])
+    caso('una regola sempre attiva oltre il tetto per file fallisce', 1, 'tetto per file')
+
+    prepara(1000, [('pesante.md', 15000, False)])
+    caso('la stessa regola esattamente al tetto passa', 0, None)
+
+    prepara(1000, [('pesante.md', 15001, True)])
+    caso('una regola oltre il tetto ma con paths: non pesa e non fallisce', 0, None)
+
+    prepara(20000, [('leggera.md', 1000, False)])
+    caso('un CLAUDE.md oltre il tetto avvisa e non fallisce', 0, 'Avviso:')
+
+    prepara(1000, [('a.md', 9000, False), ('b.md', 9000, False)])
+    caso('la soglia complessiva fallisce anche se nessun file sfora il tetto', 1, 'soglia di guardia',
+         '--soglia', '10000')
+
+    prepara(1000, [('a.md', 9000, False), ('b.md', 9000, False)])
+    caso('sotto la soglia complessiva e sotto il tetto non fallisce niente', 0, None)
+
+    shutil.rmtree(base, ignore_errors=True)
+    rossi = [e for e in esiti if not e[0]]
+    print('')
+    print('%d casi, %d superati, %d falliti' % (len(esiti), len(esiti) - len(rossi), len(rossi)))
+    return 1 if rossi else 0
 
 
 def main():
@@ -170,21 +258,44 @@ def main():
     ap.add_argument('--root', default='.', help='radice del progetto (default: cartella corrente)')
     ap.add_argument('--soglia', type=int, default=SOGLIA_PROGETTO, help='guardia sulla parte di progetto')
     ap.add_argument('--limite', type=int, default=LIMITE_PIATTAFORMA, help='limite complessivo della piattaforma')
+    ap.add_argument('--tetto-file', type=int, default=TETTO_FILE, help='quanto puo pesare una sola regola sempre attiva')
+    ap.add_argument('--autotest', action='store_true', help='esegue le prove interne e non misura niente')
     args = ap.parse_args()
 
+    if args.autotest:
+        return autotest()
+
     radice = os.path.abspath(args.root)
-    tot_p = stampa('Parte di progetto, versionata:', raccogli(radice), radice)
+    voci = raccogli(radice)
+    tot_p = stampa('Parte di progetto, versionata:', voci, radice, args.tetto_file)
     print('')
     tot_u = stampa('Parte utente, fuori dal repository e non versionata:', parte_utente(), os.path.expanduser('~'))
     print('')
+    regole = sum(n for _p, n, nota in voci if nota == 'regola sempre attiva')
     print('progetto %s caratteri, soglia di guardia %s' % (fmt(tot_p), fmt(args.soglia)))
+    print('di cui regole sempre attive %s, tetto per file %s' % (fmt(regole), fmt(args.tetto_file)))
     print('totale con la parte utente %s, limite della piattaforma %s' % (fmt(tot_p + tot_u), fmt(args.limite)))
+
+    grosse, indici = oltre_il_tetto(voci, args.tetto_file)
+    if indici:
+        print('')
+        print('Avviso: %s oltre il tetto per file. Un CLAUDE.md e un indice dei satelliti,' % ', '.join(p for p, _n in indici))
+        print('non il posto dove incorporarli: cio che non serve in ogni sessione diventa una')
+        print('scheda di .claude/context/ o il RIFERIMENTO.md di una skill, con la riga di innesco.')
 
     if tot_p > args.soglia:
         print('')
         print('ERRORE: la parte di progetto supera la soglia di guardia di %s caratteri.' % fmt(tot_p - args.soglia))
         print('Una norma che non vale in ogni sessione non sta in .claude/rules/: vive come')
         print('RIFERIMENTO.md dentro la propria skill, con la riga di innesco nel CLAUDE.md.')
+        print('Vedi la sezione 24 di .claude/PROJECT-SYSTEM.md.')
+        return 1
+    if grosse:
+        print('')
+        for p, n in grosse:
+            print('ERRORE: %s pesa %s caratteri, oltre il tetto per file di %s.' % (p, fmt(n), fmt(args.tetto_file)))
+        print('La prescrizione resta nella regola, che si paga a ogni sessione; il caso osservato')
+        print('che la giustifica va in .claude/norme/<stesso nome>, che non si carica all avvio.')
         print('Vedi la sezione 24 di .claude/PROJECT-SYSTEM.md.')
         return 1
     if tot_p + tot_u > args.limite:
