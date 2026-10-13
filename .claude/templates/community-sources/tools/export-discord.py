@@ -140,6 +140,14 @@ def token():
     comandi in un file in chiaro, quindi un token passato come argomento finisce su disco
     senza che nessuno lo abbia scritto lì.
     """
+    # BLOCCATO. Esportare con il token di un account personale è l'automazione di un account utente, che i termini di
+    # Discord vietano: in un progetto istanziato da questo modello, alla quarta esportazione in un mese, la piattaforma
+    # ha disattivato l'account e registrato una violazione valida due anni. Lo strumento non chiede più un token
+    # personale; la via lecita è `fetch-discord.py` con un account bot invitato da chi amministra il server, oppure la
+    # lettura a mano nel client. Il perché sta nella norma della skill `fonti-non-recuperabili`.
+    sys.exit("esportazione con token personale BLOCCATA: viola i termini di Discord e in un progetto istanziato ha "
+             "già causato la disattivazione dell'account. Si usa fetch-discord.py con un bot invitato dagli "
+             "amministratori, o la lettura a mano nel client.")
     t = os.environ.get("DISCORD_USER_TOKEN")
     if t:
         return t.strip()

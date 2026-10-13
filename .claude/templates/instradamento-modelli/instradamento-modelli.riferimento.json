@@ -1,0 +1,13 @@
+{
+  "_nota": "Copia di riferimento della configurazione per account. Il significato di ogni campo, i modi e i limiti stanno nel README del pacchetto instradamento-modelli. I nomi sotto agenti devono corrispondere esattamente ai tipi che la sessione offre: /instradamento segnala quelli che non ha mai visto offrire.",
+  "modo": "osserva",
+  "agenti": {
+    "Explore": "haiku",
+    "statusline-setup": "haiku",
+    "claude-code-guide": { "modello": "sonnet", "sforzo": "low" }
+  },
+  "conversazione": {},
+  "rispettaModelloChiesto": true,
+  "annuncia": true,
+  "promemoriaDopo": 10
+}

@@ -331,5 +331,122 @@ class Innesco(BaseDelMerge):
         self.assertEqual(sum("prove-che-misurano" in r for r in L), 1)
 
 
+class SkillOpzionale(BaseDelMerge):
+    """Una skill istanziata al gate dei pacchetti vive in due posti diversi: nel
+    progetto sotto .claude/skills/<nome>, nel template sotto
+    templates/<pacchetto>/skills/<nome>. Fino al 2026-10-12 il perimetro ne
+    guardava uno solo, perché accettava .claude/skills/<nome> soltanto per i nomi
+    di SKILL_SISTEMA: il template correggeva la skill e la copia nel progetto
+    restava ferma per sempre, senza che niente diventasse rosso. è la forma del
+    guasto per dimenticanza descritta in prove-che-misurano, e riguardava
+    craft-apps, pipeline-app, studio-didattico e sync-readme insieme."""
+
+    PKG = ".claude/templates/pacchetto/skills/attrezzo"
+    PRJ = ".claude/skills/attrezzo"
+    VECCHIA = "versione prima\n"
+    TESTA = "versione seconda\n"
+
+    def scrivi_tpl(self, rel: str, testo: str):
+        f = self.tpl / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(testo, encoding="utf-8", newline="\n")
+
+    def setUp(self):
+        super().setUp()
+        self.scrivi_tpl(f"{self.PKG}/SKILL.md", self.VECCHIA)
+        self.commit(["norma"], "c1: la skill del pacchetto alla prima versione")
+        self.scrivi_tpl(f"{self.PKG}/SKILL.md", self.TESTA)
+        self.commit(["norma"], "testa: la skill corretta nel template")
+
+    def istanzia(self, testo: str):
+        f = self.prj / self.PRJ / "SKILL.md"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(testo, encoding="utf-8", newline="\n")
+
+    def corri(self) -> dict:
+        rapporto = self.base / "rapporto.json"
+        r = subprocess.run([sys.executable, str(STRUMENTO), "--template", str(self.tpl),
+                            "--progetto", str(self.prj), "--json", str(rapporto), "--applica"],
+                           capture_output=True, text=True)
+        self.assertIn(r.returncode, (0, 1), r.stderr)
+        self.uscita = r.stdout + r.stderr
+        return {e["file"]: e for e in json.loads(rapporto.read_text(encoding="utf-8"))}
+
+    def test_copia_intatta_di_una_versione_vecchia_si_aggiorna(self):
+        self.istanzia(self.VECCHIA)
+        voce = self.corri()[f"{self.PRJ}/SKILL.md"]
+        self.assertEqual(voce["esito"], "VECCHIO", self.uscita)
+        self.assertEqual(voce["template"], f"{self.PKG}/SKILL.md")
+        self.assertEqual((self.prj / self.PRJ / "SKILL.md").read_text(encoding="utf-8"), self.TESTA)
+
+    def test_non_istanziata_non_si_installa(self):
+        """L'altra metà della regola, ed è quella che un'estensione distratta romperebbe:
+        il gate dei pacchetti decide che cosa un progetto ha, l'allineamento no."""
+        esiti = self.corri()
+        self.assertNotIn(f"{self.PRJ}/SKILL.md", esiti, self.uscita)
+        self.assertFalse((self.prj / self.PRJ).exists(),
+                         "l'allineamento ha installato una skill che il gate non ha scelto")
+
+    def test_file_nuovo_dentro_una_skill_istanziata_arriva(self):
+        self.scrivi_tpl(f"{self.PKG}/RIFERIMENTO.md", "dettaglio\n")
+        self.commit(["norma"], "testa: la skill cresce di un file")
+        self.istanzia(self.TESTA)
+        esiti = self.corri()
+        self.assertEqual(esiti[f"{self.PRJ}/RIFERIMENTO.md"]["esito"], "NUOVO", self.uscita)
+        self.assertEqual((self.prj / self.PRJ / "RIFERIMENTO.md").read_text(encoding="utf-8"), "dettaglio\n")
+
+    def test_due_pacchetti_con_lo_stesso_nome_sono_un_conflitto(self):
+        self.scrivi_tpl(".claude/templates/altro/skills/attrezzo/SKILL.md", "omonima\n")
+        self.commit(["norma"], "testa: un secondo pacchetto porta lo stesso nome")
+        self.istanzia(self.VECCHIA)
+        voce = self.corri()[self.PRJ]
+        self.assertEqual(voce["esito"], "CONFLITTO", self.uscita)
+        self.assertIn("origine ambigua", voce["nota"])
+        self.assertEqual((self.prj / self.PRJ / "SKILL.md").read_text(encoding="utf-8"), self.VECCHIA,
+                         "un'origine ambigua non si risolve scrivendo")
+
+
+class InnescoDiUnaSkillOpzionale(Innesco):
+    """La riga di innesco di una skill opzionale non finisce con il suo nome ma con
+    la condizione che la governa, e la skill sta nel pacchetto e non fra quelle di
+    sistema. Con la corrispondenza di prima, che chiedeva la chiusura esatta della
+    riga e il nome in SKILL_SISTEMA, non veniva innescata mai: la norma arrivava
+    nel progetto e non la caricava nessuno, che è esattamente ciò che l'innesco
+    esiste per impedire."""
+
+    MODELLO = ("# modello\n\nNorme caricate su richiesta, una riga per situazione. Si tolgono le righe delle skill "
+               "che questo progetto non ha istanziato.\n\n"
+               "- Quando si prova: skill `prove-che-misurano`.\n"
+               "- Quando si recupera: skill `fonti-non-recuperabili`.\n"
+               "- Quando si tocca un artefatto: skill `attrezzo`, solo se istanziata al gate dei pacchetti.\n\n"
+               "## Apprendimenti recenti\n")
+
+    def setUp(self):
+        super().setUp()
+        d = self.tpl / ".claude/templates/pacchetto/skills/attrezzo"
+        d.mkdir(parents=True)
+        (d / "SKILL.md").write_text("skill\n", encoding="utf-8", newline="\n")
+        self.commit(["norma"], "c2: il pacchetto con la sua skill")
+
+    def prepara_claude_md(self):
+        f = self.prj / "CLAUDE.md"
+        f.write_text("# p\n\n## Apprendimenti recenti\n", encoding="utf-8", newline="\n")
+        return f
+
+    def test_istanziata_riceve_la_riga(self):
+        d = self.prj / ".claude/skills/attrezzo"
+        d.mkdir(parents=True)
+        (d / "SKILL.md").write_text("skill\n", encoding="utf-8", newline="\n")
+        f = self.prepara_claude_md()
+        self.corri()
+        self.assertIn("skill `attrezzo`, solo se istanziata al gate dei pacchetti.",
+                      f.read_text(encoding="utf-8"), self.uscita)
+
+    def test_non_istanziata_non_riceve_la_riga(self):
+        f = self.prepara_claude_md()
+        self.corri()
+        self.assertNotIn("`attrezzo`", f.read_text(encoding="utf-8"), self.uscita)
+
+
 if __name__ == "__main__":
     unittest.main()

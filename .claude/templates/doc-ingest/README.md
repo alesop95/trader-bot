@@ -36,6 +36,14 @@ python tools/doc-ingest.py percorso/al/corpus --ocr
 python tools/doc-ingest.py percorso/al/corpus --force
 ```
 
+Su un corpus che può contenere documenti personali, come un archivio di studio con le pratiche amministrative nelle stesse cartelle, si aggiunge `--esclusi` con un file di schemi, e i file che vi corrispondono si saltano prima di aprirli, come vuole la regola `documenti-personali.md`. Il file di partenza è `esclusi-personali.esempio.txt`, da copiare in un file locale ignorato da git, perché gli schemi adattati possono rivelare dati personali. Se il file indicato manca lo strumento si ferma.
+
+```bash
+python tools/doc-ingest.py percorso/al/corpus --esclusi _notes/privacy/esclusi-personali.txt
+```
+
+`python tools/doc-ingest.py --autotest` prova l'elenco di esempio su un albero temporaneo con nomi di file nelle forme reali, trattini bassi, spazi, maiuscole e cartelle annidate, e controlla che si saltino tutti e soli i personali; `chiudi` la esegue a ogni commit. Un elenco locale adattato si prova allo stesso modo prima di usarlo su un corpus.
+
 Il comando e ripetibile: rieseguito senza modifiche ai sorgenti non riconverte nulla e si limita a confermare l'indice. `--force` ignora il manifest e riconverte l'intero corpus, utile dopo un aggiornamento del motore di estrazione. La cartella sorgente dei documenti, la cache e il manifest restano locali e ignorati da git; solo lo script si versiona.
 
 ## Crediti

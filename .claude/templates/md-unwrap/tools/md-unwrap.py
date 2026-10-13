@@ -724,6 +724,11 @@ def collect_files(paths, exts, excludes, only_tracked=False):
                 if not key.startswith(prefix) or not key.endswith(tuple(exts)):
                     continue
                 path = entries[key]
+                if not os.path.isfile(path):
+                    # Tracciato ma cancellato nell'albero di lavoro: e' il normale
+                    # stato prima di un commit che lo rimuove, e non c'e' niente da
+                    # controllare. Contarlo come saltato fermerebbe quel commit.
+                    continue
                 if dir_is_marked(os.path.dirname(path)):
                     marked += 1
                     continue

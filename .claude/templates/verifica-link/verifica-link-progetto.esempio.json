@@ -1,0 +1,40 @@
+{
+ "_leggimi": "Esempio di configurazione di verifica-link-progetto.py. Si copia in tools/verifica-link-progetto.json del progetto e si adatta. Le chiavi che cominciano con un trattino basso sono commenti e lo strumento le ignora; una chiave sconosciuta senza trattino basso fa fallire la corsa, perché un refuso non restringa il perimetro in silenzio.",
+
+ "_registri_testo": "Obbligatoria. I registri delle fonti in testo, di solito SOURCES.md: ogni indirizzo che vi compare è una fonte conosciuta. Questi file non si percorrono come documenti, perché sono la misura e non l'oggetto misurato.",
+ "registri_testo": [
+  "SOURCES.md"
+ ],
+
+ "_registri_json": "Facoltativa. Registri in JSON, un elenco di indirizzi o un oggetto le cui chiavi sono indirizzi: per esempio gli esiti della lettura di un corpus. Un file che manca si tratta come vuoto.",
+ "registri_json": [
+  "_notes/fonti/esiti-lettura.json"
+ ],
+
+ "_esclusi_tracciati": "Facoltativa. Prefissi di percorso dei file tracciati che non si percorrono: i modelli del template, che non sono scritti dal progetto, e le guide copiate intere da altrove. Lo strumento esclude comunque il proprio sorgente.",
+ "esclusi_tracciati": [
+  ".claude/templates/"
+ ],
+
+ "_estensioni": "Facoltativa. Le estensioni dei file che si percorrono; se manca vale l'elenco di difetto dello strumento, testo e codice.",
+
+ "_cartelle_non_tracciate": "Facoltativa. Le cartelle ignorate da git che contengono materiale scritto dal proprietario o dal progetto, e che quindi citano fonti: si percorrono per intero, salvo le sottocartelle saltate in radice (solo al primo livello) e quelle saltate a ogni livello. Una voce può restringere le estensioni. Qui l'esempio percorre _notes/ saltando i testi di terzi scaricati sotto fonti/, ma rientra nelle consegne del proprietario.",
+ "cartelle_non_tracciate": [
+  {
+   "percorso": "_notes",
+   "saltate_in_radice": ["fonti", "tmp"],
+   "saltate": ["cloni"]
+  },
+  {
+   "percorso": "_notes/fonti/consegne",
+   "saltate": ["trascrizioni"],
+   "estensioni": [".md", ".txt", ".url"]
+  }
+ ],
+
+ "_non_fonti": "Facoltativa. Il file JSON degli indirizzi citati che non sono fonti, ciascuno con il motivo: chiavi voci (indirizzi esatti), prefissi (prefissi di chiave normalizzata, come example-strumento.org/api) e file_dati (manifesti scaricati che enumerano il contenuto di una fonte già registrata). Il valore di una voce è il motivo, oppure un oggetto con motivo e solo_in, l'elenco dei file in cui la voce vale. Si tiene di solito sotto _notes/fonti/.",
+ "non_fonti": "_notes/fonti/link-non-fonti.json",
+
+ "_cache_brevi": "Facoltativa. Il file in cui lo strumento tiene le risoluzioni dei collegamenti brevi di Reddit, per non chiederle due volte; lo scrive lo strumento stesso quando gira senza --senza-rete.",
+ "cache_brevi": "_notes/fonti/link-brevi.json"
+}

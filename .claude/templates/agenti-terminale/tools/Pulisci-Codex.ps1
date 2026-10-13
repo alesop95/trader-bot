@@ -36,8 +36,18 @@
   Stampa ogni rimozione che verrebbe fatta, senza farne nessuna.
 
 .PARAMETER Tutto
-  Azzera anche i database di stato, ignorando la preservazione. Da usare quando
-  non si vuole conservare nessuna sessione.
+  Azzera anche i database di stato, sessions\ e tmp\, ignorando la preservazione,
+  ma solo nelle radici dove nessun thread e' vivo e nessun demone app-server e' in
+  esecuzione: un database SQLite cancellato sotto un processo che lo tiene aperto
+  puo' restare incoerente. Dove non si puo', lo dice e salta.
+
+  SESSIONI VIVE, dal 2026-10-09. Una sessione e' viva se il suo file in
+  thread-writer-locks\<id>.lock e' bloccato da un processo: verificato su questa
+  macchina, con un file bloccato per ogni sessione interattiva aperta e i file
+  .coordination.lock liberi. Le sessioni vive non si toccano mai, con o senza
+  -Tutto; tutte le altre si cancellano. E' la stessa regola del wipe di Claude
+  Code, su direttiva del proprietario del 2026-10-08: in locale resta l'impianto,
+  non le tracce delle sessioni.
 
 .PARAMETER IncludiDefault
   Include anche <PROFILO_UTENTE>\.codex, la radice dell'app desktop. Esclusa per
@@ -92,11 +102,13 @@ $ErrorActionPreference = 'Stop'
 #  Su Windows hanno la forma 'D:\' o 'E:\'; su un'altra macchina sarebbero altri,
 #  e un insieme sbagliato non produce un errore ma un magazzino vuoto.
 # =============================================================================
-#  Compilati il 2026-09-21 su questa macchina, dopo averli LETTI con -Lista da
-#  una sessione reale. Corrispondono alle due radici su cui vivono i progetti di
-#  sviluppo, le stesse che il wipe di Claude preserva come slug 'D--' ed 'E--'.
-#  Su un'altra macchina vanno riletti, non riusati.
-$prefissiDaPreservare = @('D:\', 'E:\')
+#  Dal 2026-10-09 l'insieme e' VUOTO per scelta dichiarata, come nel wipe di
+#  Claude Code: la memoria di un progetto vive nel progetto, e una sessione che
+#  sopravvive nella radice e' memoria fuori dal progetto che nessuno rileggera'.
+#  Fino ad allora conteneva 'D:\' ed 'E:\', compilati il 2026-09-21. Chi vuole
+#  conservare qualcosa compila i prefissi e mette $nienteDaPreservare a $false.
+$prefissiDaPreservare = @()
+$nienteDaPreservare = $true
 
 # Override a riga di comando, con -Prefissi. Serve per un uso occasionale su un
 # insieme diverso, e soprattutto per poter COLLAUDARE la terza guardia: senza di
@@ -188,6 +200,34 @@ function Get-Sessioni($radice) {
   return $out
 }
 
+# Le sessioni vive di una radice: i file thread-writer-locks\<id>.lock su cui un
+# processo tiene un lock. Aprire il file riesce comunque; e' il Lock() su un byte a
+# fallire quando un altro processo lo tiene.
+function Get-ThreadVivi($radice) {
+  $vivi = @{}
+  $dir = Join-Path $radice 'thread-writer-locks'
+  if (-not (Test-Path -LiteralPath $dir)) { return $vivi }
+  foreach ($f in @(Get-ChildItem -LiteralPath $dir -File -Force -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '.*' })) {
+    $fs = $null
+    try {
+      $fs = [IO.File]::Open($f.FullName, 'Open', 'ReadWrite', 'ReadWrite')
+      try { $fs.Lock(0, 1); $fs.Unlock(0, 1) } catch { $vivi[$f.BaseName] = $true }
+    }
+    catch { $vivi[$f.BaseName] = $true }
+    finally { if ($fs) { $fs.Close() } }
+  }
+  return $vivi
+}
+
+# Il demone app-server di una radice gira dall'eseguibile sotto <radice>\packages,
+# quindi si riconosce dal percorso; tiene aperti i database di stato.
+function Test-DemoneVivo($radice) {
+  $pref = (Join-Path $radice 'packages') + '\'
+  return [bool](@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+    $_.ExecutablePath -and $_.ExecutablePath.TrimStart('\', '?').StartsWith($pref, 'OrdinalIgnoreCase')
+  }).Count)
+}
+
 function Remove-Percorso($percorso, $etichetta) {
   if (-not (Test-Path -LiteralPath $percorso)) { return }
   if ($DryRun) { Scrivi "    [dry-run] rimuoverei $etichetta : $percorso" 'DarkGray'; return }
@@ -236,6 +276,7 @@ foreach ($r in $radici) {
     continue
   }
   $radiciValide += $r
+  $vivi = Get-ThreadVivi $r.Percorso
   foreach ($s in (Get-Sessioni $r.Percorso)) {
     $tutteLeSessioni += [pscustomobject]@{
       Radice   = $r.Nome
@@ -243,6 +284,7 @@ foreach ($r in $radici) {
       Id       = $s.Id
       Cartella = $s.Cartella
       File     = $s.File
+      Viva     = [bool]($s.Id -and $vivi.ContainsKey($s.Id))
     }
   }
 }
@@ -262,14 +304,18 @@ if ($Lista) {
   else {
     foreach ($s in $tutteLeSessioni) {
       $tag = 'WIPE'
-      if (Test-Preservare $s.Cartella) { $tag = 'KEEP' }
+      if ($s.Viva) { $tag = 'VIVA' }
+      elseif (-not $nienteDaPreservare -and (Test-Preservare $s.Cartella)) { $tag = 'KEEP' }
       $c = $s.Cartella
       if (-not $c) { $c = '(cartella di lavoro non determinata -> preservata per prudenza)' }
       Scrivi ("  [{0}] {1}  {2}" -f $tag, $s.Radice, $c) 'White'
     }
   }
   Scrivi '' 'Gray'
-  if ($configurato) {
+  if ($nienteDaPreservare) {
+    Scrivi 'nessun prefisso preservato, per scelta dichiarata: si conservano solo le sessioni VIVE.' 'White'
+  }
+  elseif ($configurato) {
     Scrivi ("prefissi attuali: {0}" -f ($prefissiDaPreservare -join '  ')) 'White'
   }
   else {
@@ -289,7 +335,7 @@ if ($Lista) {
 
 # GUARDIA 2: i prefissi non sono piu' il segnaposto.
 # Un insieme vuoto significherebbe non preservare niente.
-if (-not $configurato -and -not $Tutto) {
+if (-not $configurato -and -not $Tutto -and -not $nienteDaPreservare) {
   Stop-Pulizia 'i prefissi da preservare sono ancora il segnaposto. Esegui con -Lista per scoprire quali impostare, oppure usa -Tutto se vuoi davvero non preservare nulla.'
 }
 
@@ -297,7 +343,7 @@ if (-not $configurato -and -not $Tutto) {
 # configurazione appartiene a un'altra macchina. E' il caso che non somiglia a
 # un errore: lo script farebbe esattamente cio' che gli e' stato chiesto,
 # cancellando tutto, senza emettere alcun avviso.
-if ($configurato -and -not $Tutto -and $tutteLeSessioni.Count -gt 0) {
+if ($configurato -and -not $nienteDaPreservare -and -not $Tutto -and $tutteLeSessioni.Count -gt 0) {
   $corrispondenti = @($tutteLeSessioni | Where-Object { Test-Preservare $_.Cartella })
   if ($corrispondenti.Count -eq 0) {
     if (-not $Deroga) {
@@ -314,8 +360,10 @@ foreach ($r in $radiciValide) {
   Scrivi ("--- {0}" -f $r.Nome) 'Cyan'
 
   $sessioniRadice = @($tutteLeSessioni | Where-Object { $_.Percorso -eq $r.Percorso })
-  $daRimuovere = @($sessioniRadice | Where-Object { $Tutto -or -not (Test-Preservare $_.Cartella) })
-  Scrivi ("  sessioni: {0} totali, {1} da rimuovere" -f $sessioniRadice.Count, $daRimuovere.Count) 'White'
+  $vive = @($sessioniRadice | Where-Object { $_.Viva })
+  $daRimuovere = @($sessioniRadice | Where-Object { -not $_.Viva -and ($Tutto -or $nienteDaPreservare -or -not (Test-Preservare $_.Cartella)) })
+  Scrivi ("  sessioni: {0} totali, {1} vive conservate, {2} da rimuovere" -f $sessioniRadice.Count, $vive.Count, $daRimuovere.Count) 'White'
+  foreach ($v in $vive) { Scrivi ("    viva, non si tocca: {0}  {1}" -f $v.Id, $v.Cartella) 'DarkGray' }
 
   # Le sessioni si rimuovono con il comando supportato, non cancellando file:
   # sono indicizzate da thread_history_1.sqlite e state_5.sqlite.
@@ -336,7 +384,13 @@ foreach ($r in $radiciValide) {
 
   # Database di stato: solo in modo totale, perche' rimuoverli disallineerebbe
   # l'indice delle sessioni che si e' scelto di preservare.
-  if ($Tutto) {
+  $inUso = @()
+  if ($vive.Count -gt 0) { $inUso += ('{0} sessioni vive' -f $vive.Count) }
+  if ($Tutto -and (Test-DemoneVivo $r.Percorso)) { $inUso += 'il demone app-server e'' in esecuzione' }
+  if ($Tutto -and $inUso) {
+    Scrivi ("  database di stato, sessions\ e tmp\ non toccati: {0}. Si azzerano a radice ferma." -f ($inUso -join ', ')) 'Yellow'
+  }
+  elseif ($Tutto) {
     foreach ($db in @('state_5', 'logs_2', 'goals_1', 'memories_1', 'memories_v2_1', 'queue_1', 'thread_history_1')) {
       foreach ($est in @('.sqlite', '.sqlite-shm', '.sqlite-wal')) {
         Remove-Percorso (Join-Path $r.Percorso ($db + $est)) ($db + $est)

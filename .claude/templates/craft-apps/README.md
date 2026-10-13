@@ -1,0 +1,147 @@
+# craft-apps
+
+> Pacchetto opzionale. Collega a un agente, Claude Code o Codex, le applicazioni desktop della suite Craft di ArtCraft, che sono dodici programmi di grafica, video, audio, PDF, testo, fogli e presentazioni scritti in Rust, open source, e progettati fin dall'inizio per essere pilotati da fuori. Lo studio che segue dice che cosa sanno fare, quanto costano in contesto, dove finiscono i dati e come si installano e si aggiornano su Windows e su Linux. Le misure sono state prese su questa macchina il 2026-10-12 e portano accanto il loro perimetro.
+
+<!-- readme-summary: dodici applicazioni desktop open source di grafica, video, PDF e documenti pilotate dall'agente via CLI o MCP, confinate alle cartelle del progetto, con scaricamento e aggiornamento verificati dall'impronta -->
+
+## Che cosa è la suite Craft
+
+L'organizzazione GitHub `storytold`, che pubblica il sito `getartcraft.com`, mantiene dodici applicazioni desktop e un launcher. Ciascuna rifà in Rust un programma che esiste già nel mondo proprietario, e lo dichiara apertamente: PhotoCraft sta a Photoshop, VectorCraft a Illustrator, FilmCraft a Premiere, LightCraft a Lightroom, PdfCraft ad Acrobat, EffectCraft ad After Effects, DesignCraft a InDesign, WordCraft a Word, SoundCraft a Pro Tools, DeckCraft a PowerPoint, CADCraft ad AutoCAD, GridCraft a Excel. Tutte girano su Windows, macOS e Linux, e undici hanno anche una build WebAssembly che gira in una scheda del browser.
+
+Lo stato dichiarato dal sito è *alpha* per PhotoCraft e PdfCraft e *in sviluppo* per le altre dieci, e i numeri di versione lo confermano: al 2026-10-12 la più matura è VectorCraft 0.9.0 e la meno matura sta a 0.5.0. Il README di EffectCraft dichiara esplicitamente che il programma non sostituisce ancora After Effects su un lavoro per un cliente. Questo è il perimetro dentro cui vanno letti i paragrafi che seguono: non si sta adottando una suite matura, si sta collegando a un agente un insieme di motori giovani ma già utili, e la differenza sta tutta in quanto si verifica ciascun risultato.
+
+Il punto che rende la suite interessante per questo sistema di progetto non è la somiglianza con i programmi che imita, ma una scelta architetturale dichiarata sul sito: ogni azione di menu passa da un registro di comandi unico, e quel registro è esposto all'esterno per tre vie diverse. Un agente non simula i clic di un utente, chiama gli stessi comandi che chiamerebbe il menu.
+
+## Le tre vie di comando, e quale conviene
+
+La prima via è la riga di comando. Accanto a ogni applicazione viene installato un secondo binario, `<app>-cli`, che apre un file, esegue una sequenza di comandi del motore e salva, tutto in un processo che nasce e muore. È la via più economica, perché non occupa contesto: l'agente lancia un comando e legge un riepilogo. Le dodici applicazioni hanno tutte il proprio binario CLI, verificato leggendo i sorgenti delle rispettive repo, e nessuna fa eccezione.
+
+La seconda via è un canale di controllo in JSON verso l'applicazione già aperta, che si avvia con un'opzione `--control` e ascolta su un indirizzo di loopback. Serve a guidare l'interfaccia vera, cioè a cliccare, digitare, aprire pannelli e prendere schermate della finestra. È la via che consente a un agente di vedere con gli occhi dell'utente, ed è anche la meno confinata, per la ragione che si legge più avanti.
+
+La terza via è un server MCP[^1], che si avvia con `<app>-cli mcp` e parla JSON-RPC sullo standard input e output. È la via che l'agente usa senza mediazione: i comandi del motore diventano strumenti della sessione, con i loro schemi di parametri, e il risultato torna come dato strutturato invece che come testo da interpretare. È anche la più cara, e quanto lo sia è la prima cosa da misurare.
+
+La scelta fra le tre non è di gusto. Per un lavoro a passo unico, come convertire un'immagine, estrarre il testo di un PDF o rendere un fotogramma, la riga di comando costa quasi nulla e va preferita sempre. Per un lavoro esplorativo, in cui l'agente deve guardare la struttura di un progetto, provare un valore, rivedere il risultato e correggerlo, il server MCP ripaga il suo costo perché evita decine di avvii di processo e tiene lo stato aperto. Per un lavoro che riguarda l'aspetto della finestra, il canale di controllo è l'unico che lo veda.
+
+## Che cosa sanno fare, misurato sui binari
+
+La tabella che segue riporta, per le tre applicazioni installate su questa macchina, il numero di strumenti che il server MCP dichiara davvero. Il numero è stato preso avviando ciascun server e leggendo la risposta a `tools/list`, non leggendo la documentazione: i documenti delle applicazioni elencano un sottoinsieme, e nel caso di PdfCraft la distanza fra i due numeri è di due ordini di grandezza. Il costo in token è la dimensione in byte della dichiarazione degli strumenti divisa per quattro, che è l'approssimazione usuale, e rappresenta ciò che una sessione paga per avere quel server collegato prima ancora del primo messaggio.
+
+| Applicazione | Versione | Strumenti MCP | Costo di contesto | Nota |
+|---|---|---|---|---|
+| EffectCraft | 0.8.0 | 27 | circa 6 400 token | nessun modo compatto |
+| PhotoCraft | 0.7.0 | 21 | circa 4 800 token | nessun modo compatto |
+| PdfCraft | 0.6.0 | 143 | circa 33 800 token | con `--compact` scende a 17 strumenti e circa 3 200 token |
+
+Il contenuto di quegli strumenti dice che cosa si può chiedere. EffectCraft espone l'albero delle proprietà di un livello, la lettura e la scrittura di una proprietà a un tempo dato, l'aggiunta di fotogrammi chiave, il registro dei 306 effetti con l'applicazione e i parametri, il rendering di un fotogramma che torna come immagine PNG dentro la risposta, l'annullamento con la sua storia ramificata, e l'esecuzione di JavaScript con l'oggetto di scripting in stile After Effects. PhotoCraft espone i comandi del motore, l'albero dei livelli di un documento, il salvataggio in `.pcraft` o l'esportazione verso PSD, PNG, TIFF, WebP ed EXR, i lavori in background con il loro avanzamento, e in modo ponte l'ispezione e il pilotaggio dell'interfaccia viva. PdfCraft, con i suoi 143 strumenti, è il più vasto dei tre e copre un intero prodotto: oltre a pagine, segnalibri, testo e moduli, ha l'oscuramento definitivo di contenuti, la rimozione delle informazioni nascoste, il confronto fra due documenti, il riconoscimento ottico, la conversione e la verifica PDF/A, le firme digitali con le identità del portachiavi di sistema, la revisione di accessibilità e la stampa con le opzioni del driver.
+
+Per le nove applicazioni non installate qui, la lettura dei sorgenti dice che tutte hanno il sottocomando `mcp` e un canale `--control`, con un vocabolario di strumenti che però non è uniforme. Sei applicazioni, fra cui le tre installate, condividono un nucleo di cinque strumenti dai nomi uguali; le altre usano nomi propri, per esempio `execute` e `inspect_document` invece di `command_run` e `doc_inspect`. Chi scrive un'automazione che attraversi due applicazioni non può quindi presumere un'interfaccia comune, e conviene che la scopra con lo strumento di elenco invece che darla per nota.
+
+## Il costo di contesto è la prima decisione di progetto
+
+Il numero di PdfCraft merita di essere guardato per quello che è. Un solo server collegato in modo completo porta in ogni sessione, prima che l'utente abbia scritto qualcosa, più o meno il contesto che costerebbe leggere trenta file di codice. Collegati tutti e tre quelli installati qui in modo completo, il conto arriva a circa 45 000 token. Collegate ipoteticamente tutte e dodici, si supererebbero i centomila, cioè quasi il limite oltre il quale la regola `token-economy.md` segnala che la qualità delle risposte degrada per accumulo di rumore.
+
+Ne discendono tre prescrizioni, e sono il motivo per cui questo pacchetto esiste come strumento e non come appunto. Un server Craft non si lascia acceso in `.mcp.json` per comodità: si collega quando il lavoro lo richiede e si toglie quando quel lavoro è finito, esattamente come una skill si carica su richiesta. Dove esiste un modo compatto lo si usa sempre, perché PdfCraft in compatto conserva la ricerca e la chiamata di qualunque strumento attraverso `tool_search` e `tool_call`, cioè non perde capacità, perde solo la dichiarazione anticipata di tutte: è la stessa disclosure progressiva che la regola del contesto prescrive per i documenti. E un lavoro a passo unico non passa dal server, passa dalla riga di comando, che costa zero token di dichiarazione.
+
+Lo strumento `tools/craft-mcp.py elenca --conta` ricalcola questi numeri sulla macchina su cui gira, invece di citarli da qui. È deliberato: la suite pubblica una versione ogni uno o due giorni, e un numero di strumenti citato da una stesura precedente invecchia da solo.
+
+## Dove finiscono i dati
+
+La domanda ha tre risposte, e due di esse non le configura nessuno.
+
+La prima è la cartella che si indica, cioè il progetto. È l'unica che si decide, ed è anche l'unica che la maggior parte di chi collega un server MCP conosce.
+
+La seconda è la cartella dei dati applicativi. EffectCraft avviato con `--autosave` scrive copie del progetto in `%APPDATA%\EffectCraft\EffectCraft Auto-Save\MCP\<pid>-<marcatempo>\`, una per ogni salvataggio automatico più un `session.json`: su questa macchina ce n'erano cinque al momento della verifica. Quella cartella non è una delle radici di confinamento, non sta dentro nessun repository e quindi non è coperta da nessun `.gitignore`, e nessuno la svuota. EffectCraft tiene inoltre una cache su disco in `%LOCALAPPDATA%\EffectCraft\Disk Cache\v1\`, divisa fra `frames` e `layers`, che contiene fotogrammi renderizzati di ciò che è stato aperto. PhotoCraft e PdfCraft scrivono un registro in `%APPDATA%\<App>\logs\`. PdfCraft apre inoltre un socket locale e un file di lock in `%LOCALAPPDATA%\PdfCraft\`, che è il canale con cui una seconda istanza parla alla prima.
+
+La conseguenza pratica è che il contenuto di ciò che l'agente apre lascia una traccia fuori dal perimetro che si è dichiarato, e che quella traccia sopravvive alla sessione. Per un progetto di codice è un fastidio; per un documento che non doveva essere letto è esattamente il difetto che la regola `documenti-personali.md` esiste per impedire. Chi punta PdfCraft a una cartella di PDF deve sapere che un riconoscimento ottico su un contratto o su una busta paga non solo legge quel documento, ma ne lascia pezzi in due cartelle di sistema. Lo strumento di controllo di questo pacchetto segnala `--autosave` proprio per questo.
+
+La terza risposta è la rete, e qui la notizia è buona con una eccezione. Il README di EffectCraft dichiara nessuna telemetria e nessuna richiesta di rete se non su domanda esplicita dell'utente, con l'unica eccezione dei modelli opzionali che si scaricano dalle impostazioni per il pennello di rotoscopia e il tracciamento dei volti. L'eccezione sta nel launcher ufficiale: cercando gli indirizzi dentro il suo eseguibile si trova `https://api.storyteller.ai/v1/craft_apps/release_info`, cioè un servizio del fornitore, con `api.github.com` come ripiego. Il file `feed.json` che il launcher lascia nei propri dati, 313 KB su questa macchina, contiene l'elenco completo di tutte le versioni di tutte le applicazioni, e i 329 indirizzi di scaricamento che vi compaiono puntano tutti a GitHub. Il fornitore quindi non serve i binari, serve l'elenco: chi apre il launcher gli dice il proprio indirizzo di rete e il momento in cui ha controllato. Lo strumento `tools/craft-apps.py` di questo pacchetto esiste anche per questo, perché chiede l'elenco direttamente a GitHub e non contatta nessun altro host.
+
+## Il confinamento, verificato invece che dichiarato
+
+Quattro applicazioni fra quelle esaminate accettano di confinare l'accesso ai file del server MCP. EffectCraft, PhotoCraft, VectorCraft e WordCraft usano `--automation-read-root` e `--automation-write-root`, ripetibili; PdfCraft usa un `--root`. Le altre, per quanto si legge nei loro documenti, non dichiarano nulla di simile, e questo pacchetto si rifiuta di collegarle a meno che non glielo si chieda per nome.
+
+Che il confinamento sia reale è stato provato e non dedotto, avviando EffectCraft con una sola radice di scrittura e chiedendogli quattro cose. Salvare dentro la radice riesce. Salvare fuori fallisce con il messaggio `it is outside the automation roots`, e il controllo successivo sul disco conferma che nessun file è stato creato, cioè il rifiuto vale sul filesystem e non solo nella risposta. Leggere un file fuori dalla radice fallisce allo stesso modo, il che dice una cosa che l'aiuto non dice e che conviene sapere: una radice di scrittura vale anche come radice di lettura, quindi indicarne una sola non lascia scoperta la lettura. Eseguire uno script fallisce con `script.run is not available while file access is confined`, cioè l'esecuzione di JavaScript viene negata del tutto mentre il confinamento è attivo.
+
+Quest'ultimo punto è uno scambio e va deciso consapevolmente. Lo scripting è lo strumento più potente di EffectCraft, perché dà accesso all'intero modello a oggetti in stile After Effects in una chiamata sola invece che in decine; rinunciarvi significa fare lo stesso lavoro con `execute_command` e `batch`, che è più verboso ma resta completo. Chi ha bisogno dello scripting deve rinunciare al confinamento, e allora il perimetro torna a essere l'intero disco con i permessi dell'utente. La via di mezzo onesta è tenere il confinamento come predefinito e togliere la radice soltanto per la singola sessione che ha bisogno di uno script, dichiarandolo.
+
+Il modo ponte, cioè il server MCP collegato all'applicazione già aperta con `--bridge` o `--connect`, non è coperto da queste opzioni: il confinamento, se c'è, lo impone l'applicazione in esecuzione, e i documenti di WordCraft dicono anzi che combinare `--connect` con le radici è un errore. Quelli di EffectCraft dicono che gli strumenti che pilotano l'interfaccia vengono rifiutati mentre il confinamento è attivo. Il controllo di questo pacchetto segnala la presenza di `--bridge` per questo motivo.
+
+Resta una differenza fra applicazioni che vale notare perché riguarda chi può parlare al canale di controllo. PhotoCraft richiede un token di 64 cifre esadecimali, passato come opzione o letto da un file; WordCraft usa una chiave da una variabile d'ambiente o da un file; PdfCraft non apre affatto una porta e usa un file come canale; le altre ascoltano su una porta di loopback senza credenziale, ciascuna con la propria porta predefinita. Un canale di loopback senza credenziale è raggiungibile da qualunque processo dello stesso utente, il che su una macchina personale è un rischio modesto ma non nullo, e su una macchina condivisa non lo è.
+
+## Installazione, su Windows e su Linux
+
+Le vie sono due e vanno scelte sapendo che cosa cambia. Il launcher ufficiale installa e aggiorna tutte le applicazioni da solo, verifica le impronte, sceglie il formato giusto per il sistema e non sostituisce un'applicazione mentre gira: è comodo, ed è quello che interroga il servizio del fornitore. Lo strumento `tools/craft-apps.py` di questo pacchetto fa le stesse cose parlando solo con GitHub, e aggiunge che il canale predefinito non chiede privilegi di amministratore.
+
+```
+python tools/craft-apps.py stato
+python tools/craft-apps.py installa effectcraft pdfcraft photocraft
+python tools/craft-apps.py installa --tutte --canale msi --solo-scarica
+python tools/craft-apps.py aggiorna --tutte
+```
+
+Su Windows il canale predefinito è lo zip portabile, che viene scompattato sotto `%LOCALAPPDATA%\CraftApps\<App>` e non tocca né il registro né `Program Files`. Chi preferisce l'installazione di sistema chiede `--canale msi`: lo strumento scarica il file, ne verifica l'impronta e stampa il comando `msiexec` da eseguire con privilegi, invece di tentare un'elevazione per conto proprio. Su Linux il canale predefinito è il tarball, scompattato sotto `~/.local/share/craft-apps`, anch'esso senza `sudo`. La scelta va contro l'abitudine, perché per una persona l'AppImage è la forma più comoda, e ha una ragione che riguarda l'uso da agente: un AppImage è un archivio che si monta all'avvio, e il binario `<app>-cli` resta dentro, quindi nessuno strumento lo trova e il collegamento MCP non si può generare. Il tarball espone invece `bin/<app>` e `bin/<app>-cli` affiancati, come verificato il 2026-10-12 sul tarball di GridCraft 0.5.0. L'AppImage resta disponibile con `--canale appimage` per chi vuole la sola applicazione con interfaccia; restano anche `deb`, `rpm` e `flatpak`, e lì il comando privilegiato viene stampato e non eseguito. Le architetture coperte dai rilasci sono x64, x86 e arm64 su Windows, e x86_64, aarch64 e riscv64 su Linux, con il solo tarball per quest'ultima.
+
+Il peso è stato misurato sui byte reali dei rilasci del 2026-10-11. Installare tutte e dodici le applicazioni su Windows con gli MSI a 64 bit costa 587 MB di scaricamento, 595 MB contando anche il launcher; con gli zip portabili si arriva a circa 724 MB. Su Linux con gli AppImage a 64 bit si arriva a 686 MB, e con i tarball a 64 bit, che sono il canale predefinito, a 724 MB. Sono dimensioni dei file di rilascio e non spazio occupato dopo l'installazione. Ogni applicazione è autonoma: non c'è un runtime condiviso da installare prima, il che è la conseguenza pratica dell'essere scritte in Rust senza dipendere da FFmpeg.
+
+Ogni rilascio pubblica un `SHA256SUMS.txt`, e lo strumento lo usa sempre: calcola l'impronta mentre scrive il file e cancella ciò che non corrisponde, invece di scaricare prima e verificare poi. Un rilascio che non pubblicasse quel file verrebbe rifiutato, perché installare un binario senza verificarlo è esattamente il passo che questo strumento esiste per non saltare.
+
+## Aggiornamenti, e perché sono davvero velocissimi
+
+La cadenza misurata è una versione ogni uno o due giorni, su tutte e tredici le repo insieme: fra il 2026-10-05 e il 2026-10-11 ciascuna applicazione ha pubblicato fra tre e cinque rilasci. Chi segue la suite a mano, scaricando ogni nuova versione dalla pagina dei rilasci, fa quel gesto dodici volte per ogni tornata, ed è il motivo per cui conviene un comando solo.
+
+Il costo di un aggiornamento è stato misurato su questa macchina e su questa linea: GridCraft, zip portabile per Windows a 64 bit, 15,4 MB, scaricati e verificati in 2,1 secondi. Le applicazioni più pesanti, come LightCraft con 94 MB, stanno nello stesso ordine di grandezza. Non esiste aggiornamento differenziale su Windows; su Linux ogni AppImage ha accanto un file `.zsync`, che è il meccanismo di aggiornamento incrementale degli AppImage, e che questo strumento non usa perché a queste dimensioni non ripaga la complessità.
+
+Il corpo dei rilasci non contiene istruzioni di aggiornamento né promesse di compatibilità: è un changelog di richieste di fusione. Conviene quindi tenere presente che si sta aggiornando un'alpha, e che un progetto che dipenda dal formato nativo di un'applicazione, per esempio un `.ecproj`, dovrebbe conservare anche l'esportazione in un formato che si legge altrove.
+
+## Collegare Claude Code
+
+La configurazione si genera invece di scriverla, perché la parte che si sbaglia è sempre la stessa, cioè il confinamento.
+
+```
+python tools/craft-mcp.py elenca --conta
+python tools/craft-mcp.py genera effectcraft --scrittura src/animation --per claude
+python tools/craft-mcp.py genera effectcraft --scrittura src/animation --per claude --scrivi
+python tools/craft-mcp.py controlla
+```
+
+Lo strumento interroga il binario installato e legge dal suo aiuto quale dialetto di confinamento accetti, invece di consultare una tabella scritta a mano: una tabella invecchia a ogni rilascio, un aiuto no. Rifiuta una radice che stia fuori dal progetto, rifiuta una radice che non esista, e rifiuta del tutto un'applicazione che non dichiari opzioni di confinamento. Dove esiste un modo compatto lo aggiunge da sé. Non genera mai `--autosave`.
+
+Il sottocomando `controlla` rilegge un `.mcp.json` già scritto e dice che cosa vi è rimasto scoperto. Lanciato su un progetto reale di questa macchina ha trovato una configurazione corretta nelle radici e scoperta sull'autosalvataggio, che è il caso descritto nella sezione sui dati: le due radici di scrittura erano dentro il progetto, e intanto le copie automatiche finivano in `%APPDATA%`.
+
+## Collegare Codex
+
+Lo stesso generatore produce i comandi per Codex con `--per codex`, e lì cambia una cosa sola ma pesante. Claude Code tiene i server MCP nel file `.mcp.json` del progetto, quindi la radice di confinamento può essere quella di quel progetto e cambia da progetto a progetto. Codex, nella versione 0.162.0 presente su questa macchina, tiene i server MCP nella radice dell'account, cioè nel `config.toml` sotto `CODEX_HOME`, e il comando `codex mcp add` non ha alcuna opzione per limitarne la portata a una cartella: verificato leggendo il suo aiuto, dove non compare nessun parametro di ambito.
+
+La conseguenza è che un server Craft aggiunto a Codex vale per tutte le sessioni di quella radice, e la radice di confinamento che si passa diventa il confine di ogni progetto aperto con essa. Chi lavora su più progetti ha due strade. La prima è una radice di account per progetto, che è la forma che il pacchetto `agenti-terminale` già usa su questa macchina con più `CODEX_HOME` distinti, e allora ogni radice porta la propria configurazione MCP con il proprio confine. La seconda è non collegare affatto il server a Codex e usare da lì la sola riga di comando, che non ha questo problema perché il confine lo porta il comando stesso. Per un lavoro a passo unico la seconda è anche la più economica, ed è quella che conviene come predefinita.
+
+## Che cosa resta non verificato
+
+Si dichiara qui per non farlo passare per verificato altrove. Il numero di strumenti MCP è misurato sui tre binari installati; per le altre nove applicazioni è noto soltanto che il sottocomando esiste e quali nomi i documenti elencano, e i documenti risultano sottostimare, dato che quelli di PdfCraft ne nominano cinque contro i 143 reali. Le opzioni di confinamento delle nove applicazioni non installate sono lette dai loro documenti e non provate. L'assenza di telemetria è una dichiarazione dei README, confermata soltanto in negativo dal fatto che gli unici indirizzi trovati dentro il binario del launcher sono quelli descritti sopra; non è stata fatta nessuna osservazione del traffico di rete. La provenienza dei binari è verificata contro le impronte pubblicate dal progetto stesso, il che garantisce che il file scaricato sia quello pubblicato, non che ciò che è stato pubblicato sia innocuo.
+
+## Come il progetto sa quando serve, visto che il server non può restare acceso
+
+Le due cose stanno insieme e vanno lette insieme: un server che costa trentatremila token non può restare collegato per comodità, ma una capacità che nessuno nomina al momento giusto è una capacità che non verrà usata. La risposta sta su tre piani, ed è la stessa che questo sistema usa per le norme.
+
+Il primo piano decide se il progetto abbia la capacità, e passa una volta sola dal gate dei pacchetti, in inizializzazione e a ogni tornata di allineamento. Risponde alla domanda se fra i risultati del progetto ci sia un artefatto visivo o documentale, e non alla domanda se oggi serva.
+
+Il secondo piano decide quando, e vive nella skill `craft-apps` che il pacchetto istanzia. Una skill non entra in contesto finché la sua situazione non si presenta, quindi costa zero fino a quel momento: è esattamente il meccanismo con cui le norme caricate su richiesta stanno fuori dal budget delle regole sempre attive. La sua descrizione nomina le situazioni con le parole con cui si presentano, cioè modificare un'immagine, un PDF, un'animazione, un file audio, un impaginato, e il progetto la indicizza con una riga nel proprio `CLAUDE.md`, fra le norme caricate su richiesta. Quando la skill si carica, sceglie prima la via, e la via predefinita è la riga di comando, che non costa contesto.
+
+Il terzo piano riguarda i server davvero collegati, e si regge su un fatto verificato: un server dichiarato in `.mcp.json` ma non approvato resta in attesa e non viene connesso, quindi i suoi strumenti non entrano in contesto. L'aiuto di `claude mcp list` lo dice con le sue parole, cioè che i server non approvati sono mostrati come in attesa e non vi si viene connessi. Ne discende la forma che conviene a un progetto che tocca artefatti ogni tanto: le voci dei server restano scritte in `.mcp.json`, con il confinamento già verificato, e si tengono spente elencandole in `disabledMcpjsonServers` dentro `.claude/settings.local.json`. Accenderne una è togliere una riga da quell'elenco; il costo si paga solo nelle sessioni in cui è accesa. Una modifica di quell'elenco vale dalla sessione successiva, non da subito, ed è la ragione per cui il lavoro di adesso resta sulla riga di comando mentre il server si accende per il lavoro di domani.
+
+## Istanziazione
+
+Il pacchetto copia in `tools/` del progetto i tre strumenti, più il modulo comune che li tiene d'accordo su che cosa sia installato e dove, e in `.claude/skills/` la skill che li chiama quando la situazione si presenta.
+
+```
+tools/craft-apps.py            inventario, scaricamento verificato, aggiornamento
+tools/craft-mcp.py             elenco delle capacità, generazione e controllo del collegamento
+tools/craft_apps_comune.py     tabella delle applicazioni e ricerca dei binari
+tools/test-craft-apps.py       34 prove, fra cui quella dal vivo sul confinamento e il percorso Linux
+.claude/skills/craft-apps/     la skill, caricata su richiesta, che sceglie via e perimetro
+```
+
+Istanziata la skill, si aggiunge al `CLAUDE.md` del progetto una riga fra le norme caricate su richiesta, perché il caricamento non dipenda dal ricordarsi che la skill esista: si nomina la situazione con le parole con cui si presenta, cioè che va modificato, ispezionato o convertito un artefatto visivo o documentale, oppure che si deve decidere se collegare uno di questi server a una sessione. Dove il progetto serve anche Codex, l'adattatore sottile sotto `.agents/skills/` rimanda alla stessa fonte senza duplicarla, come per le altre skill.
+
+Le applicazioni restano esterne e si installano a parte, con lo strumento stesso o con il launcher ufficiale. La prova dal vivo si salta da sé dove EffectCraft non è installato, così che la suite resti verde anche su una macchina che non ha la suite.
+
+[^1]: *MCP*, Model Context Protocol - standard che permette a un client di intelligenza artificiale di parlare con sistemi esterni attraverso un'interfaccia comune; ogni server MCP espone strumenti, risorse e prompt che diventano disponibili all'agente.

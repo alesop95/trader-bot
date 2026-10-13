@@ -1,0 +1,17 @@
+{
+ "_leggimi": "Esempio dell'elenco delle non fonti letto da verifica-link-progetto.py. Ogni voce porta il motivo, perché un'esclusione senza motivo è indistinguibile da una dimenticanza. Una voce con solo_in vale soltanto nei file elencati.",
+ "file_dati": {
+  "_notes/album/manifesto.json": "manifesto scaricato che enumera le immagini di una galleria già registrata in SOURCES.md"
+ },
+ "voci": {
+  "https://github.com/<owner>/<repo>": "il repository del progetto stesso",
+  "https://www.python.org/downloads/": "pagina di scaricamento di un programma della toolchain, non una fonte"
+ },
+ "prefissi": {
+  "api.servizio-di-esempio.org/v1": "endpoint chiamato da uno strumento del progetto, non una pagina letta",
+  "esempio.it": {
+   "motivo": "dominio fittizio delle prove interne di uno strumento",
+   "solo_in": ["tools/strumento-con-prove.py"]
+  }
+ }
+}

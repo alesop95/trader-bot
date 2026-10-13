@@ -59,8 +59,13 @@ testa contro cui e stato risolto: resta ADATTATO finché il template non lo camb
 Perimetro: .claude/PROJECT-SYSTEM.md, .claude/rules/, le skill del sistema
 elencate in SKILL_SISTEMA, .claude/templates/ e gli strumenti istanziati sotto
 tools/ del progetto il cui nome corrisponde a un unico file */tools/<nome>
-del template (solo codice: i file di dati istanziati restano del progetto), e
-le guide istanziate sotto docs/<pacchetto>/ da templates/<pacchetto>/.
+del template (solo codice: i file di dati istanziati restano del progetto), le
+skill opzionali già istanziate sotto .claude/skills/<nome> del progetto, la cui
+sorgente sta in templates/<pacchetto>/skills/<nome> oppure fra le skill del
+template fuori da SKILL_SISTEMA, e le guide istanziate sotto docs/<pacchetto>/
+da templates/<pacchetto>/. Per questi tre ultimi vale la stessa regola: si
+aggiorna ciò che il progetto ha già, non si installa ciò che non ha, perché
+quella scelta è del gate dei pacchetti e non dell'allineamento.
 Non tocca mai memory/, context/, settings: quelli descrivono il progetto, e il
 loro allineamento resta un lavoro di lettura. CLAUDE.md lo tocca soltanto con
 --innesco, e soltanto per aggiungere righe.
@@ -94,7 +99,7 @@ SKILL_SISTEMA = [
     "init-project-system", "sync-context", "git-sync", "repo-status",
     "gate-pacchetti", "riprendi", "onboard",
     "prove-che-misurano", "fonti-non-recuperabili", "alberi-di-lavoro",
-    "separazione-ambienti",
+    "separazione-ambienti", "identita-git",
 ]
 IGNORA = {"__pycache__", ".pytest_cache"}
 CODICE = {".py", ".ps1", ".sh", ".js", ".mjs"}
@@ -360,9 +365,17 @@ def innesco(template: Path, prj: Path, skill: list[str]) -> tuple[bytes | None, 
     intro = next((r for r in modello if r.startswith("Norme caricate su richiesta")), None)
     righe_skill = {}
     for r in modello:
+        if not r.startswith("- "):
+            continue
+        # la riga di una skill opzionale non finisce con il suo nome ma con la
+        # condizione che la governa, per esempio «solo se istanziata al gate dei
+        # pacchetti»: si cerca la menzione e non la chiusura della riga, altrimenti
+        # proprio le skill che il gate installa restano senza innesco. Una riga vale
+        # per una skill sola, e si ferma alla prima che vi compare
         for s in skill:
-            if r.startswith("- ") and r.rstrip().endswith(f"skill `{s}`."):
-                righe_skill[s] = r
+            if f"skill `{s}`" in r:
+                righe_skill.setdefault(s, r)
+                break
     grezzo = f.read_bytes()
     bom = grezzo.startswith(b"\xef\xbb\xbf")
     testo = grezzo[3:] if bom else grezzo
@@ -581,7 +594,44 @@ def main():
                 esiti.append({"file": f"tools/{f.name}", "template": None, "esito": "CONFLITTO",
                               "nota": "origine ambigua: " + ", ".join(cand)})
 
-    # 4. guide dei pacchetti istanziate sotto docs/<pacchetto>/
+    # 4. skill opzionali istanziate sotto .claude/skills/ del progetto
+    #
+    # Il perimetro del passo 1 accetta .claude/skills/<nome> soltanto per le skill
+    # di sistema, che si installano ovunque. Una skill opzionale, istanziata al
+    # gate dei pacchetti, restava quindi ferma per sempre: il template la
+    # correggeva e la copia nel progetto non lo sapeva, senza che niente diventasse
+    # rosso, che è la forma del guasto per dimenticanza. Qui vale la stessa regola
+    # degli strumenti e delle guide, cioè si aggiorna ciò che il progetto ha già
+    # istanziato e non si installa ciò che non ha.
+    origini_skill: dict[str, set[str]] = {}
+    for p in testa:
+        parti = p.split("/")
+        if set(parti) & IGNORA:
+            continue
+        if len(parti) > 5 and parti[1] == "templates" and parti[3] == "skills":
+            origini_skill.setdefault(parti[4], set()).add("/".join(parti[:5]))
+        elif len(parti) > 3 and parti[1] == "skills" and parti[2] not in SKILL_SISTEMA:
+            origini_skill.setdefault(parti[2], set()).add("/".join(parti[:3]))
+    skill_prj = prj / ".claude" / "skills"
+    for d in sorted(skill_prj.iterdir()) if skill_prj.is_dir() else []:
+        if not d.is_dir() or d.name in SKILL_SISTEMA or d.name not in origini_skill:
+            continue
+        fonti = sorted(origini_skill[d.name])
+        # una skill che il template tiene sia istanziata sia dentro il suo pacchetto,
+        # come sync-readme, ha due origini tenute uguali da check-copie-modelli.py:
+        # vince quella istanziata, così la scelta è deterministica e non ambigua
+        dirette = [s for s in fonti if s.startswith(".claude/skills/")]
+        if len(dirette) == 1:
+            fonti = dirette
+        if len(fonti) != 1:
+            esiti.append({"file": f".claude/skills/{d.name}", "template": None, "esito": "CONFLITTO",
+                          "nota": "origine ambigua: " + ", ".join(fonti)})
+            continue
+        src = fonti[0]
+        for p in sorted(x for x in testa if x.startswith(src + "/")):
+            valuta(f".claude/skills/{d.name}/{p[len(src) + 1:]}", p, blob.get(p, set()))
+
+    # 5. guide dei pacchetti istanziate sotto docs/<pacchetto>/
     docs = prj / "docs"
     for f in sorted(docs.rglob("*")) if docs.is_dir() else []:
         if not f.is_file():
@@ -593,7 +643,7 @@ def main():
         if src in testa:
             valuta(f"docs/{rel}", src, blob.get(src, set()))
 
-    # 5. file risolti a mano, su richiesta esplicita
+    # 6. file risolti a mano, su richiesta esplicita
     if a.risolto:
         oggi = __import__("datetime").date.today().isoformat()
         for p in a.risolto:
@@ -614,11 +664,18 @@ def main():
         f_risolti.write_text(json.dumps(dict(sorted(RISOLTI.items())), ensure_ascii=False, indent=2) + "\n",
                              encoding="utf-8", newline="\n")
 
-    # 6. righe di innesco nel CLAUDE.md, fuori dal perimetro dei file e quindi solo su richiesta
+    # 7. righe di innesco nel CLAUDE.md, fuori dal perimetro dei file e quindi solo su richiesta
     if a.innesco:
-        skill = sorted({p.split("/")[2] for p in testa
-                        if p.startswith(".claude/skills/") and p.endswith("/RIFERIMENTO.md")
-                        and p.split("/")[2] in SKILL_SISTEMA})
+        nomi = {p.split("/")[2] for p in testa
+                if p.startswith(".claude/skills/") and p.endswith("/RIFERIMENTO.md")
+                and p.split("/")[2] in SKILL_SISTEMA}
+        # una skill opzionale non si installa da sé, ma dove il progetto l'ha già
+        # istanziata la sua riga va aggiunta come per le altre: senza quella riga la
+        # norma esiste nel progetto e non la carica nessuno, che è la ragione per cui
+        # l'innesco esiste. Le skill senza una riga nel modello restano fuori da sé
+        if skill_prj.is_dir():
+            nomi |= {d.name for d in skill_prj.iterdir() if d.is_dir()}
+        skill = sorted(nomi)
         dati, mancanti, dove = innesco(tpl, prj, skill)
         if dati is not None:
             nome = "CLAUDE.md" if (prj / "CLAUDE.md").is_file() else ".claude/CLAUDE.md"

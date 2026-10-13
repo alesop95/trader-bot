@@ -83,7 +83,7 @@ Do not use blogs, summaries, or third-party mirrors.
 
 ## Cosa succede dopo
 
-Indipendentemente dal percorso usato, ogni paper trovato (titolo, autori, anno, link) si aggiunge alla lista di candidati del progetto prima di comparire in un testo o nel `.bib`: mai citato direttamente dalla memoria del modello, coerentemente con la regola `no-uncited-claims`. Da lì il candidato passa a `citation-tracker`, che lo verifica contro Semantic Scholar, OpenAlex o Crossref (o `refchecker-mcp` se connesso) prima che `bib-sync` lo sincronizzi in Zotero e nel `.bib`.
+Indipendentemente dal percorso usato, ogni paper trovato (titolo, autori, anno, link) si aggiunge alla lista di candidati del progetto prima di comparire in un testo o nel `.bib`: mai citato direttamente dalla memoria del modello, coerentemente con la regola `no-uncited-claims`. Da lì il candidato passa a `citation-tracker`, che lo verifica contro Semantic Scholar, OpenAlex o Crossref (o `refchecker-mcp` se connesso) prima che `bib-sync` lo sincronizzi in Zotero e nel `.bib`. Prima di cercare, però, si fa l'inventario di ciò che l'utente ha già, cioè cartelle di studio, bibliografie dei suoi lavori precedenti e librerie bibliografiche, come prescrive la sezione omonima di `senior-researcher`: un candidato già presente non si propone, si registra con la sua provenienza.
 
 ## Vincoli non negoziabili
 

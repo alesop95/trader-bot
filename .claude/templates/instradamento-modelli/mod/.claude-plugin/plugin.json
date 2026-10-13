@@ -1,0 +1,7 @@
+{
+  "name": "instradamento-modelli",
+  "description": "Instrada i subagent meccanici su un modello piu' economico, regola lo sforzo di ragionamento e misura i token richiesta per richiesta, modello per modello.",
+  "version": "1.0.0",
+  "author": { "name": "template-claude-developing" },
+  "keywords": ["token", "costo", "modello", "subagent", "misura"]
+}

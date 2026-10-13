@@ -34,6 +34,10 @@ La ragione è la sezione 19 del sistema: lo stato lo scrive l'agente che deve su
 
 **Le discordanze non si sistemano in silenzio.** Un elemento dichiarato concluso senza artefatto prova che il mandato non ha funzionato, e va capito prima di rilanciare, altrimenti si ripresenta identico sul lotto successivo.
 
+## Quando gli elementi sono piccoli
+
+Se il lavoro è assegnare molti elementi piccoli a un insieme chiuso di etichette, l'artefatto è uno per lotto: una mappa JSON scritta dall'agente su disco, con una voce per ogni chiave dell'ingresso. All'agente va solo il residuo delle regole deterministiche, con il modello economico, e il mandato vieta di sostituire il giudizio con uno script. Prima di usare l'esito si esegue `tools/valida-etichette.py`, che misura voci mancanti, chiavi estranee, etichette inventate e voci vuote, e boccia il lotto oltre la soglia di vuote. Il resoconto testuale dell'agente non conta come misura. Il caso misurato e il mandato da copiare sono nel README del pacchetto.
+
 ## Prima di cominciare, tre domande
 
 Quanti elementi, e quanto costa uno **misurato** e non assunto.

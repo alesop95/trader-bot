@@ -5,6 +5,8 @@
 #   1. "autoMemoryEnabled": false          -> auto-memory nativa spenta
 #   2. hook SessionEnd -> session-end-wipe -> wipe automatico a chiusura sessione
 #   3. lo script di wipe installato e configurato per QUESTA macchina
+#   4. il wipe installato pulisce QUESTO account, ha accanto stato-magazzino.ps1 ed e'
+#      allineato al template, quando il template e' raggiungibile (dal 2026-10-09)
 # Da eseguire al Passo 0 dell'inizializzazione/allineamento di un progetto.
 # Vedi PROJECT-SYSTEM.md sezione 15.
 # ============================================================================
@@ -64,15 +66,55 @@ else {
   }
 }
 
+# --- 4. il wipe installato e' quello giusto per QUESTO account -------------------
+# Caso del 2026-10-09: la copia installata in .claude-account2 aveva $base di account1 da
+# quattro giorni, quindi ogni chiusura di account2 puliva o rimandava account1 e account2
+# non veniva mai pulito. Tutti e tre i controlli qui sopra passavano. Si verifica quindi
+# a quale home punta il wipe, che accanto ci sia stato-magazzino.ps1, senza il quale il
+# wipe torna al rinvio totale, e che la copia coincida con il template fuori dalle quattro
+# righe di configurazione: il README del pacchetto annotava gia' che una copia vecchia
+# passava questa verifica.
+$okInst = $false
+$instNote = ''
+if ($okHook -and $wipe -and (Test-Path -LiteralPath $wipe)) {
+  $righeInst = @(Get-Content -LiteralPath $wipe)
+  $rigaBase = $righeInst | Where-Object { $_ -match "^\`$base = '([^']*)'" } | Select-Object -First 1
+  $baseInst = if ($rigaBase -and $rigaBase -match "^\`$base = '([^']*)'") { $Matches[1] } else { '' }
+  $tpl = Join-Path $PSScriptRoot 'session-end-wipe.ps1'
+  $diverse = -1
+  if ((Test-Path -LiteralPath $tpl) -and ((Resolve-Path $tpl).Path -ne (Resolve-Path $wipe).Path)) {
+    $config = '^\s*\$(base|keepPrefixes|keepPathPrefixes|allowEmptyKeep) = '
+    $a = @(Get-Content -LiteralPath $tpl | Where-Object { $_ -notmatch $config })
+    $b = @($righeInst | Where-Object { $_ -notmatch $config })
+    $diverse = @(Compare-Object $a $b -SyncWindow 0).Count
+  }
+  if ($baseInst -and ($baseInst.TrimEnd('\') -ne $cfg.TrimEnd('\'))) {
+    $instNote = "il wipe installato pulisce un altro account: `$base = '$baseInst'"
+  }
+  elseif (-not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $wipe) 'stato-magazzino.ps1'))) {
+    $instNote = 'manca stato-magazzino.ps1 accanto al wipe: con altre sessioni aperte il wipe rimanda tutto'
+  }
+  elseif ($diverse -gt 0) {
+    $instNote = "la copia installata differisce dal template in $diverse righe oltre alla configurazione: va reinstallata"
+  }
+  else {
+    $okInst = $true
+    $instNote = if ($diverse -eq 0) { 'home giusta, libreria presente, allineato al template' } else { 'home giusta, libreria presente; template non raggiungibile da qui, versione non verificata' }
+  }
+}
+else { $instNote = 'niente da verificare senza hook e script' }
+
 Write-Output ("[{0}] autoMemoryEnabled = false" -f ($(if ($okMem) { 'PASS' } else { 'FAIL' })))
 Write-Output ("[{0}] hook SessionEnd -> session-end-wipe" -f ($(if ($okHook) { 'PASS' } else { 'FAIL' })))
 Write-Output ("[{0}] wipe configurato per questa macchina ({1})" -f ($(if ($okCfg) { 'PASS' } else { 'FAIL' })), $cfgNote)
+Write-Output ("[{0}] wipe installato per questo account ({1})" -f ($(if ($okInst) { 'PASS' } else { 'FAIL' })), $instNote)
 
-if ($okMem -and $okHook -and $okCfg) { Write-Output "`nOK: l'account attivo e' in regola."; exit 0 }
+if ($okMem -and $okHook -and $okCfg -and $okInst) { Write-Output "`nOK: l'account attivo e' in regola."; exit 0 }
 
 Write-Output "`nAZIONE RICHIESTA: l'account attivo NON e' in regola."
 if (-not $okMem)  { Write-Output ' - aggiungi  "autoMemoryEnabled": false  al settings.json dell''account' }
 if (-not $okHook) { Write-Output ' - installa session-end-wipe.ps1 nell''account e registra un hook SessionEnd che lo esegua' }
 if (-not $okCfg -and $okHook) { Write-Output "   - compila keepPrefixes nello script installato: eseguirlo con -List elenca gli slug presenti, senza rimuovere niente" }
+if (-not $okInst -and $okHook) { Write-Output '   - reinstalla il wipe con agenti-terminale/tools/Installa-Claude.ps1 -Forza, che copia anche stato-magazzino.ps1 e scrub-claude-json.js' }
 Write-Output '   (riferimenti: templates/tools/session-end-wipe.ps1 e PROJECT-SYSTEM.md sezione 15)'
 exit 1

@@ -47,18 +47,36 @@ Se una voce sia scritta bene, se spieghi davvero il perché, se la scheda sia au
 richiesto. Sono giudizi, e nessuno strumento li sostituisce. Questo controlla soltanto che le due
 serie di documenti **esistano nella stessa quantità e si citino a vicenda**.
 
+**Le promesse non mantenute.** Aggiunto il 2026-10-05. Una riga `**Didattica:**` può dire
+"nessuna scheda nuova" e insieme promettere una scheda futura, legata a una soglia o a un momento
+migliore. Il controllo sulla dichiarazione la considera in regola, e qui stava la sua cecità: in un
+progetto istanziato quattro schede promesse sono rimaste da scrivere per dieci giorni mentre
+questo strumento rispondeva "allineati", e una delle soglie era stata spostata dalla stessa voce
+che la faceva scattare. Ora una promessa apre un debito, e il debito si chiude soltanto in due modi,
+entrambi dichiarati dove vive il caso. Il primo è una scheda che la mantiene, e che lo scrive con
+`<!-- promessa-mantenuta: 2026-09-29 (4) -->`. Il secondo è una voce del registro dei pendenti che
+la rimanda, con `<!-- promessa-registrata: 2026-09-28 -->`. Una semplice citazione della data non
+basta: la data di una voce di work-log compare in molti documenti per altre ragioni, e chiuderebbe
+per caso una promessa mai mantenuta, che è esattamente il falso "allineato" da cui il controllo è
+nato.
+
 ## Uso
 
     python tools/lint-didattica.py
+    python tools/lint-didattica.py --self-test
 
-Esce con codice diverso da zero se c'è un divario o un rimando rotto, così si può mettere in una
-verifica automatica.
+Esce con codice diverso da zero se c'è un divario, un rimando rotto o una promessa aperta, così si
+può mettere in una verifica automatica.
 """
 import glob
 import io
 import os
 import re
 import subprocess
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -172,6 +190,95 @@ def voci_worklog_senza_didattica():
             mancanti.append(titolo.replace("## ", "").strip()[:90])
     return mancanti
 
+
+# ------------------------------------------------------------------ promesse non mantenute
+# Le parole con cui una voce promette una scheda futura. L'elenco nasce dalle promesse vere trovate
+# nel work-log il 2026-10-05, non da un'ipotesi su come si potrebbe scrivere una promessa. Se ne
+# nasce una forma nuova, la si aggiunge qui con l'esempio che l'ha fatta nascere.
+PROMESSA = re.compile(
+    r"meriter|merita una|scheda futura|materiale di una scheda|nasceranno|si scriver|"
+    r"la scheda non si scrive|quando ci sar|argomenti gi",
+    re.IGNORECASE,
+)
+DICHIARAZIONE = re.compile(
+    r"<!--\s*promessa-(?:mantenuta|registrata):\s*(\d{4}-\d{2}-\d{2})((?:\s*\(\d+\))?)\s*-->"
+)
+
+
+def promesse(testo_worklog):
+    """(data, numero o None, titolo) di ogni voce la cui riga **Didattica:** promette una scheda."""
+    esito = []
+    corrente = None
+    for riga in testo_worklog.split("\n"):
+        m = re.match(r"^## (\d{4}-\d{2}-\d{2})(?: \((\d+)\))?(.*)$", riga)
+        if m:
+            titolo = m.group(1) + (f" ({m.group(2)})" if m.group(2) else "") + m.group(3)
+            corrente = (m.group(1), m.group(2), titolo.strip()[:90])
+            continue
+        if corrente and riga.startswith("**Didattica:**") and PROMESSA.search(riga):
+            esito.append(corrente)
+    return esito
+
+
+def dichiarazioni(testi):
+    """L'insieme delle voci (data, numero o None) che un documento dichiara mantenute o registrate."""
+    esito = set()
+    for testo in testi:
+        for data, numero in DICHIARAZIONE.findall(testo):
+            n = re.search(r"\d+", numero)
+            esito.add((data, n.group(0) if n else None))
+    return esito
+
+
+def promesse_aperte(testo_worklog, testi_chiusura):
+    chiuse = dichiarazioni(testi_chiusura)
+    return [titolo for data, numero, titolo in promesse(testo_worklog) if (data, numero) not in chiuse]
+
+
+def self_test():
+    casi = []
+
+    def prova(nome, ok, dettaglio=""):
+        casi.append((nome, bool(ok), dettaglio))
+
+    log = ("## 2026-10-01 (4) - Una voce\n\n**Didattica:** nessuna scheda nuova. Meriterà una scheda alla quinta.\n\n"
+           "## 2026-09-28 - Un'altra\n\n**Didattica:** le schede nasceranno dalle correzioni.\n\n"
+           "## 2026-09-08 (4) - Nessuna promessa\n\n**Didattica:** nessuna voce nuova, sono applicazioni di principi già scritti.\n")
+    p = [(d, n) for d, n, _ in promesse(log)]
+    prova("riconosce una promessa con soglia", ("2026-10-01", "4") in p, str(p))
+    prova("riconosce una promessa in una voce senza numero", ("2026-09-28", None) in p, str(p))
+    prova("negativo: una voce che non promette non apre debiti", len(p) == 2, str(p))
+    aperte = promesse_aperte(log, [])
+    prova("senza dichiarazioni le promesse restano aperte", len(aperte) == 2, str(aperte))
+    aperte = promesse_aperte(log, ["<!-- promessa-mantenuta: 2026-10-01 (4) -->",
+                                   "<!-- promessa-registrata: 2026-09-28 -->"])
+    prova("una dichiarazione per voce le chiude", aperte == [], str(aperte))
+    aperte = promesse_aperte(log, ["Fonti: le voci 2026-10-01 (4) e 2026-09-28 del work-log."])
+    prova("una citazione della data non basta a chiudere", len(aperte) == 2, str(aperte))
+    aperte = promesse_aperte(log, ["<!-- promessa-mantenuta: 2026-10-01 (3) -->"])
+    prova("il numero della voce conta", len(aperte) == 2, str(aperte))
+
+    falliti = sum(0 if ok else 1 for _, ok, _ in casi)
+    for nome, ok, dettaglio in casi:
+        print(f"  {nome.ljust(58)}  {'ok' if ok else 'FALLITO'}{('  ' + dettaglio[:120]) if not ok else ''}")
+    print(f"\n{len(casi)} prove, {falliti} fallite.")
+    return 1 if falliti else 0
+
+
+if "--self-test" in sys.argv[1:]:
+    raise SystemExit(self_test())
+
+_testi_chiusura = [io.open(p, encoding="utf-8").read() for p in
+                   glob.glob(".claude/context/refactor-*.md") + [MASTER, ".claude/context/registro-dei-pendenti.md"]
+                   if os.path.exists(p)]
+aperte = promesse_aperte(io.open(WORKLOG, encoding="utf-8").read(), _testi_chiusura)
+print(f"promesse di schede non mantenute né registrate: {len(aperte)}")
+if aperte:
+    problemi.append(
+        f"{len(aperte)} voci di work-log promettono una scheda che nessuna scheda dichiara di mantenere "
+        f"(`<!-- promessa-mantenuta: DATA (N) -->`) e nessun pendente dichiara di rimandare "
+        f"(`<!-- promessa-registrata: DATA (N) -->`): " + "; ".join(aperte)
+    )
 
 date_fatti = date_worklog()
 quando_master, arretrati = commit_arretrati()

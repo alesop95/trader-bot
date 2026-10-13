@@ -72,7 +72,7 @@ MARCATORE_BUNDLE = os.path.join(".claude", "PROMPT-nuovo-progetto.md")
 SEMPRE_ATTIVE = {
     "regola:chat-non-e-memoria": "persistenza di ciò che nasce in sessione, vale in ogni progetto",
     "regola:git-commands-format": "forma dei comandi consegnati all'utente, vale in ogni progetto",
-    "regola:git-identity-and-repo": "identità git locale, vale in ogni progetto",
+    "regola:documenti-personali": "documenti personali mai letti senza richiesta espressa, vale in ogni progetto",
     "regola:interaction-style": "stile di documentazione e interazione, vale in ogni progetto",
     "regola:manual-screenshots": "riscontro visivo dei passi manuali, vale in ogni progetto",
     "regola:security-permissions": "modalità di permesso e sandbox, vale in ogni sessione",

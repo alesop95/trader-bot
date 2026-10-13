@@ -17,7 +17,7 @@ disable-model-invocation: true
 
 ## Che cosa fa questa skill, e perché non è un elenco
 
-Il catalogo `.claude/templates/PACKAGES.md` contiene più di ottanta voci opzionali. Un gate che le proponga tutte in fila è un gate che nessuno legge fino in fondo, e un gate che ne scelga tre a occhio nasconde le altre senza dirlo. Questa skill risolve il problema cambiando l'unità della domanda: si riconosce prima a quali settori il progetto appartiene, e si attraversano i soli settori riconosciuti. Un progetto appartiene tipicamente a due o tre settori su dieci, quindi le domande restano pertinenti.
+Il catalogo `.claude/templates/PACKAGES.md` contiene più di ottanta voci opzionali. Un gate che le proponga tutte in fila è un gate che nessuno legge fino in fondo, e un gate che ne scelga tre a occhio nasconde le altre senza dirlo. Questa skill risolve il problema cambiando l'unità della domanda: si riconosce prima a quali settori il progetto appartiene, e si attraversano i soli settori riconosciuti. Un progetto appartiene tipicamente a due o tre settori su undici, quindi le domande restano pertinenti.
 
 La fonte di verità di che cosa esista resta il catalogo, che va letto e non ricordato. Questa skill è la procedura, non il contenuto: se le due divergono, ha ragione il catalogo.
 

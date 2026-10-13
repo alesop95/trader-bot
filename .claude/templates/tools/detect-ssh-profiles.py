@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rileva i profili SSH verso GitHub configurati su QUESTA macchina, in sola lettura.
 
-Esiste perché la regola `git-identity-and-repo.md` non può sapere quali alias e quali
+Esiste perché il riferimento della skill `identita-git` non può sapere quali alias e quali
 chiavi esistano sulla macchina dove viene letta: gli alias sono una convenzione della
 singola installazione, non un fatto del sistema di progetto, e assumerli porta a
 proporre un remoto che punta a una chiave inesistente. Lo strumento legge la

@@ -56,6 +56,18 @@ AFFERMAZIONI = [
     (os.path.join("docs", "feature-map.html"),
      r"<strong>(\d+)</strong> pacchetti opt-in totali", "voci"),
     (os.path.join("docs", "feature-map.html"), r"I (\w+) settori, e da che cosa", "settori"),
+    # Le quattro righe qui sotto sono entrate il 2026-10-12, dopo che una ricognizione le ha
+    # trovate ferme a settantanove mentre il catalogo ne aveva ottantasette. Non erano
+    # sbagliate per distrazione: erano le sole quattro affermazioni di conteggio che nessuno
+    # verificava, e sono precisamente quelle che hanno derivato. Il conteggio verificato, nella
+    # stessa pagina, era giusto. Vale come misura del fatto che una convenzione dichiarata e non
+    # controllata non resta vera: si conta da se' soltanto cio' che qualcuno conta.
+    (os.path.join("docs", "feature-map.html"),
+     r'<span class="ps-n">(\d+)</span><span class="ps-l">Pacchetti opt-in</span>', "voci"),
+    (os.path.join("docs", "feature-map.html"), r"Con (\w+) voci, il modo in cui", "voci"),
+    (os.path.join("docs", "project-flow.html"),
+     r'<span class="hm-n">(\d+)</span><span class="hm-l">Pacchetti opt-in</span>', "voci"),
+    (os.path.join("docs", "project-flow.html"), r"riga per riga: con (\w+) voci", "voci"),
 ]
 
 UNITA = {"zero": 0, "uno": 1, "due": 2, "tre": 3, "quattro": 4, "cinque": 5, "sei": 6,

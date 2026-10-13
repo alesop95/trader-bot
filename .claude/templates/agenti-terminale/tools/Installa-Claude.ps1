@@ -104,7 +104,8 @@ if ($Verifica) { Scrivi 'Modo: SOLA LETTURA, nessuna modifica.' 'Yellow' }
 $toolsTemplate = Join-Path $Template '.claude\templates\tools'
 $srcWipe = Join-Path $toolsTemplate 'session-end-wipe.ps1'
 $srcScrub = Join-Path $toolsTemplate 'scrub-claude-json.js'
-foreach ($f in @($srcWipe, $srcScrub)) {
+$srcStato = Join-Path $toolsTemplate 'stato-magazzino.ps1'
+foreach ($f in @($srcWipe, $srcScrub, $srcStato)) {
   if (-not (Test-Path -LiteralPath $f)) {
     Scrivi "MANCA la copia di riferimento: $f" 'Red'
     Scrivi 'Le copie di riferimento vivono nel template, non in questo repository.' 'Yellow'
@@ -175,6 +176,7 @@ foreach ($r in $radici) {
   $hooksDir = Join-Path $r.Percorso 'hooks'
   $dstWipe = Join-Path $hooksDir 'session-end-wipe.ps1'
   $dstScrub = Join-Path $hooksDir 'scrub-claude-json.js'
+  $dstStato = Join-Path $hooksDir 'stato-magazzino.ps1'
   $settings = Join-Path $r.Percorso 'settings.json'
 
   if (-not (Test-Path -LiteralPath $r.Percorso)) {
@@ -244,6 +246,15 @@ foreach ($r in $radici) {
   if ($serveScrub) {
     if ($Verifica) { $azioni += 'companion da copiare' }
     else { Copy-Item -LiteralPath $srcScrub -Destination $dstScrub -Force; $azioni += 'companion copiato' }
+  }
+
+  # --- il resoconto dei residui, in sola lettura e senza configurazione -----
+  # Lo legge il promemoria di chiusura dell'account e, nei progetti che non ne hanno una
+  # copia in tools/, chiudi-sessione.ps1.
+  $serveStato = (-not (Test-Path -LiteralPath $dstStato)) -or $Forza
+  if ($serveStato) {
+    if ($Verifica) { $azioni += 'resoconto da copiare' }
+    else { Copy-Item -LiteralPath $srcStato -Destination $dstStato -Force; $azioni += 'resoconto copiato' }
   }
 
   # --- GUARDIA 3: nessun segnaposto deve essere sopravvissuto ---------------

@@ -25,3 +25,5 @@ Il percorso indicato e la cartella di default di Screenpresso su Windows 11; su 
 ## Igiene
 
 Gli screenshot sono materiale effimero e non si versionano. Se uno screenshot va conservato come riferimento di una decisione o di un bug, si copia sotto `_notes/`, che è ignorato da git, mai in una cartella tracciata. L'agente legge lo screenshot dalla cartella di cattura e non lo introduce nel repository.
+
+Per la stessa ragione un documento durevole non cita gli screenshot per numero o per nome di file: né una descrizione di pull request, né un registro, né un commento nel codice. Chi verifica li cancella dopo, e un riferimento a un file che non esiste più non dice niente a chi legge; nasce da una richiesta d'uso del 2026-10-08 in un progetto istanziato, dove cinque descrizioni di pull request li citavano senza che nessuno l'avesse chiesto. Si scrive invece che cosa si è visto, su quale versione e con quale esito; se l'immagine stessa è la prova che serve conservare, si copia sotto `_notes/` come detto sopra.

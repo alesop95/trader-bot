@@ -111,6 +111,7 @@ Il settore dell'orchestrazione ha già un trigger quantitativo dichiarato nel ca
 |---|---|---|
 | `registro.esempio.jsonl` | `_notes/registro-<lavoro>.jsonl` | no, è stato di lavoro |
 | `tools/registro.py` | `tools/registro.py` | sì |
+| `tools/valida-etichette.py` | `tools/valida-etichette.py` | sì |
 | la regola di instradamento | `.claude/rules/lavoro-a-lotti.md`, dichiarata fra le regole caricate | sì |
 
 Il registro sta nel livello privato perché è **stato**, non conoscenza: cambia a ogni elemento lavorato e sporcherebbe la storia. Lo strumento e la regola sono invece impianto, e si versionano.
@@ -149,6 +150,33 @@ La conseguenza sul caso osservato è netta e conferma la premessa del pacchetto:
 
 Il modo corretto di ricavare questo numero è misurare il consumo della flotta **prima e dopo un lotto piccolo**, e dividere. Non serve altro, e va rifatto per ogni tipo di lavoro: venti mila token per elemento valgono per questa forma di mappatura su questa taglia di documenti, non in generale.
 
+## Il modello si sceglie dal compito, e il costo sta nei turni
+
+Sezione nata il 2026-10-06 in un progetto istanziato, che deve schedare alcune migliaia di documenti convertiti, e scritta su istruzione dell'utente come lezione generale. Due lotti da 50 schede di fonte, scritte dal modello economico con 5 agenti da 10 schede, hanno dato le misure seguenti.
+
+| Lotto | Parole negli estratti | Token in tutto | Token per scheda | Durata |
+|---|---|---|---|---|
+| estratti da 1500 parole | circa 69 900 | 491 484 | circa 9 800 | circa 2 minuti e mezzo |
+| estratti da 800 parole | circa 39 700 | 447 132 | circa 8 900 | circa 2 minuti |
+
+Nello stesso progetto, la lettura profonda di una fonte di 25 000 parole con verifica dei conti, fatta dal modello intermedio, è costata 283 497 token, circa 11 per parola.
+
+Da queste misure discendono tre regole. La prima: un compito che consuma molti token ma non richiede giudizio fine va al modello più economico che lo sa fare, e il modello più capace si riserva alla parte che ne ha bisogno, come la verifica dei conti o la sintesi fra fonti. La scelta si fa per compito e non per sessione, e si misura invece di assumerla.
+
+La seconda: il testo letto non è la voce di costo principale. Gli estratti del 43 per cento più corti hanno ridotto il costo solo del 9 per cento. Il grosso viene dai turni: ogni agente ha fatto circa 24 chiamate di strumento, cioè una lettura e una scrittura per scheda più gli elenchi, e ogni turno rimanda il contesto intero, comprese le istruzioni di progetto che ogni agente carica all'avvio. Ne segue che la leva più forte è ridurre i turni. Uno script prepara in un solo file gli estratti del lotto e le informazioni che servono, l'agente risponde con un solo testo strutturato, e un altro script scrive le schede. Questa leva è stata misurata il giorno stesso su un terzo lotto, e la misura ha corretto il modo in cui il costo va letto. Le chiamate di strumento sono scese da 118 a 13, ma il numero di token della notifica solo da 447 132 a 410 272, perché quel numero conta la cache scritta e l'uscita, non la cache letta. Le trascrizioni degli agenti danno la ripartizione.
+
+| Lotto | Turni | Cache scritta | Cache letta | Uscita |
+|---|---|---|---|---|
+| estratti da 1500 parole | 61 | 418 003 | 4 942 017 | 37 710 |
+| estratti da 800 parole | 51 | 355 293 | 3 754 050 | 37 344 |
+| un pacchetto per agente | 19 | 336 792 | 1 031 208 | 29 421 |
+
+La riduzione dei turni ha tagliato la cache letta di quasi cinque volte. Con i pesi del listino pubblico, 1,25 per la cache scritta, 0,1 per la cache letta e 5 per l'uscita del modello economico, il costo equivalente scende del 44 per cento circa: è un'inferenza sui pesi, e la quota di un abbonamento può pesare diversamente. La cache scritta resta invece quasi costante, circa 67 000 token per agente, perché è il contesto fisso che ogni agente scrive all'avvio. La regola che ne discende vale oltre questo caso: il numero di token di una notifica non è il costo, e due configurazioni si confrontano sulla ripartizione nelle trascrizioni. La leva successiva, ancora da misurare, è usare meno agenti con pacchetti più grandi, perché ogni agente in meno toglie il suo contesto fisso. Lo strumento `tools/scrivi-schede.py` del progetto d'origine, che scrive le schede dal JSON degli agenti, è il complemento di `estratti-lotto.py` per questa forma.
+
+Misura aggiunta lo stesso giorno. Un quarto lotto da 50 schede, con 2 agenti da 25 estratti invece di 5 da 10, ha usato 10 turni, 181 144 token di cache scritta, 599 298 di cache letta e 18 760 di uscita. Con gli stessi pesi il costo equivalente è di circa 380 000, il 43 per cento in meno del lotto con 5 agenti, circa 7 600 per scheda. La leva dei pacchetti più grandi quindi funziona. Ha però un segnale da sorvegliare: nessuna scheda è stata giudicata di utilità nulla, contro 9-10 su 50 nei lotti precedenti. Prima di adottare pacchetti grandi come forma stabile si rilegge a campione una parte dei giudizi più alti.
+
+La terza: il lavoro meccanico resta nel codice. La scelta dei documenti, l'esclusione dei documenti personali e il taglio degli estratti li fa `tools/estratti-lotto.py`, e il modello vede soltanto gli estratti. Anche la correzione dei campi mancanti, che un agente su cinque ha omesso, si fa da codice confrontando le schede con l'elenco del lotto.
+
 ## Che cosa ha dimostrato il primo lotto reale
 
 Dieci elementi su un corpus di trecentosettantuno, undici minuti, una flotta secondaria. Tre esiti, e due sono lezioni.
@@ -161,6 +189,58 @@ Dieci elementi su un corpus di trecentosettantuno, undici minuti, una flotta sec
 
 **L'approvazione a richiesta è incompatibile con il lavoro a lotti.** Con `approval_policy = "on-request"` l'agente si è fermato a ogni comando che scrive, in attesa di una persona. Su dieci elementi è un fastidio; su trecentosettantuno sarebbe una persona incatenata a un pulsante, che è l'opposto del motivo per cui il lavoro era stato spostato su un'altra flotta. Per i lotti si avvia con l'approvazione disattivata, così che i comandi dentro il perimetro passino e quelli fuori **falliscano** invece di chiedere. Chi approva concede anche persistenza a famiglie di comandi, quindi le esecuzioni successive sono meno interrotte, ma la prima resta presidiata.
 
+## Classificare molti elementi piccoli su etichette chiuse
+
+È un caso diverso dal corpus di documenti, e il pacchetto lo copre con uno strumento proprio. Gli elementi sono migliaia e piccoli, come le voci di una bibliografia o i file di un disco, e vanno assegnati a un insieme chiuso di categorie. Un artefatto per elemento qui sarebbe burocrazia. La forma giusta è un artefatto per lotto, cioè una mappa JSON `{chiave: {campo: [etichette]}}` scritta dall'agente su disco. La sua verifica può essere più forte di quella di `registro.py`: il contratto chiuso rende misurabili la completezza e la forma dell'esito, oltre alla sua presenza.
+
+Il caso che l'ha insegnato è del 2026-10-05, in un progetto istanziato: una biblioteca di 8194 fonti da distribuire su un albero di 148 gruppi. Le misure che seguono vengono dai file del lavoro, e i token dalle notifiche di fine agente della piattaforma.
+
+La sequenza ha quattro passi.
+- Prima le regole deterministiche, e all'agente solo il residuo. Una tabella di cartelle, le parole chiave sul titolo e le stesse parole contate nel testo convertito hanno classificato l'82% delle voci, e all'agente ne sono rimaste 1513.
+- Poi il mandato a contratto chiuso, nella forma riportata qui sotto.
+- Poi il modello economico, in lotti paralleli.
+- Infine `tools/valida-etichette.py` sull'esito di ogni lotto, prima di usarlo.
+
+| Lotto | Voci | Estratto del testo | Mancanti | Etichette inventate | Vuote | Token per voce |
+|---|---|---|---|---|---|---|
+| 1 | 379 | no | 0 | 0 | 104 (27%) | 285 |
+| 2 | 379 | no | 0 | 0 | 2 (1%) | 312 |
+| 3 | 379 | no | 5 | 24 | 9 (2%) | 281 |
+| 4 | 376 | no | 0 | 0 | 88 (23%) | 245 |
+| 5, residuo del residuo | 173 | 500 caratteri | 0 | 0 | 0 | 630 |
+
+Le lezioni sono cinque, e la prima è la più costosa da ignorare.
+
+**Il resoconto dell'agente non è una misura.** L'agente del lotto 3 ha dichiarato di aver scritto 500 voci su un ingresso di 379, e il file ne conteneva 374. Si legge il file, non il messaggio.
+
+**Lo stesso mandato dà esiti molto diversi.** Quattro agenti identici con istruzioni identiche hanno lasciato senza etichetta fra l'1% e il 27% delle voci. L'agente del lotto peggiore ha dichiarato di aver classificato "per corrispondenza di parole chiave": si è scritto uno script invece di giudicare, e la scorciatoia ha prodotto le vuote. Il tasso di vuote è quindi un segnale misurabile, e oltre una soglia il lotto si rilancia. Il mandato vieta la scorciatoia in modo esplicito. Nel caso osservato i lotti 1, 3 e 4 erano stati accettati a vista, e il danno è stato evitato solo perché i loro residui sono stati ripresi nella tornata successiva: l'esito va validato prima di unirlo, non dopo.
+
+**Il contenuto vale il suo prezzo sul residuo.** Con le prime 500 lettere del testo, oltre a titolo, sede e cartella, il costo per voce è salito di 2,2 volte. Sulle 173 voci più difficili, cioè quelle che regole e prima tornata non avevano saputo classificare, le vuote sono scese a zero. Ne segue una politica a due passaggi: il titolo per la massa, l'estratto per il residuo.
+
+**Le regole restano sovrane.** L'esito dell'agente si applica solo alle voci che le regole deterministiche non hanno assegnato. Ogni etichetta assegnata dall'agente porta nello stato intermedio il motivo `agente`, così che si riconosca e si corregga a mano senza rilanciare nulla.
+
+**Il parallelismo ha compresso il tempo e non il costo.** Quattro lotti in parallelo hanno chiuso in circa cinque minuti, il tempo del lotto più lento, contro i circa dodici della somma dei loro tempi, misurati sulle notifiche di fine agente in 165, 285, 160 e 116 secondi, con lo stesso consumo, come prescrive la regola del pacchetto.
+
+Il mandato, da copiare e adattare:
+
+```text
+Classifica ogni elemento di <ingresso.json> (campi: chiave, titolo, <altri>) usando SOLO
+le etichette elencate in <etichette.json>, copiate esattamente. Giudica ogni elemento
+uno per uno leggendone i campi: non scrivere programmi o regole per parole chiave.
+Se un elemento non e' materiale pertinente usa <etichetta di scarto>; usa [] solo se e'
+davvero impossibile giudicare. Scrivi con lo strumento di scrittura <uscita.json>, una
+mappa {chiave: {campo: [etichette]}} con esattamente una voce per ogni chiave
+dell'ingresso. Nessun altro file. Rispondi solo con il numero di chiavi scritte.
+```
+
+E la validazione, sull'esito di ogni lotto:
+
+```text
+python tools/valida-etichette.py --ingresso lotto-1.json --uscita esito-1.json --etichette etichette.json --campione 20 --scrivi unione.json
+```
+
+Se i dati vengono da un disco privato, ingresso, esito e unione stanno in una cartella ignorata da git, perché i titoli sono già un dato.
+
 ## Rapporto con le regole del sistema
 
 Attua `rules/token-economy.md` sul caso del corpus grande, e non la duplica: la disclosure progressiva resta la riduzione del costo per elemento, questo pacchetto aggiunge la riduzione del **numero** di elementi e la sopravvivenza alla fine della finestra.
@@ -169,7 +249,7 @@ Obbedisce alla sezione 17 nominando il proprio presidio e dichiarando cosa non c
 
 ## Vincoli e onestà
 
-Il presidio **non giudica la qualità** di un esito, e non può farlo.
+Il presidio **non giudica la qualità** di un esito, e non può farlo. `valida-etichette.py` ne misura la completezza e la forma, cioè chiavi ed etichette, ma un'etichetta ammessa non è un'etichetta giusta: la giustezza resta affidata alla rilettura del campione.
 
 Il registro **non impedisce** a un agente di lavorare fuori da esso: è un contratto, non una prigione. Se l'agente non lo aggiorna, il presidio se ne accorge alla passata successiva, non durante.
 

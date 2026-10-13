@@ -31,3 +31,5 @@ La copia da cui ripristinare deve esistere prima della prima mutazione, e va ver
 ## Vincoli
 
 La skill è di sola lettura sul giudizio: non decide da sé che una prova sia sufficiente, applica il controllo e riporta l'esito. Non esegue `git add`, commit o push, che restano manuali dell'utente secondo `git-commands-format.md`. Ciò che si misura si scrive su disco nello stesso giro di lavoro, secondo `chat-non-e-memoria.md`, con accanto il perimetro della misura.
+
+Quando una suite salta prove di integrazione se manca un servizio, il tool `verifica-ambiente-test.py` della skill, che un progetto istanzia sotto `tools/`, controlla prima dell'avvio che l'URL del servizio sia presente, locale e raggiungibile. È un controllo preliminare del bersaglio, non una prova che i casi siano stati eseguiti: il report della suite va comunque letto.

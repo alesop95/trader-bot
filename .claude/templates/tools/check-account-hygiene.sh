@@ -6,6 +6,8 @@
 #   1. "autoMemoryEnabled": false
 #   2. hook SessionEnd -> session-end-wipe
 #   3. lo script di wipe installato e' configurato per QUESTA macchina
+#   4. il wipe installato pulisce QUESTO account, ha accanto stato-magazzino.py ed e'
+#      allineato al template, quando il template e' raggiungibile (dal 2026-10-09)
 # Da eseguire al Passo 0 dell'inizializzazione/allineamento di un progetto.
 # Esce 0 se in regola, 1 altrimenti. Usa python3 se disponibile, con fallback grep.
 # ============================================================================
@@ -80,16 +82,48 @@ else
   fi
 fi
 
+# --- 4. il wipe installato e' quello giusto per QUESTO account ---------------------
+# Stesso controllo della gemella .ps1, dove e' raccontato il caso che lo ha imposto: una
+# copia con la home di un altro account passava i tre controlli qui sopra.
+ok_inst=1
+inst_note="niente da verificare senza hook e script"
+if [ "$ok_hook" = "0" ] && [ -n "$WIPE" ] && [ -f "$WIPE" ]; then
+  base_inst="$(sed -n 's/^BASE="\([^"]*\)".*/\1/p' "$WIPE" | head -n 1)"
+  tpl="$(cd "$(dirname "$0")" && pwd)/session-end-wipe.sh"
+  diverse=-1
+  if [ -f "$tpl" ] && [ "$tpl" != "$WIPE" ]; then
+    filtro='^[[:space:]]*(BASE|KEEP_PREFIXES|KEEP_PATH_PREFIXES|ALLOW_EMPTY_KEEP)='
+    diverse="$(diff <(grep -Ev "$filtro" "$tpl") <(grep -Ev "$filtro" "$WIPE") | grep -c '^[<>]')"
+  fi
+  case "$base_inst" in
+    *"<"*">"*|"") base_ok=1 ;;
+    *) [ "${base_inst%/}" = "${CFG%/}" ] && base_ok=1 || base_ok=0 ;;
+  esac
+  if [ "$base_ok" = "0" ]; then
+    inst_note="il wipe installato pulisce un altro account: BASE=\"$base_inst\""
+  elif [ ! -f "$(dirname "$WIPE")/stato-magazzino.py" ]; then
+    inst_note="manca stato-magazzino.py accanto al wipe: con altre sessioni aperte il wipe rimanda tutto"
+  elif [ "$diverse" -gt 0 ]; then
+    inst_note="la copia installata differisce dal template in $diverse righe oltre alla configurazione: va reinstallata"
+  else
+    ok_inst=0
+    if [ "$diverse" = "0" ]; then inst_note="home giusta, libreria presente, allineato al template"
+    else inst_note="home giusta, libreria presente; template non raggiungibile da qui, versione non verificata"; fi
+  fi
+fi
+
 [ "$ok_mem" = "0" ]  && echo "[PASS] autoMemoryEnabled = false" || echo "[FAIL] autoMemoryEnabled = false"
 [ "$ok_hook" = "0" ] && echo "[PASS] hook SessionEnd -> session-end-wipe" || echo "[FAIL] hook SessionEnd -> session-end-wipe"
 [ "$ok_cfg" = "0" ]  && echo "[PASS] wipe configurato per questa macchina ($cfg_note)" || echo "[FAIL] wipe configurato per questa macchina ($cfg_note)"
+[ "$ok_inst" = "0" ] && echo "[PASS] wipe installato per questo account ($inst_note)" || echo "[FAIL] wipe installato per questo account ($inst_note)"
 
-if [ "$ok_mem" = "0" ] && [ "$ok_hook" = "0" ] && [ "$ok_cfg" = "0" ]; then
+if [ "$ok_mem" = "0" ] && [ "$ok_hook" = "0" ] && [ "$ok_cfg" = "0" ] && [ "$ok_inst" = "0" ]; then
   echo; echo "OK: l'account attivo e' in regola."; exit 0
 fi
 echo; echo "AZIONE RICHIESTA: l'account attivo NON e' in regola."
 [ "$ok_mem"  = "0" ] || echo ' - aggiungi  "autoMemoryEnabled": false  al settings.json dell'\''account'
 [ "$ok_hook" = "0" ] || echo ' - installa session-end-wipe.sh e registra un hook SessionEnd che lo esegua'
 [ "$ok_cfg"  = "0" ] || echo " - compila KEEP_PREFIXES nello script installato: 'bash \"$WIPE\" --list' elenca gli slug presenti, senza rimuovere niente"
+[ "$ok_inst" = "0" ] || [ "$ok_hook" != "0" ] || echo ' - reinstalla session-end-wipe.sh dal template, con accanto stato-magazzino.py e scrub-claude-json.js'
 echo '   (riferimenti: templates/tools/session-end-wipe.sh e PROJECT-SYSTEM.md sezione 15)'
 exit 1

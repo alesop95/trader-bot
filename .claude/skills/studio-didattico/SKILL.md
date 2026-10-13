@@ -18,7 +18,7 @@ Nessuno dei due copre un bisogno diverso: capire, con dettaglio pedagogico e nel
 
 Il livello didattico vive in due tipi di documento, entrambi sotto `.claude/context/`, entrambi tracciati (sono conoscenza tecnica recuperabile da un clone, non narrativa personale da confinare in `_notes/`).
 
-Un documento *master*, punto d'ingresso unico, con un nome riconoscibile come `studio-didattico-master.md`. È un racconto evolutivo che **cresce per voci numerate in ordine cronologico**, non si riscrive né si riordina: ogni intervento nuovo aggiunge una voce in fondo. Ogni voce segue una struttura fissa in quattro parti.
+Un documento *master*, punto d'ingresso unico, con un nome riconoscibile come `studio-didattico-master.md`. È un racconto evolutivo che cresce per voci numerate in ordine cronologico, non si riscrive né si riordina: ogni intervento nuovo aggiunge una voce in fondo. Ogni voce segue una struttura fissa in quattro parti.
 
 ```
 ## N. Titolo breve e concreto della voce
@@ -58,5 +58,7 @@ Quando si chiude un intervento che merita una voce:
 ## Cosa non fare
 
 Non generare voci retroattive per tutta la storia del progetto quando la pratica viene adottata a metà percorso: si parte dalla prima voce dal momento dell'adozione in avanti, senza ricostruire artificialmente il passato. Non usare questo livello come sostituto delle schede tecniche di stato: se qualcuno clona il progetto e vuole sapere *cosa* è vero oggi nello stack, deve poter rispondere da `STACK.md`, non dover leggere l'intero racconto evolutivo per dedurlo. Non comprimere la struttura in quattro parti per risparmiare spazio: è la struttura stessa, applicata con disciplina voce dopo voce, che rende il master leggibile come percorso di apprendimento invece che come changelog travestito.
+
+Non rimandare una voce a una soglia che nessuno conta. "Merita una scheda se il tema si ripresenta" è una promessa, non un presidio: la soglia la valuta chi scrive il passo, e il singolo passo sembra sempre troppo piccolo per pagarla. Caso osservato in un progetto istanziato: una soglia fissata al quarto caso è stata spostata al quinto proprio dalla voce di work-log che registrava il quarto, e quattro schede promesse sono rimaste da scrivere per dieci giorni. Nel frattempo il controllo automatico rispondeva "allineato", perché verificava che ogni passo dichiarasse la propria didattica e non che le promesse fossero state mantenute. Una promessa si registra come pendente, con il criterio che la chiude, oppure non si fa.
 
 [^1]: *ADR*, Architecture Decision Record - un formato breve e numerato per registrare una decisione architetturale con il suo contesto e le sue conseguenze; la variante "lite" adottata da questo sistema ne mantiene la struttura essenziale (contesto, decisione, motivazione, conseguenze) senza il formalismo completo del formato originale.

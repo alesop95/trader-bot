@@ -49,7 +49,7 @@ python tools/indice-refactor.py
 python tools/indice-refactor.py --cartella docs/studi --prefisso studio- --racconto RACCONTO.md
 ```
 
-`tools/lint-didattica.py` segnala quando i fatti hanno superato le spiegazioni: voci di work-log senza didattica dichiarata, schede orfane che nessuna voce del racconto cita, e lo scarto in commit fra i due registri. Porta tre costanti da adattare all'istanziazione, in testa al file: il percorso del work-log, il percorso del racconto, e la data da cui la dichiarazione diventa obbligatoria. Quest'ultima esiste perché imporre una regola al passato produce solo rumore: si applica da quando si adotta.
+`tools/lint-didattica.py` segnala quando i fatti hanno superato le spiegazioni: voci di work-log senza didattica dichiarata, schede orfane che nessuna voce del racconto cita, lo scarto in commit fra i due registri e, dal 2026-10-05, le promesse non mantenute. Una voce che promette una scheda futura apre un debito, che si chiude soltanto con una dichiarazione esplicita: `<!-- promessa-mantenuta: DATA (N) -->` nella scheda che la mantiene, oppure `<!-- promessa-registrata: DATA (N) -->` nel pendente che la rimanda. Una semplice citazione della data non basta, perché la data di una voce compare in molti documenti per altre ragioni. Porta tre costanti da adattare all'istanziazione, in testa al file: il percorso del work-log, il percorso del racconto, e la data da cui la dichiarazione diventa obbligatoria. Quest'ultima esiste perché imporre una regola al passato produce solo rumore: si applica da quando si adotta.
 
 ## Quando offrirlo, e quando non offrirlo
 

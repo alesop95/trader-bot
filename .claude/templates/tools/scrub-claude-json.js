@@ -4,7 +4,17 @@
 // uno dei prefissi da preservare, lasciando intatto tutto il resto del file:
 // login, credenziali, configurazione, cache di stato.
 //
-//   node scrub-claude-json.js <percorso .claude.json> <prefisso> [<prefisso> ...]
+//   node scrub-claude-json.js <percorso .claude.json> [--solo-config] <prefisso> [<prefisso> ...]
+//
+// Con --solo-config, aggiunto il 2026-10-09, dalle voci CONSERVATE si tolgono anche le
+// metriche dell'ultima sessione: i campi che iniziano con 'last' seguito da una
+// maiuscola (lastSessionId, lastCost, i contatori di token e di durata), piu'
+// exampleFiles, exampleFilesGeneratedAt e loggedAuthoredArtifactPaths, che elenca i
+// file toccati. Restano permessi, server MCP e fiducia nella cartella, cioe' cio' che
+// serve perche' il lavoro sul progetto continui senza dialoghi da rifare. E' la
+// direttiva del proprietario del 2026-10-08: in locale resta l'impianto, non le tracce
+// delle sessioni. Senza l'opzione il comportamento e' quello di prima, cosi' una copia
+// vecchia del wipe che non la passa resta corretta.
 //
 // I prefissi sono PERCORSI, non slug: su Windows di norma la radice del disco dei
 // progetti di sviluppo ("D:", "E:"), su POSIX la radice della cartella di sviluppo
@@ -25,7 +35,10 @@
 'use strict';
 const fs = require('fs');
 
-const [cfgPath, ...keepPrefixes] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const cfgPath = args[0];
+const soloConfig = args.includes('--solo-config');
+const keepPrefixes = args.slice(1).filter(a => a !== '--solo-config');
 if (!cfgPath) {
   console.error('scrub: percorso di .claude.json mancante');
   process.exit(1);
@@ -55,7 +68,18 @@ for (const key of allKeys) {
   if (keep.some(prefix => k.startsWith(prefix))) kept[key] = cfg.projects[key];
 }
 const dropped = allKeys.length - Object.keys(kept).length;
-if (dropped === 0) process.exit(0);
+const METRICHE = new Set(['exampleFiles', 'exampleFilesGeneratedAt', 'loggedAuthoredArtifactPaths']);
+let stripped = 0;
+if (soloConfig) {
+  for (const key of Object.keys(kept)) {
+    const voce = kept[key];
+    if (!voce || typeof voce !== 'object' || Array.isArray(voce)) continue;
+    for (const campo of Object.keys(voce)) {
+      if (/^last[A-Z]/.test(campo) || METRICHE.has(campo)) { delete voce[campo]; stripped++; }
+    }
+  }
+}
+if (dropped === 0 && stripped === 0) process.exit(0);
 
 // Non si riscrive un file che custodisce il login senza avere il login sotto mano.
 if (!cfg.oauthAccount || !cfg.userID) {
@@ -83,4 +107,4 @@ try {
   process.exit(1);
 }
 
-console.error(`scrub: rimosse ${dropped} voci di projects, conservate ${Object.keys(kept).length}`);
+console.error(`scrub: rimosse ${dropped} voci di projects, conservate ${Object.keys(kept).length}, tolti ${stripped} campi di metrica`);

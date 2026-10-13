@@ -58,6 +58,8 @@ Caso osservato: un'interfaccia di persistenza con semantica di *fusione*, dove u
 
 La domanda da porsi prima di fermarsi al carico: fra quello che consegno e l'effetto che voglio, c'è qualcosa che interpreta? Se sì, la prova va scritta al livello dove quell'interpretazione è osservabile, non a quello che ci sta sopra.
 
+Esiste anche il caso speculare, e non lo vede nessuna delle prove di componente. Chi scrive il contenuto dà per scontato che il destinatario interpreti, e invece il destinatario è trasparente. Caso osservato: testi di interfaccia in una risorsa di traduzione, con il grassetto scritto in sintassi Markdown, stampati da un componente che rende il testo così com'è. A video comparivano gli asterischi in entrambe le lingue, con la suite verde. Il cieco era la finzione della funzione di traduzione, che restituisce la chiave e non il valore: così ogni prova di componente è strutturalmente incapace di guardare il contenuto della risorsa. La prova che misura sta sulla risorsa stessa, dove il difetto nasce, e verifica che nessun valore contenga una sintassi che nessun componente interpreta.
+
 ## Un'asserzione di assenza passa anche per la ragione sbagliata
 
 Provare che una cosa c'è e provare che una cosa non c'è non sono simmetrici, e la differenza è il genere di errore che ciascuna ammette. Un'asserzione di presenza fallisce se il selettore è sbagliato, quindi un selettore sbagliato si manifesta subito. Un'asserzione di assenza **passa** se il selettore è sbagliato, perché un selettore che non sa cercare non trova niente, esattamente come non trova niente quando la cosa è stata davvero rimossa. I due casi producono lo stesso verde e non sono distinguibili guardandolo.
@@ -72,11 +74,51 @@ Due prescrizioni, e la seconda vale anche quando la prima è stata rispettata.
 
 Corollario sul nome. Una prova il cui nome dice più di quanto il corpo verifica è peggio della sua assenza, perché chi legge l'elenco dei nomi la conta come copertura acquisita. Quando il corpo non può essere allargato subito, si stringe il nome.
 
+## Una prova scritta su una fixture comoda misura la fixture
+
+Il dato di prova si eredita. Un file di prova che esiste già porta le sue finzioni, e scrivere la prova successiva riusandole costa niente ed è quasi sempre giusto. Il caso in cui è sbagliato, e in cui l'errore non si vede, è quello in cui il difetto che si vuole fissare **dipende dalla forma del dato**: lì una finzione comoda può non contenere affatto il difetto, e la prova passa prima della correzione esattamente come dopo.
+
+Il caso che ha insegnato la regola. Un elenco raggruppato mostrava un'intestazione per gruppo e, sotto, le righe del gruppo. Un cambio di modello aveva reso il gruppo coincidente con il suo unico elemento, quindi l'intestazione ripeteva alla lettera la riga sottostante, ed era quella ripetizione che andava tolta. La prima stesura della prova riusò la finzione già presente nel file, dove il nome del gruppo e quello della riga erano stati scritti diversi per comodità di lettura. Con quel dato i due testi non coincidono, la ripetizione non esiste, e la prova sarebbe stata verde in entrambi i mondi. La finzione fu rifatta andando a leggere **come quel campo viene valorizzato in produzione**, che era una sola riga di codice nel modulo che crea i documenti: da lì la prova è diventata rossa, dichiarando due elementi dove ne chiedeva uno.
+
+La prescrizione. Prima di scrivere l'atteso di una prova che riguarda la forma di un dato, si legge chi scrive quel dato nel percorso reale, e la finzione si costruisce su quello. Non è una regola sulla fedeltà in generale, che costerebbe troppo e non servirebbe: vale per i campi su cui il difetto si gioca, e il modo di riconoscerli è chiedersi se cambiando il valore della finzione il difetto sparirebbe. Se la risposta è sì, la finzione è parte dell'oggetto misurato e non del contorno.
+
+Corollario, perché è il motivo per cui l'errore passa inosservato. Una finzione comoda viene di solito scritta da chi conosceva il dominio al tempo in cui il modello era un altro, e resta corretta rispetto a quel modello. Quel dato è **vecchio**, e un dato vecchio supera ogni rilettura perché non contiene niente di falso, solo qualcosa che non è più il caso.
+
+## Una prova che fallisce in modo plausibile manda a cercare nel posto sbagliato
+
+Un evento sintetico che **imposta un valore** non riproduce sempre l'interazione che si vuole provare: alcuni componenti reagiscono alla sequenza di digitazione e non al valore finale, quindi il campo risulta pieno e la logica che dipende dalla digitazione non è mai partita. La prova allora fallisce dicendo che l'effetto atteso non c'è.
+
+Il punto non è la differenza fra i due modi di scrivere in un campo, che cambia da libreria a libreria e si risolve leggendone la documentazione. Il punto è la **forma del fallimento**: la prova fallisce **esattamente come fallirebbe se il difetto non fosse stato corretto**. Non c'è niente, nel messaggio, che distingua "la correzione non funziona" da "l'interazione non è mai avvenuta", e la prima ipotesi è sempre la propria colpa. Si perde tempo a rileggere il codice del progetto mentre la causa sta nell'attrezzo.
+
+La prescrizione è un gesto, non una regola da ricordare. Quando una prova di interazione fallisce dicendo che l'effetto non c'è, prima di toccare il codice si scrive una **prova usa e getta sul componente nudo della libreria**, fuori dal proprio, con dati finti e un effetto riconoscibile. Se lì il comportamento è lo stesso, la causa non è nel progetto. Costa un minuto, separa in un colpo solo il proprio codice da quello della dipendenza, e si cancella appena ha risposto.
+
+Il corollario che vale oltre il caso: **una prova di interazione andrebbe vista fallire per il motivo giusto, non solo fallire.** La non vacuità chiede di vederla rossa prima della correzione; questo aggiunge che il messaggio con cui è rossa va letto, perché due cause diverse producono lo stesso rosso.
+
+## Un guasto per dimenticanza non si coglie con una prova sul comportamento
+
+Prima di scrivere le prove di una funzione conviene chiedersi **in che modo si guasterà**, perché ci sono due specie di guasto e vogliono due specie di prova.
+
+Un guasto per **errore** si manifesta: qualcosa va in eccezione, un valore è diverso da quello atteso, uno schermo resta vuoto. La prova che lo coglie sta sul comportamento, nel punto in cui accade, ed è quella che viene naturale scrivere perché c'è un sintomo a suggerirla.
+
+Un guasto per **dimenticanza** non si manifesta affatto. Nasce dove una funzione è fatta di due pezzi che vivono in posti diversi, e uno dei due è quello che chi lavora nota subito mentre l'altro no: una voce di menù e il testo che le corrisponde, una colonna e la sua etichetta, una chiave di configurazione e il suo valore predefinito. Chi aggiunge il primo pezzo lo vede, perché senza di quello non compare niente; il secondo può dimenticarlo, e il risultato non è un errore ma un'identificazione grezza mostrata al posto di una frase, una colonna senza intestazione, un valore vuoto accettato in silenzio. Niente diventa rosso, e lo vede per primo chi usa il prodotto.
+
+La prova che coglie il secondo genere **non sta sul comportamento**: percorre l'elenco dei pezzi del primo tipo e chiede, per ciascuno, che il pezzo corrispondente esista. è una prova sulla **completezza di una corrispondenza fra due posti**, non su un'esecuzione, e si scrive una volta sola a prescindere da quanti elementi l'elenco conterré. La sua non vacuità si verifica aggiungendo all'elenco un elemento senza il suo corrispondente.
+
+Il motivo per cui va detto invece di essere lasciato all'intuito: questa prova **si salta volentieri**, perché non c'è nessun sintomo che la suggerisca e perché al momento di scriverla la corrispondenza è completa per costruzione, essendo stata appena creata da chi scrive. Il guasto arriva mesi dopo, dalla mano di qualcun altro.
+
 ## Quando una verifica manuale smentisce una prova verde
 
 Succede, ed è successo due volte in due giorni nello stesso progetto. La reazione corretta non è correggere il sintomo ma capire perché la prova non l'aveva visto, e scrivere quella ragione dove la leggerà chi scriverà la prossima prova. Un difetto trovato a mano dopo una suite verde è un difetto *della suite* oltre che del codice, e ignorare la seconda metà garantisce la ripetizione.
 
 Vale anche il verso positivo, da dire a chi esegue la verifica manuale: un risultato inatteso vale più di uno atteso, e va riportato insieme al passo che lo ha prodotto invece di essere aggiustato a mano e dimenticato.
+
+Il verso opposto esiste, e prima di cercare il difetto va escluso. Caso osservato: chi verificava una ricerca ha concluso che non cercasse, mentre le prove la davano corretta; il contatore dei risultati sullo schermo diceva "1", quindi cercava. Il suo effetto, cioè l'elenco filtrato, era finito sotto un piè di pagina fisso, spinto in basso da un testo di spiegazione aggiunto nella stessa modifica per rendere la funzione più chiara. Avevano ragione le prove, e il difetto era vero lo stesso: un effetto che non si vede, per chi usa l'interfaccia, è una funzione che non funziona. Ne seguono due cose. Quando una verifica manuale dice che qualcosa non succede, la prima domanda è se succede fuori vista, e la risposta si cerca nello screenshot, in un contatore o in uno stato che il gesto modifica, prima che nel codice. E ogni testo o controllo aggiunto sopra la zona in cui un gesto produce il suo effetto va riverificato a schermo, perché nessuna prova che non calcoli la disposizione può accorgersi che l'effetto è uscito dalla vista.
+
+## Un difetto di forma si corregge in tutte le sue occorrenze, non in quelle viste
+
+Caso osservato, in una sola verifica dal vivo divisa in tre giri. Al primo giro un contatore diceva "1 risultati": corretti i due testi visibili in quella schermata. Al terzo giro un avviso diceva "applicata a 1 invitati", e altri sei testi dello stesso componente avevano lo stesso difetto, che nessuno aveva cercato; insieme è emerso anche il caso dello zero. Ogni giro di verifica ne ha trovato un pezzo, perché la correzione seguiva lo schermo invece che la forma.
+
+La regola: quando un difetto ha una forma riconoscibile, cioè un plurale con il numero, un percorso relativo, un testo scritto fuori dalle traduzioni, un colore scritto a mano, prima di chiuderlo si elencano tutte le occorrenze di quella forma nel perimetro toccato, con uno strumento e non a memoria, e si correggono insieme. Si dichiara il perimetro dell'elenco, come per ogni misura. Una verifica dal vivo trova un'occorrenza per volta, e a quella velocità le occorrenze restanti arrivano all'utente.
 
 ## In una verifica manuale si marca quale passo è quello discriminante
 
@@ -101,6 +143,42 @@ Il secondo modo è la precondizione sul dato. Un passo chiedeva di modificare un
 Ne discende che una casella di una sequenza manuale porta tre cose e non una. Il gesto, cioè che cosa fare. Il **luogo**, cioè dove si guarda il risultato, disambiguato quando l'interfaccia riusa lo stesso nome. E la **precondizione**, cioè quale proprietà deve avere il dato su cui si opera perché il passo eserciti davvero il codice, scritta accanto al passo e non in una premessa che chi esegue ha letto dieci minuti prima.
 
 Il criterio per scriverla, quando la sequenza la si sta redigendo: si prova a immaginare un'esecuzione che segue ogni parola della casella e che tuttavia non toccherebbe il difetto. Se quell'esecuzione esiste, alla casella manca il luogo o la precondizione.
+
+### Una precondizione che non si può osservare è un'assunzione, e il tempo la logora
+
+Aggiunto dopo che anche la prescrizione qui sopra è stata applicata e la verifica ha trovato un terzo modo di non concludere. La precondizione era scritta accanto al passo, con i numeri attesi, e chi eseguiva l'ha letta. Mancava una cosa sola: **il modo di guardarla**. La proprietà richiesta era l'assenza di un campo su certi record, e quel campo non è mostrato da nessuna schermata, perché si scrive solo alla creazione e in modifica non compare. Chi eseguiva poteva quindi vedere il risultato ma non la premessa, e la premessa restava un'assunzione travestita da controllo.
+
+Una precondizione porta perciò un quarto elemento oltre al gesto, al luogo e alla proprietà: **dove si osserva quella proprietà**, con lo stesso grado di precisione del luogo del risultato. Se la risposta è che non si osserva da nessuna parte, il passo non è verificabile come scritto e la sequenza deve dire cosa fare al suo posto, per esempio leggere il dato alla fonte invece che nell'interfaccia, oppure costruire deliberatamente un record che abbia la proprietà voluta.
+
+Il caso ha portato con sé una seconda osservazione, più banale e altrettanto costosa. Fra la scrittura della sequenza e la sua esecuzione era passato un giorno, e **i dati reali erano cambiati**: un record confermato in meno, e la categoria che il passo nominava passata da uno a zero. I numeri attesi scritti nella casella non corrispondevano più, e senza il modo di osservare la precondizione non c'era modo di dire se lo scostamento fosse il dato che si era mosso o il codice che sbagliava. Ne discende che una sequenza manuale scritta su dati vivi dichiara **la data della fotografia** da cui i numeri attesi provengono, e che l'invariante, cioè la relazione fra i numeri, vale più dei numeri stessi: la somma delle categorie deve fare il totale, qualunque sia il totale di oggi.
+
+## Prima di estendere un campo, si contano i suoi lettori e la sua popolazione
+
+Caso osservato: una voce di lavoro chiedeva di aggiungere un terzo valore a un campo che ne ammetteva due. La richiesta era sensata come scritta, e due misure di dieci minuti l'hanno cambiata di natura prima che si toccasse una riga.
+
+La prima misura è **chi legge il campo**, cercato in tutto il codice e non nel punto che si sta per modificare. Risultato: nessuno. Il solo consumatore semantico era stato tolto poco prima da una correzione indipendente, e i due usi rimasti erano entrambi di forma identitaria, cioè il campo compariva dentro una chiave di confronto e dentro una chiave di riconciliazione dell'interfaccia. Un campo senza lettori non ha bisogno di un valore in più: ha bisogno di una decisione sulla propria esistenza, che è una domanda per chi possiede il prodotto e non per chi scrive il codice.
+
+La seconda misura è **quanto il campo sia popolato nei dati veri**. Risultato: sette unità su centonovantotto, cioè il novantasei per cento assente. Ne discendeva subito che la chiave di confronto che lo includeva non stava disambiguando niente per quasi tutti, perché per loro quel termine confrontava un valore assente con un valore assente. Una protezione che i dati rendono inerte è indistinguibile da una assente finché qualcuno non la conta.
+
+La terza, che è la verifica dell'alternativa: **la chiave funzionerebbe senza quel campo?** Contate le coppie residue, erano tutte distinte, e non per fortuna, perché l'identificatore del documento era costruito con gli stessi due elementi e quindi una collisione sarebbe già stata impossibile a monte. La protezione era ridondante per costruzione, non solo inerte nei fatti.
+
+La regola che ne discende è breve. Davanti a una richiesta di estendere un tipo enumerato si contano tre cose prima di scrivere: **chi legge**, **quanto è popolato**, **che cosa resta se lo si toglie**. Nessuna delle tre si deduce dal codice che si sta per modificare, e tutte e tre possono trasformare un'aggiunta in una rimozione.
+
+C'è un secondo corollario, scoperto scrivendo la correzione e non prevedendolo: **rendere modificabile un campo obbliga a toglierlo da ogni chiave che lo contiene**, e le chiavi sono più di quelle che si cercano. Nel caso osservato erano due e di natura diversa: una chiave di identità applicativa, usata per ritrovare un record dentro una lista e aggiornarlo, e una chiave di riconciliazione dell'interfaccia, cioè la chiave con cui il motore di rendering decide se un elemento è lo stesso di prima. La prima, lasciata com'era, avrebbe fatto sparire dal proprio posto la persona che si stava correggendo; la seconda avrebbe ricostruito il componente a ogni battuta, facendo perdere il fuoco a chi scriveva. Nessuna delle due si manifesta come errore: la prima produce un dato sbagliato, la seconda un fastidio che si attribuisce al browser.
+
+Ne discende una verifica meccanica da fare prima di rendere scrivibile un campo che prima non lo era: si cerca il nome del campo in tutto il progetto e si guarda **ogni occorrenza dentro una concatenazione, un confronto di uguaglianza o una chiave**, non solo dentro i calcoli. Un campo immutabile può stare ovunque; un campo modificabile può stare solo dove, cambiando, non rompe un legame.
+
+C'è un corollario sul significato, che è la trappola più silenziosa. Quando il campo è opzionale, l'assenza **già significa** "non specificato": aggiungere un valore esplicito con quel nome crea due rappresentazioni dello stesso stato, che è la stessa famiglia di difetti dei due contatori che contano la stessa cosa e danno risposte diverse. Il valore esplicito si giustifica solo se distingue davvero due stati, per esempio "nessuno ha ancora compilato" da "la persona ha scelto di non dirlo", e quella distinzione va chiesta a chi possiede il prodotto, non dedotta: se nessuno legge il campo, la distinzione non è osservabile da nessuna parte e quindi non esiste ancora.
+
+## Una prova scritta sul modello mentale del codice ne eredita il punto cieco
+
+Caso osservato, e vale per la via con cui il difetto è emerso più che per il difetto. Una funzionalità chiedeva che uno stato sopravvivesse a un ricaricamento. La correzione lo ha messo in un posto che il ricaricamento rilegge, e lo ha letto **all'avvio**. Tutte le prove passavano, automatiche e manuali, perché erano scritte sulla stessa domanda del codice: "dopo un ricaricamento, lo stato c'è ancora?". Nessuna chiedeva chi ALTRO potesse cambiare quello stato, e per quali vie; esisteva una via che non passa dall'avvio, e per quella via lo schermo e la fonte divergevano in silenzio.
+
+Due conseguenze, entrambe sul metodo.
+
+La prima: il difetto l'ha trovato **il passo di non regressione, non quello discriminante**. Il passo discriminante era costruito per confermare la correzione e la confermava; quello di ripiego, messo in lista solo per verificare che un valore sbagliato non rompesse niente, ha esercitato la via che nessuno aveva considerato. È un argomento concreto per non saltare i passi di ripiego perché "tanto passano": il loro valore non è confermare, è arrivare dove il progetto del passo discriminante non guardava.
+
+La seconda, che si può applicare a tavolino senza aspettare una verifica: davanti a uno stato che si vuole rendere persistente o condiviso, si elencano **tutte le vie per cui quello stato può cambiare**, non solo quella che si sta implementando. Una prova scritta guardando il codice copre le vie che il codice conosce, e quelle sono per costruzione le vie in cui il codice è già corretto.
 
 ## Un avviso che ricompare sempre uguale smette di essere un avviso
 
@@ -151,3 +229,35 @@ L'ultima forma, osservata tre volte nello stesso progetto istanziato e diversa d
 Il presidio non è una prova ma una **misura**: uno strumento di sola lettura che, dato un campo, conta su quanti record reali è valorizzato, vuoto, assente, oppure irraggiungibile perché il percorso si interrompe prima. Separare l'ultimo esito dall'assenza non è pedanteria: un record senza il contenitore non è un elemento senza il campo, e sommarli mette due unità di misura nello stesso numero. La conta va scritta come funzione pura, provata sui record già letti, e la lettura va tenuta a parte, così che la logica si provi senza toccare la rete.
 
 La regola che ne discende: **prima di costruire una vista che raggruppa per un campo, o di togliere un ripiego che dipende dalla migrazione di un campo, si conta quante righe quel campo lo hanno.** La prima misura, nel caso osservato, ha dato zero su centonovantacinque per il campo del grafico rimosso e cinque su centonovantacinque per quello che lo aveva sostituito, cioè ha confermato in un comando ciò che tre giri di costruzione avevano scoperto a posteriori. Due riserve vanno dichiarate accanto a ogni misura. La prima è l'ambiente su cui è stata presa, perché un conteggio sullo sviluppo non autorizza una rimozione in produzione. La seconda è che due conteggi uguali non sono gli stessi record: se una decisione dipende dalla corrispondenza fra due campi, serve l'incrocio e non il confronto dei totali.
+
+## Un rosso che non ha eseguito niente
+
+Specchio della prova verde che non esercita il difetto, e altrettanto capace di far perdere tempo nella direzione opposta. Osservato il 2026-09-30 in un progetto istanziato: tutti i lavori della verifica automatica di una pull request rossi in tre o quattro secondi, compresi quelli su parti del codice che la modifica non toccava. La tentazione è cercare il difetto nel diff. La causa era che **nessun lavoro era partito**: il servizio di integrazione continua aveva esaurito i minuti inclusi nel piano per un repository privato, con un limite di spesa a zero che blocca invece di fatturare. Confermato dalla notifica del fornitore (2000 minuti usati su 2000, rinnovo il giorno dopo), non solo dall'annotazione del lavoro.
+
+Due segni lo distinguono da un fallimento vero, e si guardano prima di aprire il codice. Il **tempo**: un lavoro che installa dipendenze non fallisce in tre secondi per una causa nel programma. La **coincidenza**: se cadono insieme lavori che verificano parti indipendenti, la causa sta in ciò che hanno in comune, cioè l'infrastruttura, e non in una modifica che ne tocca una sola. La conferma sta nell'annotazione del lavoro, che dice esplicitamente se è stato eseguito.
+
+Il punto che vale oltre il caso: **sulla pagina della pull request un lavoro non eseguito e un lavoro fallito hanno lo stesso segno rosso**, così come un lavoro verde che non esercita niente ha lo stesso segno di uno che misura. Finché i lavori non girano, per quella modifica valgono soltanto le verifiche eseguite a mano, e va scritto così, invece di lasciar credere che la verifica automatica l'abbia vista. Un dato utile per prevedere il blocco: il consumo fatturato è sensibilmente più alto della durata delle esecuzioni sommata, perché si paga per lavoro e con arrotondamento per eccesso al minuto; nel caso osservato 1103 minuti di durata a parete sono diventati circa 2000 fatturati, poco meno del doppio, con quattro lavori in parallelo per esecuzione.
+
+## Il servizio di prova deve esistere prima della suite
+
+Un progetto istanziato usa prove di integrazione che chiamano un PostgreSQL reale, ma alcuni gruppi sono dichiarati con `skipIf(!DATABASE_URL)`. Se manca la variabile, Vitest può terminare verde perché esegue solo le prove indipendenti dal database. Se la variabile arriva dalla shell e punta per errore a un servizio remoto, i test scrivono dove non dovrebbero. La stessa classe di problema vale per emulatori di altri servizi avviati in CI: la presenza di una suite nel workflow non dimostra che essa abbia incontrato il bersaglio previsto.
+
+Il tool `verifica-ambiente-test.py`, che in questo repository vive accanto alla skill in `.claude/skills/prove-che-misurano/tools/` e che un progetto istanzia nella propria cartella `tools/`, è un controllo preliminare per URL di servizi locali. Legge prima l'ambiente del processo e, solo se la variabile manca, un file di test indicato esplicitamente. Richiede uno schema, un host loopback e una porta esplicita; con `--tcp` verifica anche che il servizio accetti connessioni. Fallisce prima della suite se il bersaglio manca, è remoto o non risponde. Non stampa password o stringhe di connessione. Esempio, dalla radice di un progetto che lo ha istanziato: `python tools/verifica-ambiente-test.py --env-file .env.test --loopback-url DATABASE_URL --tcp`.
+
+Questo presidio misura soltanto la disponibilità e la destinazione del servizio. Non dimostra che le prove abbiano eseguito i casi importanti, né che l'emulatore riproduca i limiti della piattaforma remota. Dopo la suite si controllano i test eseguiti e quelli saltati; per i limiti osservabili solo nel servizio pubblicato serve una prova di staging distinta.
+
+## Prima di modificare un file con uno strumento, si misura il giro a vuoto
+
+Quando un file si modifica dentro uno strumento che lo importa e lo riesporta, come un editor di animazioni, di diagrammi o di fogli di calcolo, la prima cosa da misurare è il giro senza modifiche, confrontando il prima e il dopo **valore per valore**. Contare le strutture non basta: stesso numero di livelli, di forme e di nodi con zero avvisi è compatibile con una curva di interpolazione cambiata o con un numero arrotondato. Senza quella misura, ogni differenza vista dopo la modifica vera viene attribuita alla modifica, anche quando la produce lo strumento.
+
+Il confronto separa due specie di differenza, e la distinzione va fatta caso per caso perché a prima vista si somigliano. Le differenze **di scrittura**, cioè valori predefiniti scritti per esteso, uno scalare diventato vettore di un elemento, un terzo asse a zero, una curva lineare riscritta con altri punti di controllo ancora sulla diagonale, non cambiano niente a video. Le differenze **di sostanza** sì. Caso osservato: un giro in un editor di animazioni ha riscritto 2.414 valori, e otto curve sembravano diventate davvero non lineari. Cercate una per una, stavano tutte fra due valori uguali, dove la curva non sposta niente. Il criterio con cui si decide è l'effetto sul valore interpolato, non la forma della curva.
+
+La seconda conseguenza riguarda la revisione. Un'esportazione che riscrive tutto il file produce un diff in cui le righe cambiate davvero si perdono fra migliaia di righe solo riscritte. Dove la modifica è esprimibile sul sorgente, cioè colori, spessori, tempi o valori di un fotogramma chiave, si scrive con uno script che tocca solo quei campi, e lo strumento serve a vedere il risultato, non a produrlo.
+
+## Uno strumento d'anteprima è un altro motore
+
+Quando un file viene disegnato dall'applicazione con un motore e guardato durante il lavoro con un altro, cioè l'editor del formato, un visualizzatore o un'esportazione in immagine, quello che si vede nel secondo è una previsione di quello che mostrerà il primo, non una sua misura. Caso osservato: in un'animazione vettoriale un contorno aggiunto come gruppo sopra il contenuto di un livello appariva giusto nell'editor e coperto a metà nell'applicazione. Il motore dell'applicazione applica uno stile del contenitore a tutti i tracciati che lo precedono, gruppi compresi, e l'editor no. Lo ha mostrato il motore vero, fatto girare fuori dal browser dentro un DOM simulato: l'SVG prodotto ripeteva lo stesso tracciato tre volte. Ne segue che, dove i due motori possono divergere, la verifica si fa con quello dell'applicazione, e la regola che il confronto ha fatto emergere diventa una prova sul file, con un caso costruito sul difetto perché la prova non passi per costruzione.
+
+## Una correzione si chiude nominando la causa, non il sintomo
+
+Un sintomo può avere due cause, e una correzione chiusa sul sintomo dichiara chiusa anche quella che non ha toccato. Caso osservato: "la figura mostrava lo sfondo all'interno" è stato segnato come risolto dopo aver riempito una delle due regioni vuote. L'altra, aperta da un altro tracciato, è rimasta così per due mesi e mezzo mentre il registro diceva che il difetto non c'era più. La chiusura va scritta sulla causa tolta, cioè quale elemento e quale regola, perché è la sola forma che chi rilegge può confrontare con ciò che vede ancora.

@@ -3,7 +3,7 @@
 #
 # Stessa sequenza e stesse ragioni di chiudi-sessione.ps1, a cui si rimanda per il commento
 # esteso: stato, controlli istanziati (si ferma se uno fallisce), commit con conferma, push
-# verificato, impronta di ripresa, wipe degli account se nessuna sessione Claude Code e' aperta.
+# verificato, impronta di ripresa, wipe degli account (conserva le sessioni ancora aperte) e resoconto.
 # Si lancia dal proprio terminale dopo aver chiuso Claude Code. Le regole che applica sono elencate
 # in testa a chiudi-sessione.ps1: il messaggio lo fa rispettare l'hook .githooks/commit-msg.
 #
@@ -49,10 +49,10 @@ cd "$radice" || exit 2
 # vive solo nel bundle e non si importa mai.
 bundle=0; [ -f .claude/templates/PACKAGES.md ] && [ -f .claude/PROMPT-nuovo-progetto.md ] && bundle=1
 
-cartelle="tools .claude/templates/tools .claude/templates/md-unwrap/tools .claude/templates/readme-sync/tools .claude/templates/fix-typography/tools"
+cartelle="tools .claude/templates/tools .claude/templates/md-unwrap/tools .claude/templates/readme-sync/tools .claude/templates/fix-typography/tools .claude/templates/verifica-link/tools"
 # In un progetto si eseguono soltanto i controlli istanziati in tools/: le copie dei modelli sono
 # pacchetti non ancora adottati, e lanciarli fermerebbe il commit per strumenti che nessuno ha scelto.
-[ $bundle = 0 ] && cartelle="tools"
+[ $bundle = 0 ] && cartelle="tools scripts"
 trova() { for c in $cartelle; do [ -f "$c/$1" ] && { echo "$c/$1"; return; }; done; }
 
 python=""
@@ -82,17 +82,25 @@ b=""; m=""; o=""
 controlli="md-unwrap.py|--check --only-tracked $o .||0
 sync-readme.py|--check $b|README.md|0
 lint-md-commands.py|.||0
+Test-Anonymization.py|--quiet||0
+Test-Anonymization.py|--autotest||0
+doc-ingest.py|--autotest||0
 lint-doc-references.py|--solo-vivi $b||0
 check-eol.py|.||0
 misura-istruzioni.py|||0
+verifica-schede.py||.claude/context|0
+lint-didattica.py||.claude/context/studio-didattico-master.md|0
 fix-accents.py|--check $m .||0
 fix-dashes.py|--check $m .||0
 fix-missing-accents.py|--check $m .||0
 sync-codex-skills.py|--project-root . --check|.claude/skills|0
+verifica-link-progetto.py|--check --senza-rete|tools/verifica-link-progetto.json|0
 check-copie-modelli.py|||1
 check-catalogo.py|||1
 check-raggiungibilita.py|||1
-test-tipografia.py|||1"
+test-tipografia.py|||1
+test-documenti-personali.py|||1
+verifica-link-progetto.py|--prova||1"
 
 falliti=""
 if [ -z "$python" ]; then ko "Python non trovato"; falliti="python"
@@ -123,7 +131,7 @@ if [ "$ncambi" != 0 ]; then
         read -r -p "   Messaggio di commit: " messaggio || { echo "Input non disponibile: mi fermo."; exit 1; }
     fi
     [ -n "$messaggio" ] || { echo "Messaggio vuoto: mi fermo."; exit 1; }
-    # git-identity-and-repo.md: si firma solo con l'identita' locale del repository.
+    # skill identita-git: si firma solo con l'identita' locale del repository.
     nome="$(git config --local user.name)"; email="$(git config --local user.email)"
     [ -n "$nome" ] && [ -n "$email" ] || { echo "Identita' git locale non impostata: impostare user.name e user.email del repository e rilanciare."; exit 1; }
     nota "$ncambi file  ->  \"$messaggio\""
@@ -177,11 +185,21 @@ for d in "$HOME"/.claude*; do
     [ -z "$account" ] || [ "$n" = ".claude-$account" ] || [ "$n" = "$account" ] || continue
     [ -f "$d/hooks/session-end-wipe.sh" ] && scripts+=("$d/hooks/session-end-wipe.sh")
 done
+# Dal 2026-10-09 il wipe toglie da se' cio' che appartiene a sessioni chiuse e conserva quelle
+# aperte, quindi si esegue anche con altre sessioni vive; una copia anteriore rimanda tutto.
 if [ ${#scripts[@]} -eq 0 ]; then nota "nessuno script di wipe installato negli account: passo saltato"
-elif pgrep -x claude >/dev/null 2>&1; then
-    nota "processi Claude Code ancora aperti: wipe rimandato. Chiuderli e lanciare:"
-    for s in "${scripts[@]}"; do nota "bash \"$s\""; done
 else
-    for s in "${scripts[@]}"; do bash "$s" && ok "$s" || ko "$s"; done
+    if pgrep -x claude >/dev/null 2>&1; then
+        nota "processi Claude Code ancora aperti: il wipe conserva le loro sessioni e toglie tutte le altre"
+    fi
+    for s in "${scripts[@]}"; do bash "$s" < /dev/null && ok "$s" || ko "$s"; done
 fi
+# Che cosa resta dopo il wipe: lo strumento e' in sola lettura, si cerca accanto a questo
+# script e, in un progetto che non lo ha, nelle home degli account.
+stato=""
+for c in "$(dirname "$0")/stato-magazzino.py" "$HOME"/.claude*/hooks/stato-magazzino.py; do
+    [ -f "$c" ] && { stato="$c"; break; }
+done
+if [ -n "$stato" ] && command -v python3 >/dev/null 2>&1; then python3 "$stato"
+else nota "stato-magazzino.py o python3 non disponibili: resoconto dei residui saltato"; fi
 fine ""

@@ -1,0 +1,75 @@
+# Schemi dei documenti personali da non aprire mai (regola documenti-personali.md).
+# Un'espressione regolare per riga, confrontata senza maiuscole con il percorso del file; si usa con doc-ingest.py --esclusi.
+# Elenco di partenza, nato in un progetto istanziato il 2026-10-06 e rafforzato il 2026-10-07: acquisti, pagamenti, fisco, banca, lavoro, salute, identità, licenze. Si copia in un file locale ignorato da git e si adatta. Il 2026-10-07 i confini di parola `\b` sono diventati `(?<![a-z0-9])` e `(?![a-z0-9])`, perché per le espressioni regolari il trattino basso è parte della parola e `\bIBAN\b` non trovava `coordinate_IBAN.pdf`; e si sono aggiunti conto corrente, carte, mutui, prestiti e rendiconti.
+
+# Cartelle intere
+[\\/]Documenti[\\/]
+[\\/]IMMATRICOLAZIONE[\\/]
+[\\/]per presentare domanda tesi[\\/]
+[\\/]Domanda Borsa di Studio
+[\\/]\[?ACQUISTI\]?[\\/]
+[\\/]\[?(acquisti|purchases?|orders?|ordini|fatture|invoices?|receipts?|ricevute|bollette|banca|bank|tasse|taxes|fisco|medic[oi]|salute|health|personale|private?)\]?[\\/]
+
+# Acquisti e pagamenti
+contratt
+ricevut
+fattur
+invoice
+receipt
+scontrin
+(?<![a-z0-9])order(e|i)?[\s_-]*(n|no|nr|num|#)?[\s_.-]*\d{3,}
+conferma[\s_-]*(d[\s_']*)?ordine
+order[\s_-]*confirmation
+pagament
+payment
+bonific
+paypal
+bollett
+abbonament
+subscription
+
+# Fisco, banca, lavoro
+(?<![a-z0-9])DSU(?![a-z0-9])
+(?<![a-z0-9])ISEE(?![a-z0-9])
+(?<![a-z0-9])F24(?![a-z0-9])
+(?<![a-z0-9])730(?![a-z0-9])
+(?<![a-z0-9])CUD(?![a-z0-9])
+certificazione[\s_-]*unica
+dichiarazione[\s_-]*dei[\s_-]*redditi
+agenzia_entrate
+agenzia[\s_-]*(delle[\s_-]*)?entrate
+(?<![a-z0-9])IBAN(?![a-z0-9])
+estratto[\s_-]*conto
+conto[\s_-]*corrente
+carta[\s_-]*(di[\s_-]*)?(credito|debito)
+carta[\s_-]*prepagata
+(?<![a-z0-9])mutu[oi](?![a-z0-9])
+finanziament
+prestit
+rendicont
+bank[\s_-]*statement
+movimenti[\s_-]*(conto|bancari|carta)
+busta[\s_-]*paga
+cedolin
+(?<![a-z0-9])payslip(?![a-z0-9])
+
+# Identità, studio amministrativo, salute
+identit[aà]
+passaport
+patente
+codice[\s_-]*fiscale
+carta[\s_-]*d[\s_']*identit
+tessera[\s_-]*sanitaria
+borsa di studio
+autocertific
+domanda di ammissione
+piano di studi
+(?<![a-z0-9])ERSU(?![a-z0-9])
+referto
+certificato[\s_-]*medic
+
+# Licenze e chiavi
+licen[sz]e[\s_-]*key
+product[\s_-]*key
+serial[\s_-]*(number|key)
+numero[\s_-]*di[\s_-]*serie

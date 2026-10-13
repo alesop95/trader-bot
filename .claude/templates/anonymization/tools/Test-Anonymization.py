@@ -84,7 +84,7 @@ LIMITE_BYTE = 5 * 1024 * 1024
 
 # Categorie che fanno fallire il controllo: sono valori reali, non ambiguità.
 BLOCCANTI = {"IP REALE", "MAC REALE", "NOME PROPRIO", "SEGRETO LETTERALE",
-             "EMAIL PERSONALE", "TELEFONO", "IBAN", "PIVA/CF", "IMPORTO"}
+             "EMAIL PERSONALE", "TELEFONO", "IBAN", "CARTA DI PAGAMENTO", "PIVA/CF", "IMPORTO"}
 
 IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}(?:/\d{1,2})?\b")
 MAC = re.compile(r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b")
@@ -95,8 +95,76 @@ EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 # internazionale, che è riconoscibile senza sapere nulla del progetto.
 PHONE_FALLBACK = re.compile(r"\b\+\d{2}\s?\d{9,10}\b")
 MONEY = re.compile(r"(?:€\s?[\d.,]+|\b[\d.]+[,.]\d{2}\s?(?:€|euro|EUR)\b|\b\d+(?:[.,]\d+)?\s?euro\b)", re.I)
-IBAN = re.compile(r"\bIT\d{2}[A-Z0-9]{20,25}\b")
-PIVA = re.compile(r"\b(?:P\.?\s?IVA|partita iva|cod\.?\s?fisc|codice fiscale)\b[^\n]{0,40}\d{11,16}", re.I)
+# L'IBAN, dal 2026-10-07 in ogni forma in cui lo si scrive davvero. Fino ad allora il
+# controllo era `\bIT\d{2}[A-Z0-9]{20,25}\b`, che trovava soltanto un IBAN italiano scritto
+# tutto attaccato e in maiuscolo: non la forma a gruppi di quattro separati da spazi, che è
+# quella di ogni estratto conto e di ogni modulo, non il minuscolo, non un conto estero. Il
+# candidato ammette spazi singoli fra i caratteri e qualsiasi paese; poi si tiene solo se la
+# lunghezza è quella del paese e la cifra di controllo modulo 97 della norma ISO 13616 torna,
+# cosa che una stringa qualunque fa una volta su novantasette.
+IBAN_CANDIDATO = re.compile(r"\b[A-Za-z]{2}\d{2}(?: ?[A-Za-z0-9]){10,32}\b")
+LUNGHEZZE_IBAN = {
+    "AD": 24, "AT": 20, "BE": 16, "BG": 22, "CH": 21, "CY": 28, "CZ": 24, "DE": 22, "DK": 18,
+    "EE": 20, "ES": 24, "FI": 18, "FR": 27, "GB": 22, "GI": 23, "GR": 27, "HR": 21, "HU": 28,
+    "IE": 22, "IS": 26, "IT": 27, "LI": 21, "LT": 20, "LU": 20, "LV": 21, "MC": 27, "MT": 31,
+    "NL": 18, "NO": 15, "PL": 28, "PT": 25, "RO": 24, "SE": 24, "SI": 19, "SK": 24, "SM": 27,
+    "VA": 22,
+}
+# Il numero di una carta di pagamento, da 13 a 19 cifre, anche a gruppi separati da spazi o
+# trattini. In un repository tecnico i numeri lunghi sono ovunque, quindi si tiene solo se
+# comincia con un prefisso di circuito (4 Visa, 51-55 e 2221-2720 Mastercard, 34 e 37 American
+# Express, 6011, 644-649 e 65 Discover, 35 JCB, 36 e 38 Diners) e se la cifra di controllo di
+# Luhn torna.
+CARTA_CANDIDATA = re.compile(r"\b\d(?:[ -]?\d){12,18}\b")
+
+
+def iban_valido(testo):
+    """Restituisce l'IBAN normalizzato se `testo`, o un suo inizio, è un IBAN valido."""
+    s = re.sub(r"\s", "", testo).upper()
+    n = LUNGHEZZE_IBAN.get(s[:2])
+    if not n or len(s) < n:
+        return None
+    s = s[:n]
+    numero = "".join(str(int(c, 36)) for c in s[4:] + s[:4])
+    return s if int(numero) % 97 == 1 else None
+
+
+def carta_valida(testo):
+    """Restituisce le cifre se `testo` è il numero di una carta di pagamento plausibile."""
+    cifre = re.sub(r"[ -]", "", testo)
+    n = len(cifre)
+    if not 13 <= n <= 19:
+        return None
+    # Oltre le sedici cifre una carta si scrive a gruppi. Il vincolo nasce dalla prima misura su
+    # un progetto vero, il 2026-10-07: l'identificativo di un canale Discord, diciotto cifre
+    # attaccate che cominciano per 4, passava Luhn come capita a un numero su dieci. Gli
+    # identificativi di Discord e dei social hanno 17-19 cifre e non hanno mai separatori.
+    if n > 16 and n == len(testo):
+        return None
+    p2, p3, p4 = int(cifre[:2]), int(cifre[:3]), int(cifre[:4])
+    # Le lunghezze che ciascun circuito ammette: una lunghezza fuori dal circuito è un altro numero.
+    if cifre[0] == "4":
+        ammesse = (13, 16, 19)
+    elif 51 <= p2 <= 55 or 2221 <= p4 <= 2720:
+        ammesse = (16,)
+    elif p2 in (34, 37):
+        ammesse = (15,)
+    elif p2 in (36, 38):
+        ammesse = range(14, 20)
+    elif p2 in (35, 65) or p4 == 6011 or 644 <= p3 <= 649:
+        ammesse = range(16, 20)
+    else:
+        return None
+    if n not in ammesse:
+        return None
+    somma = 0
+    for i, c in enumerate(reversed(cifre)):
+        d = int(c) * (2 if i % 2 else 1)
+        somma += d - 9 if d > 9 else d
+    return cifre if somma % 10 == 0 else None
+
+
+PIVA =re.compile(r"\b(?:P\.?\s?IVA|partita iva|cod\.?\s?fisc|codice fiscale)\b[^\n]{0,40}\d{11,16}", re.I)
 # Domini riservati alla documentazione da RFC 2606: non esistono, non sono registrabili
 # e non possono appartenere a nessuno, quindi una casella su di essi è un esempio e non il
 # dato di una persona. È la stessa ammissione per costruzione che vale per i blocchi di
@@ -254,10 +322,17 @@ def analizza(pat, files):
                     continue
                 aggiungi("EMAIL PERSONALE", f, ln, riga, mail, origine)
 
-            for regex, cat in ((phone, "TELEFONO"), (MONEY, "IMPORTO"),
-                               (IBAN, "IBAN"), (PIVA, "PIVA/CF")):
+            for regex, cat in ((phone, "TELEFONO"), (MONEY, "IMPORTO"), (PIVA, "PIVA/CF")):
                 for m in regex.finditer(riga):
                     aggiungi(cat, f, ln, riga, m.group(0)[:60], origine)
+
+            for m in IBAN_CANDIDATO.finditer(riga):
+                if iban_valido(m.group(0)):
+                    aggiungi("IBAN", f, ln, riga, "<IBAN oscurato>", origine)
+
+            for m in CARTA_CANDIDATA.finditer(riga):
+                if carta_valida(m.group(0)):
+                    aggiungi("CARTA DI PAGAMENTO", f, ln, riga, "<numero oscurato>", origine)
 
             for s in segreti:
                 if s in riga:
@@ -275,7 +350,93 @@ def analizza(pat, files):
     return trovati, saltati
 
 
+def autotest():
+    """Prova dei riconoscitori di IBAN e carte di pagamento, dal 2026-10-07.
+
+    I valori sono quelli pubblicati come esempio dalla norma e dai circuiti, e si compongono
+    a pezzi: scritti interi in questo file, il controllo li troverebbe nel proprio sorgente.
+    Ogni caso positivo ha accanto un negativo che differisce per una sola proprietà, perché
+    una prova che passa anche con il riconoscitore spento non misura niente.
+    """
+    it = "IT60" + " X054 2811 1010 0000 0123 456"
+    gb = "GB82" + " WEST 1234 5698 7654 32"
+    casi_iban = [
+        (it, True, "italiano a gruppi di quattro"),
+        (it.replace(" ", ""), True, "italiano attaccato"),
+        (it.lower(), True, "minuscolo"),
+        (gb, True, "britannico"),
+        ("bonifico su " + it.replace(" ", "") + " entro venerdì", True, "dentro una frase"),
+        ("IT61" + it[4:], False, "cifra di controllo sbagliata"),
+        (it[:14], False, "troncato"),
+        ("AB12" + " CDEF GHIJ KLMN OP", False, "paese inesistente"),
+        ("PK67" + " offset 0x0E", False, "testo tecnico"),
+    ]
+    casi_carta = [
+        ("4111" + " 1111" + " 1111" + " 1111", True, "Visa a gruppi"),
+        ("5500" + "-0000" + "-0000" + "-0004", True, "Mastercard con trattini"),
+        ("378282" + "246310005", True, "American Express attaccata"),
+        ("4111" + " 1111" + " 1111" + " 1112", False, "Luhn sbagliato"),
+        ("1583996519" + "325147137", False, "identificativo di un post, prefisso 1"),
+        ("9111" + "1111" + "1111" + "1111", False, "prefisso di nessun circuito"),
+    ]
+
+    def _luhn_ok(cifre):
+        somma = 0
+        for i, c in enumerate(reversed(cifre)):
+            d = int(c) * (2 if i % 2 else 1)
+            somma += d - 9 if d > 9 else d
+        return somma % 10 == 0
+
+    def con_luhn(corpo):
+        """Aggiunge a `corpo` la cifra di controllo di Luhn: serve a costruire numeri che la
+        superano, così che i negativi sotto falliscano per la regola che vogliono provare."""
+        return next(corpo + c for c in "0123456789" if _luhn_ok(corpo + c))
+
+    diciotto = con_luhn("4" + "7" * 16)
+    diciannove = con_luhn("4" + "1" * 17)
+    a_gruppi = " ".join(diciannove[i:i + 4] for i in range(0, 19, 4))
+    casi_carta += [
+        (diciotto, False, "diciotto cifre attaccate che passano Luhn, come un identificativo Discord"),
+        (diciannove, False, "diciannove cifre attaccate"),
+        (a_gruppi, True, "Visa a diciannove cifre scritta a gruppi"),
+    ]
+    if not (_luhn_ok(diciotto) and _luhn_ok(diciannove)):
+        print("autotest: i numeri costruiti non passano Luhn, la prova non è valida")
+        return 1
+    errori = 0
+    for testo, atteso, nome in casi_iban:
+        ottenuto = any(iban_valido(m.group(0)) for m in IBAN_CANDIDATO.finditer(testo))
+        if ottenuto != atteso:
+            errori += 1
+            print("IBAN, %s: atteso %s, ottenuto %s" % (nome, atteso, ottenuto))
+    for testo, atteso, nome in casi_carta:
+        ottenuto = any(carta_valida(m.group(0)) for m in CARTA_CANDIDATA.finditer(testo))
+        if ottenuto != atteso:
+            errori += 1
+            print("carta, %s: atteso %s, ottenuto %s" % (nome, atteso, ottenuto))
+    # Il percorso completo: un file con un IBAN a gruppi e una carta, passato ad `analizza`
+    # con un file di pattern minimo, deve dare un riscontro per categoria e il valore oscurato.
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        f = os.path.join(d, "prova.md")
+        with io.open(f, "w", encoding="utf-8") as fh:
+            fh.write("Conto %s, carta %s.\n" % (it, casi_carta[0][0]))
+        pat = {"reti_documentali_ammesse": [], "ip_ammessi": [], "prefissi_reali": [],
+               "mac_ammessi_prefissi": [], "email_ammesse": [], "nomi_propri": []}
+        trovati, _ = analizza(pat, [(f, "tracciato")])
+        for cat in ("IBAN", "CARTA DI PAGAMENTO"):
+            voci = trovati.get(cat, [])
+            if len(voci) != 1 or "oscurat" not in voci[0][2]:
+                errori += 1
+                print("analizza, %s: atteso un riscontro oscurato, ottenuti %d" % (cat, len(voci)))
+    totale = len(casi_iban) + len(casi_carta) + 2
+    print("autotest: %d casi, %d errori" % (totale, errori))
+    return 1 if errori else 0
+
+
 def main():
+    if "--autotest" in sys.argv[1:]:
+        return autotest()
     ap = argparse.ArgumentParser(description="Guard-rail di anonimizzazione sui file del repository.")
     ap.add_argument("--quiet", action="store_true", help="stampa solo il riepilogo")
     ap.add_argument("--max", type=int, default=40, help="righe stampate per categoria")
@@ -304,7 +465,7 @@ def main():
     conteggio = collections.Counter(origine for _, origine in files)
 
     ordine = ["IP REALE", "MAC REALE", "SEGRETO LETTERALE", "NOME PROPRIO", "EMAIL PERSONALE",
-              "TELEFONO", "IBAN", "PIVA/CF", "IMPORTO",
+              "TELEFONO", "IBAN", "CARTA DI PAGAMENTO", "PIVA/CF", "IMPORTO",
               "IP privato fuori schema", "IP pubblico da valutare"]
 
     bloccanti = 0
