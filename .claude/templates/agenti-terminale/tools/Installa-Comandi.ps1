@@ -127,7 +127,12 @@ if ($codex.Count -gt 0) { $righe.Add('') }
 # chiudi-sessione.ps1 nel repository in cui si trova il terminale, in tools\ di un progetto
 # istanziato oppure sotto .claude\templates\tools\ nel template, e gli passa gli argomenti.
 $righe.Add('function chiudi {')
-$righe.Add('    $radice = (git rev-parse --show-toplevel 2>$null)')
+# git scrive il percorso in UTF-8 e PowerShell 5.1 lo decodifica con la codifica OEM: un nome di
+# cartella con una lettera accentata diventava un percorso inesistente e chiudi rispondeva che lo
+# script non era istanziato (osservato il 2026-10-12 su D:/integrita-docs con l'accento). Si legge
+# in UTF-8 e si ripristina la codifica di prima.
+$righe.Add('    $codificaPrec = [Console]::OutputEncoding; [Console]::OutputEncoding = [Text.Encoding]::UTF8')
+$righe.Add('    try { $radice = (git rev-parse --show-toplevel 2>$null) } finally { [Console]::OutputEncoding = $codificaPrec }')
 $righe.Add('    if (-not $radice) { Write-Host "chiudi: la cartella corrente non e'' dentro un repository git." -ForegroundColor Red; return }')
 $righe.Add('    $script = @("tools\chiudi-sessione.ps1", ".claude\templates\tools\chiudi-sessione.ps1") | ForEach-Object { Join-Path $radice $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1')
 $righe.Add('    if (-not $script) { Write-Host "chiudi: chiudi-sessione.ps1 non e'' istanziato in $radice." -ForegroundColor Red; return }')

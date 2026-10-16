@@ -32,7 +32,7 @@ git commit -m "Messaggio sintetico del commit"
 git push
 ```
 
-Se i file da aggiungere sono molti, si usa `git add` con tutti i percorsi sulla stessa riga, separati da spazio, ciascuno tra doppi apici.
+Se i file da aggiungere sono molti, si usano più righe `git add`, ciascuna completa e sotto i cento caratteri circa, oppure le cartelle come percorsi quando contengono soltanto file della milestone, sempre tra doppi apici. Una riga sola con tutti i percorsi va a capo nella chat e il copia-incolla la spezza: il 2026-10-16 un `git add` di tredici file è arrivato al terminale in sei righe, PowerShell ha eseguito solo la prima e il commit ha preso due file su tredici senza nessun errore sul `git add`.
 
 Quando il repository su cui si opera non è quello aperto nella sessione, il blocco si apre sempre con il proprio `cd`, su una riga a sé, con il percorso tra doppi apici e con le barre in avanti, che entrambe le shell accettano. Non si scrive in prosa di spostarsi in un'altra cartella lasciando i comandi senza: chi copia un blocco lo incolla dove si trova, e un `git add -A` eseguito nella cartella sbagliata è un errore che si scopre dopo il commit. La prescrizione nasce da una richiesta d'uso del 2026-09-15 in un progetto istanziato, dopo due sessioni in cui i comandi per un repository gemello erano stati dati senza.
 

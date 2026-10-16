@@ -63,7 +63,9 @@ function Nota([string]$t) { Write-Host "   $t" -ForegroundColor DarkGray }
 
 # Radice del repository: quella indicata, altrimenti quella che contiene lo script, cosi' il
 # comando funziona da qualunque cartella sia aperto il terminale.
-if (-not $Radice) { $Radice = (& git -C $PSScriptRoot rev-parse --show-toplevel 2>$null) }
+# git scrive il percorso in UTF-8: senza questa impostazione PowerShell 5.1 lo decodifica con la
+# codifica OEM e un accento nel nome della cartella diventa un percorso inesistente (2026-10-12).
+if (-not $Radice) { $codificaPrec = [Console]::OutputEncoding; [Console]::OutputEncoding = [Text.Encoding]::UTF8; try { $Radice = (& git -C $PSScriptRoot rev-parse --show-toplevel 2>$null) } finally { [Console]::OutputEncoding = $codificaPrec } }
 if (-not $Radice) { Write-Host "Non trovo il repository: passare -Radice." -ForegroundColor Red; exit 2 }
 Set-Location $Radice
 # Il bundle si riconosce da due file insieme. PACKAGES.md da solo non basta: la procedura di

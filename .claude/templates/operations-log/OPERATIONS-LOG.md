@@ -4,7 +4,7 @@
 
 ## Convenzione
 
-Ogni microstep ha un identificativo progressivo nella forma `MS-NNN`, una data, un titolo, il perimetro dei file toccati, la dichiarazione del legame con lo scopo del progetto, il comando o l'osservazione con cui è stato verificato, e l'esito. Gli stati possibili sono `fatto` quando la verifica è passata, `bloccato` quando la verifica non è eseguibile per una dipendenza esterna, e `aperto` quando il lavoro è iniziato e non concluso. Un microstep bloccato dichiara sempre da che cosa dipende.
+Ogni microstep ha un identificativo progressivo nella forma `MS-NNN`, una data scritta nel campo `Data:` (lo legge `timeline-progetto`, che salta le voci senza), un titolo, il perimetro dei file toccati, la dichiarazione del legame con lo scopo del progetto, il comando o l'osservazione con cui è stato verificato, e l'esito. Gli stati possibili sono `fatto` quando la verifica è passata, `bloccato` quando la verifica non è eseguibile per una dipendenza esterna, e `aperto` quando il lavoro è iniziato e non concluso. Un microstep bloccato dichiara sempre da che cosa dipende.
 
 Le voci si aggiungono in ordine cronologico crescente, così che il registro si legga come una storia. Non si riscrive una voce passata: se un intervento successivo la corregge, si aggiunge una voce nuova che dichiara di superarla.
 
@@ -31,6 +31,8 @@ La regola ha però un difetto, e la sua correzione è l'indice qui sotto. In un 
 Quanto segue è il modello da copiare, non una voce reale. Si tolgono le parentesi angolari insieme al testo che contengono.
 
 ### MS-001 - &lt;titolo che dichiara il fatto e non l'intenzione&gt;
+
+Data: &lt;YYYY-MM-DD, il giorno in cui l'intervento è stato fatto e verificato&gt;
 
 Perimetro: &lt;i file o i sistemi toccati, con precisione sufficiente a rifare il lavoro&gt;.
 

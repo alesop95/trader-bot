@@ -1,6 +1,6 @@
 # Profilo di stack: Python (scripting, data, RAG)
 
-> Regola modulare istanziata dal pacchetto `stack-profiles` come `stack-profile.md`. Prescrive le convenzioni con cui si scrive il codice di questo stack; la descrizione dello stack reale del progetto resta nella scheda `context/STACK.md`. Adattare i comandi agli strumenti reali del progetto alla prima istanziazione.
+> Regola modulare istanziata dal pacchetto `stack-profiles` come `stack-profile.md`. Prescrive le convenzioni con cui si scrive il codice di questo stack; la descrizione dello stack reale del progetto resta nella scheda `context/STACK.md`. Adattare i comandi agli strumenti reali del progetto alla prima istanziazione, e su un progetto esistente dividere le prescrizioni in "vale già" e "da adottare" (README del pacchetto, passo 2).
 
 ## Ambiente e tipi
 

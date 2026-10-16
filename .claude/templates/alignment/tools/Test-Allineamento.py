@@ -537,7 +537,12 @@ def invariante_frontmatter(esito, percorsi):
         esito.nota("      frontmatter delle schede: la cartella %s non esiste" % rel_schede)
         return
 
-    campi = percorsi.get('campi_firma') or ['last-verified-commit', 'last-verified']
+    # generated-from-commit e' un campo di firma come gli altri: il primo ancoraggio di
+    # sync-context (passo 0) lo riscrive insieme a last-verified-commit, e senza di lui
+    # quel commit conterebbe come modifica di contenuto, cioe' ogni scheda risulterebbe
+    # rotta subito dopo essere stata ancorata (osservato il 2026-10-16 su cinque schede).
+    campi = percorsi.get('campi_firma') or ['last-verified-commit', 'last-verified',
+                                             'generated-from-commit']
 
     # Il percorso si estrae separando sul primo spazio, non tagliando a posizione fissa:
     # il taglio a posizione fissa si rompe perché l'output viene normalizzato e lo spazio

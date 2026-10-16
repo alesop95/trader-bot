@@ -704,7 +704,7 @@ def dir_is_marked(dirpath: str) -> bool:
     return marked
 
 
-def collect_files(paths, exts, excludes, only_tracked=False):
+def collect_files(paths, exts, excludes, only_tracked=False, with_others=False):
     found, marked = [], 0
     for target in paths:
         target = os.path.abspath(target)
@@ -714,8 +714,8 @@ def collect_files(paths, exts, excludes, only_tracked=False):
             # camminare l'albero costa minuti e serve a nulla, perché i file da
             # processare sono solo quelli che git conosce.
             prefix = os.path.normcase(target + os.sep)
-            entries = tracked_files(target)
-            if not entries:
+            entries = tracked_files(target, with_others)
+            if entries is None:
                 found.append(('__nogit__',
                               '--only-tracked: %s non e un repository git, o git non e '
                               'disponibile; nessun file processato' % target))
@@ -784,26 +784,36 @@ def collect_files(paths, exts, excludes, only_tracked=False):
 _TRACKED_CACHE = {}
 
 
-def tracked_files(dirpath: str):
+def tracked_files(dirpath: str, with_others: bool = False):
     """File tracciati da git nel repository che contiene `dirpath`, come dizionario
     dal percorso assoluto normalizzato (per il confronto, che su Windows va fatto
     senza distinzione di maiuscole) al percorso reale (per aprire il file e per
-    scriverlo nei messaggi con il nome giusto). Dizionario vuoto se non è un
-    repository o se git non è disponibile. Memoizzato per radice."""
+    scriverlo nei messaggi con il nome giusto). None se non è un repository o se git
+    non è disponibile; dizionario vuoto se è un repository senza file tracciati, che
+    è lo stato normale prima del primo commit e non un errore.
+
+    Con `with_others` comprende anche i file non tracciati e non ignorati, cioè i
+    candidati al prossimo commit. Serve al controllo: un controllo che gira prima di
+    `git add` e guarda i soli file tracciati non vede mai un file nuovo, proprio
+    quello che il commit sta per pubblicare (osservato il 2026-10-16, insieme al primo
+    commit di un repository che il controllo rifiutava come "non un repository").
+    Memoizzato per radice."""
     try:
         top = subprocess.run(
             ['git', '-C', dirpath, 'rev-parse', '--show-toplevel'],
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
         )
     except OSError:
-        return {}
+        return None
     if top.returncode != 0:
-        return {}
+        return None
     root = os.path.abspath(top.stdout.decode('utf-8', 'replace').strip())
-    if root in _TRACKED_CACHE:
-        return _TRACKED_CACHE[root]
+    key = (root, with_others)
+    if key in _TRACKED_CACHE:
+        return _TRACKED_CACHE[key]
+    extra = ['--cached', '--others', '--exclude-standard'] if with_others else []
     listing = subprocess.run(
-        ['git', '-C', root, 'ls-files', '-z'],
+        ['git', '-C', root, 'ls-files', '-z'] + extra,
         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
     )
     entries = listing.stdout.decode('utf-8', 'replace').split('\0') if listing.returncode == 0 else []
@@ -813,12 +823,13 @@ def tracked_files(dirpath: str):
             continue
         real = os.path.join(root, entry.replace('/', os.sep))
         result[os.path.normcase(real)] = real
-    _TRACKED_CACHE[root] = result
+    _TRACKED_CACHE[key] = result
     return result
 
 
-def is_tracked(path: str) -> bool:
-    return os.path.normcase(os.path.abspath(path)) in tracked_files(os.path.dirname(os.path.abspath(path)))
+def is_tracked(path: str, with_others: bool = False) -> bool:
+    entries = tracked_files(os.path.dirname(os.path.abspath(path)), with_others) or {}
+    return os.path.normcase(os.path.abspath(path)) in entries
 
 
 def build_parser():
@@ -840,7 +851,9 @@ def build_parser():
                    help='estensione da processare, ripetibile (default: .md, .markdown)')
     p.add_argument('--only-tracked', action='store_true',
                    help='processa solo i file tracciati da git, cosi ogni scrittura '
-                        'ha una rete di recupero; salta gli altri dichiarandoli')
+                        'ha una rete di recupero; salta gli altri dichiarandoli. Con '
+                        '--check comprende anche i non tracciati e non ignorati, cioe '
+                        'i candidati al prossimo commit, perche controllare non scrive')
     p.add_argument('--oracle', choices=('auto', 'require', 'off'), default='auto',
                    help='oracolo di rendering: auto (se disponibile), require, off')
     p.add_argument('-v', '--verbose', action='store_true', help='una riga per file')
@@ -861,7 +874,10 @@ def main(argv=None) -> int:
               '(pip install markdown-it-py)')
         return 2
 
-    files, marked = collect_files(args.paths or ['.'], exts, excludes, args.only_tracked)
+    # In controllo il perimetro sono i candidati al commit; in scrittura i soli tracciati.
+    with_others = bool(args.only_tracked and args.check)
+    files, marked = collect_files(args.paths or ['.'], exts, excludes, args.only_tracked,
+                                  with_others)
     examined = changed = errors = total_joins = untracked = 0
 
     def say(line):
@@ -875,7 +891,7 @@ def main(argv=None) -> int:
             continue
         path = entry
         rel = display_path(path)
-        if args.only_tracked and not is_tracked(path):
+        if args.only_tracked and not is_tracked(path, with_others):
             untracked += 1
             if args.verbose:
                 say('salta   %s: non tracciato da git' % rel)

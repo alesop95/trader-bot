@@ -18,7 +18,13 @@ done
 
 bundle=""
 script="$root/tools/sync-readme.py"
-if [ ! -f "$script" ]; then
+# Il modo bundle vale solo per il README del template, l'unico che porta l'indice dei
+# pacchetti. Un progetto istanziato ha anch'esso una copia di .claude/templates/, quindi
+# senza questa condizione un progetto con un README proprio e senza tools/sync-readme.py
+# ricadrebbe qui, e sync-readme fermerebbe ogni commit chiedendo i marcatori dell'indice
+# dei pacchetti, che quel README non ha (riprodotto il 2026-10-16 in un progetto che aveva
+# copiato l'hook da un altro).
+if [ ! -f "$script" ] && [ -f "$root/README.md" ]     && grep -q '<!-- sync-readme:packages:start -->' "$root/README.md"; then
     script="$root/.claude/templates/readme-sync/tools/sync-readme.py"
     bundle="--bundle"
 fi

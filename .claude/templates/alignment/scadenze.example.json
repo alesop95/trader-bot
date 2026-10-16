@@ -12,7 +12,7 @@
     "decisioni": ".claude/memory/decisions.md",
     "script": "scripts",
     "estensioni_script": [".ps1", ".py", ".sh"],
-    "campi_firma": ["last-verified-commit", "last-verified"],
+    "campi_firma": ["last-verified-commit", "last-verified", "generated-from-commit"],
     "registro_voci": null,
     "richiami_cifre": [2, 3],
     "marcatori_fallimento": null

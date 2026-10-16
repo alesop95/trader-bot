@@ -21,7 +21,7 @@ Si istanzia un solo profilo per progetto, quello dello stack principale; il file
 ## Come si usa, passo per passo
 
 1. Al gate dei pacchetti l'agente riconosce lo stack dai manifest presenti (`package.json`, `pyproject.toml`, cartelle `nodes/` di n8n, dipendenze React) e propone il profilo corrispondente; se nessuno corrisponde propone `generico` oppure niente.
-2. Su conferma, il profilo scelto si copia in `.claude/rules/stack-profile.md` e si compila dove il testo indica di adattare, per esempio il package manager reale del progetto.
+2. Su conferma, il profilo scelto si copia in `.claude/rules/stack-profile.md` e si compila dove il testo indica di adattare, per esempio il package manager reale del progetto. Su un progetto esistente si confronta ogni prescrizione con ciò che il progetto fa davvero e con ciò che il suo `CLAUDE.md` e le sue schede già dicono, e si divide il profilo in ciò che vale già e ciò che è da adottare: un profilo copiato così com'è che chiede un typecheck pulito come condizione di merge, in un progetto che non ha typecheck, è una regola che nessuno rispetta e insegna a ignorare le altre. Le sezioni che non riguardano il progetto, per esempio quella RAG in un'applicazione che non recupera documenti, si tolgono, e ciò che il progetto descrive già altrove si cita invece di ripeterlo (caso del 2026-10-16, un'applicazione FastAPI senza linter né typecheck).
 3. Il profilo viene caricato come ogni regola modulare e vincola le sessioni successive; la scheda `STACK.md` resta il posto dove descrivere lo stack reale.
 4. Quando le convenzioni del progetto divergono dal profilo, si aggiorna il file istanziato e, se la divergenza è una decisione architetturale, la si registra in `memory/decisions.md`.
 

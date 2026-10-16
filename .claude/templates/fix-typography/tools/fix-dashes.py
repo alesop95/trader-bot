@@ -29,9 +29,13 @@ motivo dopo un cancelletto, e un'esclusione senza motivo viene rifiutata.
 
 Che cosa non tocca comunque
 ---------------------------
-Nei Markdown salta i blocchi di codice recintati, perché la' un trattino può essere un
-dato o un frammento di output e non prosa. Nei file Python lavora solo su commenti,
-docstring e stringhe a doppi apici. Conserva fine riga, BOM e newline finale.
+Nei Markdown salta i blocchi di codice recintati e i code span in linea, perché la' un
+trattino può essere un dato, un nome di file o un frammento di output e non prosa. Nei
+file Python lavora su commenti, docstring e stringhe a doppi apici: in un'applicazione
+quelle stringhe possono essere testo mostrato all'utente o istruzioni inviate a un
+modello, quindi il codice dell'applicazione si dichiara in `tools/dashes-exclude.txt`
+quando lo si istanzia, se il progetto non vuole che quei testi cambino. Conserva fine
+riga, BOM e newline finale.
 
 Uso
 ---
@@ -126,7 +130,11 @@ def converti_markdown(testo, conteggio):
             if re.match(r"^\s*" + re.escape(recinto), nudo):
                 dentro_recinto = False
             continue
-        fuori.append(sostituisci(riga, conteggio))
+        # Fuori dai recinti la riga si spezza sui code span in linea, come in
+        # fix-accents.py: il contenuto fra apici inversi e' un dato e non prosa.
+        pezzi = re.split(r"(`+[^`\n]*`+)", riga)
+        fuori.append("".join(p if p.startswith("`") else sostituisci(p, conteggio)
+                             for p in pezzi))
     return "".join(fuori)
 
 
@@ -237,7 +245,21 @@ def autotest():
         print("  FALLITO  la prosa fuori dal recinto non e' stata normalizzata")
         fallite += 1
 
-    print("autotest: %d casi, %d falliti" % (len(casi) + 2, fallite))
+    # Il code span in linea non si tocca: nomina un file, un comando o un identificatore,
+    # e un nome di file che contiene il segno smette di puntare al file vero. Caso del
+    # 2026-10-16: un rimando a un documento con il trattino lungo nel nome e' stato
+    # riscritto e e' diventato un riferimento a un file inesistente.
+    c = {}
+    riga = "prosa " + EM + " fuori e `cartella/nome " + EM + " vero.md` dentro\n"
+    reso = converti_markdown(riga, c)
+    if "`cartella/nome " + EM + " vero.md`" not in reso:
+        print("  FALLITO  il code span in linea e' stato modificato")
+        fallite += 1
+    if not reso.startswith("prosa - fuori"):
+        print("  FALLITO  la prosa accanto al code span non e' stata normalizzata")
+        fallite += 1
+
+    print("autotest: %d casi, %d falliti" % (len(casi) + 4, fallite))
     return 1 if fallite else 0
 
 

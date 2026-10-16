@@ -310,6 +310,13 @@ schede = sorted(
     os.path.basename(p) for p in glob.glob(".claude/context/refactor-*.md")
     if re.match(r"refactor-\d+-", os.path.basename(p))
 )
+# Il racconto puo' non esistere ancora: in un progetto appena adottato la prima voce nasce con
+# la prima scelta non ovvia. Senza il file il controllo non e' giudicabile e lo dichiara, invece
+# di fermarsi con un'eccezione che nessuno legge come un esito (osservato il 2026-10-16).
+if not os.path.exists(MASTER):
+    print(f"NON GIUDICABILE: manca {MASTER}, il racconto del perché delle scelte.")
+    print("Si crea con la skill studio-didattico alla prima scelta di qualità non ovvia.")
+    sys.exit(2)
 testo_master = io.open(MASTER, encoding="utf-8").read()
 
 orfane = [s for s in schede if s not in testo_master]
