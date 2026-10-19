@@ -60,9 +60,15 @@ def candidati(radice: Path):
     # non se ne pretende la coerenza delle fini riga, che appartiene alla fonte.
     marcate = {m.parent for m in radice.rglob(".md-unwrap-ignore")}
     for p in sorted(radice.rglob("*")):
-        if not p.is_file() or p.suffix not in ESTENSIONI:
+        # Prima i filtri sul nome, che non toccano il disco: una cartella esclusa puo'
+        # contenere voci che il sistema rifiuta di leggere, come i collegamenti di un
+        # pacchetto per macOS estratto su Windows, e interrogarle farebbe cadere il controllo.
+        if p.suffix not in ESTENSIONI or CARTELLE_ESCLUSE & set(p.parts):
             continue
-        if CARTELLE_ESCLUSE & set(p.parts):
+        try:
+            if not p.is_file():
+                continue
+        except OSError:
             continue
         if any(m == p.parent or m in p.parents for m in marcate):
             continue

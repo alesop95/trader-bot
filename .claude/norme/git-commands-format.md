@@ -84,3 +84,9 @@ Il comando che crea una pull request, lanciato quando per quel ramo ne esiste gi
 La conseguenza è peggiore di una semplice omissione, perché sotto quella descrizione vecchia continuano ad arrivare commit nuovi: chi apre la pull request legge uno stato del lavoro che il lavoro ha già superato, e non ha modo di accorgersene.
 
 La prescrizione: dopo ogni giro che cambia il file della descrizione si lancia il comando di **modifica**, non quello di creazione, e si guarda che risponda. Il comando di creazione si usa una volta sola, quando la pull request davvero non esiste; se non si sa se esista, lo si chiede prima invece di dedurlo dall'esito del comando di creazione.
+
+## Un commit rifiutato non ferma il blocco di comandi
+
+Salita il 2026-10-19 da un progetto istanziato. Un blocco consegnato conteneva due commit, uno script fra i due e un deploy. Il primo commit è stato rifiutato dal controllo dei segreti prima del commit, giustamente, per una password finta in una prova appena scritta: il messaggio d'errore è comparso, ma le righe seguenti incollate nello stesso terminale sono partite lo stesso, perché un terminale esegue ogni riga incollata a prescindere dall'esito della precedente. Lo script di riancoraggio ha rifiutato di partire, il secondo commit è fallito per lo stesso motivo, e il deploy è andato a buon fine dalla cartella di lavoro. Chi guardava ha visto la pagina aggiornata e ha concluso che tutto fosse passato; i due messaggi successivi dell'agente hanno costruito sopra commit che non esistevano.
+
+Conseguenza: un blocco che contiene un commit si chiude con una riga che ne mostra l'esito, `git log --oneline -<n>` con `n` pari ai commit del blocco, e l'agente, prima di costruire sopra quei commit, legge `git log` e non presume. Un blocco che fa commit e poi pubblica separa le due cose: prima i commit e il loro controllo, poi, in un secondo blocco, il deploy.

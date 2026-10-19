@@ -17,6 +17,12 @@ last-verified-commit: <hash dell'ultima verifica o aggiornamento>
 
 > Da verificare popolando, se il progetto normalizza le letture dal database (un parser che riempie i valori predefiniti e traduce le forme vecchie): la regola "ogni lettura passa dal parser" ha un'eccezione strutturale. Una lettura il cui risultato viene poi riscritto per intero da un ruolo che le regole di sicurezza limitano a poche chiavi non deve essere normalizzata, o deve restituire il documento identico: altrimenti la riscrittura porta chiavi che quel ruolo non può toccare, e la scrittura viene rifiutata senza che nessuna prova lo veda, perché le prove delle regole non passano da quel flusso e quelle del flusso fingono la scrittura. Salita il 2026-10-19 da un progetto istanziato, dove l'assegnazione di un tavolo da parte del ruolo che gestisce la sala sarebbe stata rifiutata; la ragione va scritta accanto alla lettura lasciata grezza.
 
+> Da verificare popolando, due regole d'interfaccia salite il 2026-10-19 da un progetto istanziato.
+>
+> Un'azione che salva da sola deve dire com'è andata, e a un errore deve rimettere a video il valore che il database ha davvero. Un salvataggio silenzioso è indistinguibile da un salvataggio non avvenuto, e un valore lasciato a schermo dopo un rifiuto afferma un dato falso. Nel caso osservato i campi in cui si scrive tenevano un pulsante di salvataggio e quelli a scelta secca si salvavano subito: l'uniformità utile non è stata un gesto unico ma un'informazione unica, cioè che ogni campo dica se è salvato, e il censimento dei controlli ha trovato due salvataggi che a un errore tornavano indietro senza una parola.
+>
+> Un interruttore globale promette qualcosa in ogni punto in cui si vede. Un comando "mostra spiegazioni" che accendeva riquadri in quattro schede su dieci è stato letto, dal vivo, come una funzione rotta: se un interruttore è globale, ogni schermata che lo mostra deve rispondergli.
+
 ## Sicurezza applicativa
 
 <gestione di autenticazione e autorizzazione, validazione input, gestione dei segreti, superfici esposte e relative mitigazioni>

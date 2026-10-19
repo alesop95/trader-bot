@@ -28,11 +28,18 @@ con formattazione, che questo strumento ricompone.
 
 Il formato viene riconosciuto dalla forma del file, non dall'estensione.
 
+Un export puo' essere compresso con gzip, cioe' avere l'estensione `.json.gz`: la cartella
+`_notes/fonti/discord/dce/` li conserva cosi' perche' il formato di DiscordChatExporter pesa
+venti volte il suo contenuto, come misurato in ADR-104. Anche la compressione si riconosce dai
+primi due byte del file e non dal nome, quindi un export compresso si passa a questo strumento
+esattamente come uno in chiaro, senza opzioni e senza decomprimerlo prima.
+
 Uso
 ---
     python tools/read-chat-export.py export.json --out _notes/fonti/2026-08-26-canale.md
     python tools/read-chat-export.py export.json --grep "link cable" --grep checksum
     python tools/read-chat-export.py export.json --since 2024-01-01 --min-length 40
+    python tools/read-chat-export.py export.json.gz --grep ACE
 
 Nota sul token di Discord
 -------------------------
@@ -45,6 +52,7 @@ un file già prodotto.
 """
 
 import argparse
+import gzip
 import io
 import json
 import os
@@ -52,6 +60,24 @@ import re
 import sys
 
 RE_DATA = re.compile(r"^(\d{4})-(\d{2})-(\d{2})")
+
+# I due byte con cui si apre ogni flusso gzip. Si guarda il contenuto e non il nome del file
+# perche' un export rinominato a mano resta leggibile, mentre un gzip salvato senza la sua
+# estensione, se ci si fidasse del nome, non lo sarebbe.
+MAGICO_GZIP = b"\x1f\x8b"
+
+
+def apri_export(path):
+    """Apre l'export in lettura testo, decomprimendolo al volo se e' un gzip.
+
+    Ritorna un flusso di testo gia' decodificato in UTF-8, con gli errori sostituiti come fa
+    l'apertura in chiaro: chi chiama non deve sapere se il file su disco sia compresso.
+    """
+    with io.open(path, "rb") as fh:
+        magico = fh.read(2)
+    if magico == MAGICO_GZIP:
+        return io.TextIOWrapper(gzip.open(path, "rb"), encoding="utf-8", errors="replace")
+    return io.open(path, encoding="utf-8", errors="replace")
 
 
 def riconosci(payload):
@@ -181,7 +207,7 @@ def main():
             print("la data %r non è nel formato AAAA-MM-GG" % v, file=sys.stderr)
             return 2
 
-    with io.open(args.export, encoding="utf-8", errors="replace") as fh:
+    with apri_export(args.export) as fh:
         payload = json.load(fh)
 
     tipo = riconosci(payload)

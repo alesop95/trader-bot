@@ -29,7 +29,14 @@ if [ ! -f "$script" ] && [ -f "$root/README.md" ]     && grep -q '<!-- sync-read
     bundle="--bundle"
 fi
 
-if [ -f "$root/README.md" ] && [ -f "$script" ]; then
+# Il README si riallinea solo se questo commit tocca il README o il catalogo da cui l'indice si
+# genera, `.claude/templates/PACKAGES.md`.
+# Prima la verifica girava a ogni commit e guardava la cartella, non lo stage: il 2026-10-19 un'altra
+# sessione aveva il README modificato e non in stage, e da quel momento nessun commit passava, di
+# nessuno, anche se non toccava il README (T-24 del progetto che l'ha trovato).
+tocca_indice=$(git diff --cached --name-only | grep -E '^(README\.md|\.claude/templates/PACKAGES\.md)$' || true)
+
+if [ -n "$tocca_indice" ] && [ -f "$root/README.md" ] && [ -f "$script" ]; then
     if [ -z "$python_cmd" ]; then
         echo "sync-readme: Python non trovato; installarlo prima del commit" >&2
         exit 1
