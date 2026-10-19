@@ -508,5 +508,41 @@ class RiferimentoEsteso(BaseDelMerge):
         self.assertIn(PROPRIA, f.read_text(encoding="utf-8"))
 
 
+class Somiglianza(unittest.TestCase):
+    """La scorciatoia della somiglianza decide come la ratio piena, a ogni soglia.
+
+    La scorciatoia esiste per il costo, misurato il 2026-10-19 su un progetto mai
+    allineato; se decidesse diversamente dalla ratio cambierebbe quali righe il
+    merge perdona, cioe' l'esito dell'allineamento, senza nessun errore visibile.
+    Le coppie coprono le tre forme: righe quasi uguali, lontane, e lontane per
+    lunghezza, che e' il caso che real_quick_ratio scarta senza leggerle."""
+
+    def test_decide_come_la_ratio_piena(self):
+        import difflib
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("allinea", STRUMENTO)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        paragrafo = "La passata di allineamento legge la storia del template e decide file per file. " * 12
+        coppie = [
+            (paragrafo, paragrafo.replace("decide", "sceglie")),
+            (paragrafo, paragrafo[: len(paragrafo) // 3]),
+            (paragrafo, "una riga breve e diversa"),
+            ("abc def ghi", "abc dxf ghi"),
+            ("", "qualcosa"),
+            (paragrafo, "".join(reversed(paragrafo))),
+            # stessa lunghezza, caratteri diversi: passa real_quick_ratio, la scarta quick_ratio
+            ("a" * 300, "b" * 300),
+        ]
+        for v, r in coppie:
+            piena = difflib.SequenceMatcher(None, v, r, autojunk=False).ratio()
+            for soglia in (0.3, 0.6, 0.8, 0.95):
+                for _ in range(2):  # la seconda volta passa dalla cache
+                    q = mod.somiglianza(v, r, soglia)
+                    self.assertEqual(q >= soglia, piena >= soglia, (v[:20], r[:20], soglia))
+                    if piena >= soglia:
+                        self.assertEqual(q, piena)
+
+
 if __name__ == "__main__":
     unittest.main()

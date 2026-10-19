@@ -79,6 +79,23 @@ cartella che ha .claude ma non .claude/PROJECT-SYSTEM.md non e istanziata, quind
 la passata non la tratta; non resta pero' invisibile, perche a fine corsa viene
 elencata a parte, da istanziare o da escludere.
 
+Progetti dentro macchine raggiungibili via SSH. Oltre alle radici locali la
+passata interroga ogni alias di ~/.ssh/config che non punta a GitHub (oppure i
+soli -Ssh indicati; -SoloLocali li salta tutti) e cerca .claude/PROJECT-SYSTEM.md
+sotto -RadiciRemote fino a -ProfonditaRemota livelli. Un progetto remoto si scrive
+ssh://<alias>/<percorso> e passa per le stesse guardie, la stessa misura e la
+stessa scrittura di uno locale, attraverso trasporto-ssh.ps1; il template gli
+arriva come git bundle in ~/.cache/template-claude-developing della macchina.
+Un progetto remoto si tratta solo se il proprietario lo ha approvato in
+_notes/allineamento/remoti-approvati.txt: uno nuovo resta da-confermare, si
+elenca e non si tocca, perche' una macchina nuova con progetti di sviluppo e' una
+decisione del proprietario e non della passata. esclusi.txt accetta anche
+ssh://<alias>, che esclude l'host intero. Un host che non risponde, che non ha
+git o python3, o su cui il template non arriva, si elenca fra quelli da guardare.
+
+  da-confermare        progetto remoto trovato ma non ancora approvato dal
+                       proprietario: non si misura e non si scrive
+
 Il registro vive in _notes/allineamento/registro.json del template, ignorato da
 git perche contiene percorsi di progetti; ogni corsa lascia accanto log, rapporti
 JSON e righe del consenso. Commit e push restano manuali, progetto per progetto;
@@ -104,6 +121,10 @@ param(
   [int]$Consenso = 3,
   [switch]$IncludiAlberi,
   [switch]$ConsentiTemplateSporco,
+  [string[]]$Ssh = @(),
+  [switch]$SoloLocali,
+  [string[]]$RadiciRemote = @('~', '/opt', '/srv', '/var/www', '/home'),
+  [int]$ProfonditaRemota = 5,
   [switch]$Autotest
 )
 Set-StrictMode -Version 2
@@ -114,15 +135,12 @@ try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
 $utf8 = New-Object System.Text.UTF8Encoding $false
 
 function Dividi([string[]]$v) { @($v | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ }) }
-$Solo = Dividi $Solo; $Escludi = Dividi $Escludi; $Radici = Dividi $Radici
+$Solo = Dividi $Solo; $Escludi = Dividi $Escludi; $Radici = Dividi $Radici; $Ssh = Dividi $Ssh; $RadiciRemote = Dividi $RadiciRemote
 
 function Esci-Guardia([string]$m) { Write-Host "GUARDIA: $m"; exit 2 }
-# Non si chiama Git: in PowerShell una funzione con quel nome copre git.exe e
-# richiamerebbe se stessa all'infinito.
-function Invoca-Git([string]$repo) {
-  $out = & git -C $repo @args 2>$null
-  return $out
-}
+# Invoca-Git, Esiste, Leggi-Testo, Scrivi-Testo e la scoperta remota: un solo
+# codice per i progetti locali e per quelli nelle macchine raggiungibili via SSH.
+. (Join-Path $PSScriptRoot 'trasporto-ssh.ps1')
 
 # --- guardie iniziali ---------------------------------------------------------
 foreach ($c in 'git', 'python') { if (-not (Get-Command $c -ErrorAction SilentlyContinue)) { Esci-Guardia "$c non e sul PATH" } }
@@ -176,12 +194,33 @@ function Conta($esiti) {
   $c['azionabili'] = ($AZIONABILI | ForEach-Object { $c[$_] } | Measure-Object -Sum).Sum
   return $c
 }
+# Per un progetto remoto lo strumento gira sulla macchina, con la copia del template
+# preparata li', e il rapporto torna qui con scp: da quel momento consenso, registro
+# e chiudi-allineamento lo leggono come quello di un progetto locale.
+$tplRemoti = @{}
 function Misura([string]$prj, [string]$json, [switch]$Scrivi) {
-  $a = @($strumento, '--template', $tpl, '--progetto', $prj, '--json', $json, '--innesco')
-  if (Test-Path -LiteralPath $fileComuni) { $a += '--righe-comuni', $fileComuni }
-  if ($Scrivi) { $a += '--applica', '--rimuovi' }
-  $out = & python @a 2>&1
-  $codice = $LASTEXITCODE
+  if (Test-Remoto $prj) {
+    $r = Dividi-Remoto $prj
+    $rt = $tplRemoti[$r.alias]
+    $rjson = '.cache/allinea-rapporti/' + [System.IO.Path]::GetFileName($json)
+    $a = @("$rt/.claude/templates/tools/allinea-dal-template.py", '--template', $rt, '--progetto', $r.percorso, '--json', "`$HOME/$rjson", '--innesco')
+    if (Test-Path -LiteralPath $fileComuni) { $a += '--righe-comuni', "`$HOME/.cache/allinea-rapporti/righe-comuni.json" }
+    if ($Scrivi) { $a += '--applica', '--rimuovi' }
+    # $HOME resta fuori dagli apici perche' la shell remota lo espanda.
+    $riga = 'mkdir -p "$HOME/.cache/allinea-rapporti" && python3 ' + (($a | ForEach-Object { if ($_ -like '$HOME/*') { '"' + $_ + '"' } else { Q $_ } }) -join ' ') + ' 2>&1; echo "USCITA=$?"'
+    $out = @(Esegui-Ssh $r.alias $riga)
+    $u = $out | Where-Object { $_ -like 'USCITA=*' } | Select-Object -Last 1
+    $codice = if ($u) { [int]$u.Substring(7) } else { 2 }
+    $out = @($out | Where-Object { $_ -notlike 'USCITA=*' })
+    if ($codice -lt 2 -and -not (Copia-Giu $r.alias $rjson $json)) { $codice = 2; $out += 'rapporto non riportato con scp' }
+  }
+  else {
+    $a = @($strumento, '--template', $tpl, '--progetto', $prj, '--json', $json, '--innesco')
+    if (Test-Path -LiteralPath $fileComuni) { $a += '--righe-comuni', $fileComuni }
+    if ($Scrivi) { $a += '--applica', '--rimuovi' }
+    $out = & python @a 2>&1
+    $codice = $LASTEXITCODE
+  }
   [System.IO.File]::AppendAllText($fileLog, "--- $prj" + $(if ($Scrivi) { ' (applica)' } else { '' }) + "`r`n" + ($out | Out-String) + "`r`n", $utf8)
   return $codice
 }
@@ -251,9 +290,8 @@ function Prove-Strumenti([string]$prj, $esitiPrima) {
   $falliti = @(); $provati = 0
   $tocchi = @($esitiPrima | Where-Object { $_.file -like 'tools/*.py' -and ($AZIONABILI -contains $_.esito) })
   foreach ($e in $tocchi) {
-    $f = Join-Path $prj ($e.file -replace '/', '\')
-    if (-not (Test-Path -LiteralPath $f)) { continue }
-    $src = Get-Content -LiteralPath $f -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+    if (-not (Esiste $prj $e.file 'file')) { continue }
+    $src = Leggi-Testo $prj $e.file
     $flag = $null
     if ($src -match '--self-test') { $flag = '--self-test' } elseif ($src -match '--autotest') { $flag = '--autotest' }
     # Uno strumento senza prova interna si prova almeno a caricare, con --help. Misurato il
@@ -263,8 +301,16 @@ function Prove-Strumenti([string]$prj, $esitiPrima) {
     # comportamento, ma un file troncato o con un import rotto cade qui e in nessun altro punto
     # della passata.
     if (-not $flag) { $flag = '--help' }
-    $out = & python $f $flag 2>&1
-    $codice = $LASTEXITCODE
+    if (Test-Remoto $prj) {
+      $out = @(Esegui-Ssh (Dividi-Remoto $prj).alias ('cd ' + (Q (Dividi-Remoto $prj).percorso) + ' && python3 ' + (Q $e.file) + ' ' + $flag + ' 2>&1; echo "USCITA=$?"'))
+      $u = $out | Where-Object { $_ -like 'USCITA=*' } | Select-Object -Last 1
+      $codice = if ($u) { [int]$u.Substring(7) } else { 2 }
+      $out = @($out | Where-Object { $_ -notlike 'USCITA=*' })
+    }
+    else {
+      $out = & python (Join-Path $prj ($e.file -replace '/', '\')) $flag 2>&1
+      $codice = $LASTEXITCODE
+    }
     $testo = ($out | Out-String)
     [System.IO.File]::AppendAllText($fileLog, "--- prova interna $($e.file) $flag (uscita $codice)`r`n" + $testo + "`r`n", $utf8)
     if ($codice -eq 0) { $provati++ }
@@ -279,17 +325,12 @@ function Prove-Strumenti([string]$prj, $esitiPrima) {
 # riga per percorso, con il motivo dopo il cancelletto. Vive in _notes/ del template perche
 # i percorsi sono della macchina, come il registro, e non si versiona.
 $fileEsclusi = Join-Path $base 'esclusi.txt'
-$esclusi = @{}
-if (Test-Path -LiteralPath $fileEsclusi) {
-  foreach ($r in (Get-Content -LiteralPath $fileEsclusi -Encoding UTF8)) {
-    $t = $r.Trim()
-    if (-not $t -or $t.StartsWith('#')) { continue }
-    $parti = $t -split '#', 2
-    $percorso = $parti[0].Trim().TrimEnd([char]92, [char]47).Replace([string][char]47, [string][char]92)
-    $motivo = if ($parti.Count -gt 1) { $parti[1].Trim() } else { 'senza motivo' }
-    $esclusi[$percorso.ToLowerInvariant()] = $motivo
-  }
-}
+$esclusi = Leggi-Elenco $fileEsclusi
+# I progetti remoti che il proprietario ha approvato: un progetto in una macchina
+# raggiungibile via SSH non si tocca finche' non sta qui, perche' una macchina nuova
+# con progetti di sviluppo si decide, non si scopre.
+$fileApprovati = Join-Path $base 'remoti-approvati.txt'
+$approvati = Leggi-Elenco $fileApprovati
 
 # Prove interne della guardia dell'albero sporco. Sono qui e non in tests/ perche'
 # esercitano due funzioni di questo script e non il suo giro completo: il giro completo
@@ -313,8 +354,22 @@ if ($Autotest) {
   Caso 'un file che resta uguale non viene scritto, quindi non collide' @() (Collisione $esitiFinti @('.claude/rules/tre.md'))
   Caso 'un file da rimuovere collide se e sporco' @('tools/vecchio.py') (Collisione $esitiFinti @('tools/vecchio.py'))
   Caso 'una cartella non tracciata copre cio che sta sotto' @('.claude/skills/attrezzo/SKILL.md') (Collisione $esitiFinti @('.claude/skills/attrezzo/'))
+
+  # Il trasporto verso le macchine raggiungibili via SSH, nelle parti che non chiedono una rete.
+  $configFinta = "Host github-corp`n  HostName github.com`nHost vm-a vm-b`n  HostName 10.0.0.1`nHost *.interno`n  User x`nHost github.com`n  HostName github.com`nHost gh-lavoro`n  HostName ssh.github.com`nHost studio`n  HostName studio.lan"
+  Caso 'gli alias GitHub e quelli con jolly non sono macchine' @('vm-a', 'vm-b', 'studio') (Host-Ssh $configFinta)
+  Caso "l'apice singolo si cita senza aprire la stringa" @("'a'\''b'") (Q "a'b")
+  Caso 'un progetto remoto si divide in alias e percorso' @('vm-a', '/opt/x') (@((Dividi-Remoto 'ssh://vm-a/opt/x/') | ForEach-Object { $_.alias; $_.percorso }))
+  Caso 'un percorso locale non e remoto' @($false) (Test-Remoto 'D:\progetto')
+  $elencoFinto = @{ 'ssh://vm-b' = 'host intero'; 'ssh://vm-a/opt/x' = 'progetto'; 'd:\locale' = 'locale' }
+  Caso "l'host escluso copre tutti i suoi progetti" @('host intero') (In-Elenco $elencoFinto 'ssh://VM-B/home/y')
+  Caso 'un progetto remoto si trova per percorso' @('progetto') (In-Elenco $elencoFinto 'ssh://vm-a/opt/x')
+  Caso "un progetto nuovo su un host noto non e approvato" @($null) (In-Elenco $elencoFinto 'ssh://vm-a/opt/nuovo')
+  Caso 'un percorso locale si trova senza distinguere le maiuscole' @('locale') (In-Elenco $elencoFinto 'D:\Locale\')
+  $b64 = (Comando-Ssh "echo 'x'") -replace '^echo (\S+) \|.*$', '$1'
+  Caso 'il comando remoto torna identico dal base64' @("echo 'x'") ([System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($b64)))
   Write-Host ''
-  Write-Host "$(6 - $rossi) casi superati su 6"
+  Write-Host "$(15 - $rossi) casi superati su 15"
   Remove-Item -LiteralPath $blocco -Force -ErrorAction SilentlyContinue
   exit $(if ($rossi) { 1 } else { 0 })
 }
@@ -341,9 +396,35 @@ try {
       Where-Object { $_.FullName.TrimEnd('\') -ne $tpl } |
       Where-Object { $_.FullName -notmatch '\\\.claude\\' } |
       Where-Object { -not $Solo -or $Solo -contains $_.Name } |
-      Where-Object { $Escludi -notcontains $_.Name }
+      Where-Object { $Escludi -notcontains $_.Name } |
+      ForEach-Object { [pscustomobject]@{ percorso = $_.FullName.TrimEnd('\'); nome = $_.Name } }
   }
-  $trovati = @($trovati | Sort-Object FullName -Unique)
+  $trovati = @($trovati | Sort-Object percorso -Unique)
+
+  # Le macchine raggiungibili via SSH. Una macchina esclusa per intero non si
+  # interroga nemmeno; una che non risponde non ferma la corsa ma si dichiara, perche'
+  # un progetto che la passata non vede e' un progetto che resta indietro in silenzio.
+  $hostProblemi = @(); $parzialiRemoti = @(); $remotiTrovati = @()
+  if (-not $SoloLocali) {
+    $alias = if ($Ssh) { $Ssh } else { Host-Ssh }
+    foreach ($h in $alias) {
+      if (In-Elenco $esclusi "ssh://$h/") { continue }
+      $s = Scopri-Remoti $h $RadiciRemote $ProfonditaRemota
+      if (-not $s.raggiunto) { $hostProblemi += [pscustomobject]@{ alias = $h; motivo = 'non risponde via ssh' }; continue }
+      if (-not $s.strumenti) { $hostProblemi += [pscustomobject]@{ alias = $h; motivo = 'manca git o python3' }; continue }
+      $progettiHost = @($s.progetti | Where-Object { -not $Solo -or $Solo -contains (($_ -split '/')[-1]) } | Where-Object { $Escludi -notcontains (($_ -split '/')[-1]) })
+      $parzialiRemoti += @($s.parziali | Where-Object { -not (In-Elenco $esclusi $_) })
+      if (-not $progettiHost) { continue }
+      $daMisurare = @($progettiHost | Where-Object { (In-Elenco $approvati $_) -and -not (In-Elenco $esclusi $_) })
+      if ($daMisurare) {
+        $rt = Prepara-Template $h $tpl $tplHead
+        if (-not $rt) { $hostProblemi += [pscustomobject]@{ alias = $h; motivo = $script:ErroreTemplate }; continue }
+        $tplRemoti[$h] = $rt
+      }
+      $remotiTrovati += @($progettiHost | ForEach-Object { [pscustomobject]@{ percorso = $_.TrimEnd('/'); nome = (Nome-Progetto $_) } })
+    }
+  }
+  $trovati = @($trovati) + @($remotiTrovati)
 
   # Una cartella che ha .claude ma non .claude/PROJECT-SYSTEM.md e' invisibile a
   # questa passata, e lo resta in silenzio: non essendo istanziata non entra nel
@@ -368,20 +449,21 @@ try {
   }
   $parziali = @($parziali | Sort-Object FullName -Unique)
 
-  if (-not $trovati) { Log 'nessun progetto istanziato trovato'; $esito = 0; return }
+  if (-not $trovati -and -not $hostProblemi) { Log 'nessun progetto istanziato trovato'; $esito = 0; return }
 
   # --- fase 1: guardie e prima misura -----------------------------------------
   $progetti = foreach ($p in $trovati) {
-    $prj = $p.FullName.TrimEnd('\')
-    $o = [pscustomobject]@{ nome = $p.Name; percorso = $prj; slug = ($prj -replace '[:\\/]+', '--').Trim('-'); stato = $null; sporco = $false; sporchi = @(); c = $null; avvisi = @() }
-    $dotgit = Join-Path $prj '.git'
-    if ($esclusi.ContainsKey($prj.ToLowerInvariant())) { $o.stato = 'escluso'; $o.avvisi += 'escluso: ' + $esclusi[$prj.ToLowerInvariant()] }
-    elseif (-not (Test-Path -LiteralPath $dotgit)) { $o.stato = 'non-git' }
-    elseif ((Test-Path -LiteralPath $dotgit -PathType Leaf) -and -not $IncludiAlberi) { $o.stato = 'albero-secondario' }
+    $prj = $p.percorso
+    $o = [pscustomobject]@{ nome = $p.nome; percorso = $prj; slug = ($prj -replace '[:\\/]+', '--').Trim('-'); stato = $null; sporco = $false; sporchi = @(); c = $null; avvisi = @() }
+    $escl = In-Elenco $esclusi $prj
+    if ($escl) { $o.stato = 'escluso'; $o.avvisi += 'escluso: ' + $escl }
+    elseif ((Test-Remoto $prj) -and -not (In-Elenco $approvati $prj)) { $o.stato = 'da-confermare' }
+    elseif (-not (Esiste $prj '.git')) { $o.stato = 'non-git' }
+    elseif ((Esiste $prj '.git' 'file') -and -not $IncludiAlberi) { $o.stato = 'albero-secondario' }
     else {
       $radiciPrj = @(Invoca-Git $prj rev-list --max-parents=0 HEAD)
       if ($radiciPrj | Where-Object { $tplRadici -contains $_ }) { $o.stato = 'clone-del-template' }
-      elseif (@('MERGE_HEAD', 'rebase-merge', 'rebase-apply', 'CHERRY_PICK_HEAD', 'REVERT_HEAD') | Where-Object { Test-Path -LiteralPath (Join-Path $prj (Invoca-Git $prj rev-parse --git-path $_)) }) { $o.stato = 'operazione-in-corso' }
+      elseif (@('MERGE_HEAD', 'rebase-merge', 'rebase-apply', 'CHERRY_PICK_HEAD', 'REVERT_HEAD') | Where-Object { $gp = Invoca-Git $prj rev-parse --git-path $_; $gp -and (Esiste $prj $gp) }) { $o.stato = 'operazione-in-corso' }
       else {
         $null = Invoca-Git $prj symbolic-ref -q HEAD
         if ($LASTEXITCODE -ne 0) { $o.stato = 'head-staccato' }
@@ -410,6 +492,9 @@ try {
   foreach ($k in $conteggio.Keys) { if ($conteggio[$k] -ge $Consenso) { $t = $testi[$k]; if (-not $comuni.ContainsKey($t[0])) { $comuni[$t[0]] = New-Object System.Collections.ArrayList }; [void]$comuni[$t[0]].Add($t[1]) } }
   if ($comuni.Count) {
     [System.IO.File]::WriteAllText($fileComuni, ($comuni | ConvertTo-Json -Depth 3), $utf8)
+    foreach ($h in @($tplRemoti.Keys)) {
+      if (-not (Copia-Su $h $fileComuni '.cache/allinea-rapporti/righe-comuni.json')) { Log "AVVISO: righe del consenso non copiate su $h" }
+    }
     Log ("consenso: {0} righe anteriori alla storia del template, in {1} file, condivise da almeno {2} progetti" -f (($comuni.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum), $comuni.Count, $Consenso)
     Log ''
   }
@@ -467,22 +552,27 @@ try {
           }
         }
         if ($Applica -and $o.stato -in 'applicato', 'allineato') {
-          $marcatore = Join-Path $prj '.claude\allineamento-template.json'
+          $marcatore = '.claude/allineamento-template.json'
           $vecchio = $null
-          if (Test-Path -LiteralPath $marcatore) { try { $vecchio = Leggi-Json $marcatore } catch {} }
+          if (Esiste $prj $marcatore 'file') { try { $vecchio = (Leggi-Testo $prj $marcatore) | ConvertFrom-Json } catch {} }
           if (-not $vecchio -or $vecchio.template_albero_claude -ne $tplAlbero) {
             $m = [ordered]@{ template_commit = $tplHead; template_albero_claude = $tplAlbero; data_commit_template = $tplData; allineato_il = (Get-Date -Format 'yyyy-MM-dd'); strumento = 'allinea-tutti.ps1' }
-            [System.IO.File]::WriteAllText($marcatore, ($m | ConvertTo-Json) + "`n", $utf8)
+            if (-not (Scrivi-Testo $prj $marcatore (($m | ConvertTo-Json) + "`n"))) { $o.avvisi += 'marcatore di allineamento non scritto' }
           }
         }
 
-        $claudeMd = Join-Path $prj 'CLAUDE.md'
-        if (-not (Test-Path -LiteralPath $claudeMd)) { $claudeMd = Join-Path $prj '.claude\CLAUDE.md' }
-        $testo = if (Test-Path -LiteralPath $claudeMd) { Get-Content -LiteralPath $claudeMd -Raw -Encoding UTF8 } else { '' }
-        $senza = @($skillNorme | Where-Object { (Test-Path -LiteralPath (Join-Path $prj ".claude\skills\$_")) -and ($testo -notmatch [regex]::Escape('`' + $_ + '`')) })
+        $relMd = if (Esiste $prj 'CLAUDE.md' 'file') { 'CLAUDE.md' } else { '.claude/CLAUDE.md' }
+        $testo = Leggi-Testo $prj $relMd
+        $senza = @($skillNorme | Where-Object { (Esiste $prj ".claude/skills/$_" 'cartella') -and ($testo -notmatch [regex]::Escape('`' + $_ + '`')) })
         if ($senza) { $o.avvisi += 'innesco mancante nel CLAUDE.md: ' + ($senza -join ', ') }
         if (Test-Path -LiteralPath $misura) {
-          $mis = & python $misura --root $prj 2>&1
+          if (Test-Remoto $prj) {
+            $r = Dividi-Remoto $prj
+            $mis = @(Esegui-Ssh $r.alias ('python3 ' + (Q "$($tplRemoti[$r.alias])/.claude/templates/tools/misura-istruzioni.py") + ' --root ' + (Q $r.percorso) + ' 2>&1; echo "USCITA=$?"'))
+            $u = $mis | Where-Object { $_ -like 'USCITA=*' } | Select-Object -Last 1
+            $global:LASTEXITCODE = if ($u) { [int]$u.Substring(7) } else { 0 }
+          }
+          else { $mis = & python $misura --root $prj 2>&1 }
           if ($LASTEXITCODE -ne 0) { $tot = ($mis | Select-String 'progetto [0-9.]+ caratteri' | Select-Object -First 1); $o.avvisi += 'carico istruzioni oltre soglia' + $(if ($tot) { " ($($tot.Line.Trim()))" } else { '' }) }
         }
       }
@@ -504,12 +594,21 @@ try {
   $finali = @('allineato', 'applicato', 'da-allineare') + $SALTATI
   $saltati = @($progetti | Where-Object { $SALTATI -contains $_.stato })
   if ($saltati) { Log ''; Log 'Saltati per costruzione, nessuna azione:'; $saltati | ForEach-Object { Log "  $($_.percorso)  ($($_.stato))" } }
-  $amano = @($progetti | Where-Object { $finali -notcontains $_.stato })
+  $daConfermare = @($progetti | Where-Object { $_.stato -eq 'da-confermare' })
+  $amano = @($progetti | Where-Object { $finali -notcontains $_.stato -and $_.stato -ne 'da-confermare' })
   if ($amano) { Log ''; Log 'Da guardare a mano:'; $amano | ForEach-Object { Log "  $($_.percorso)  ($($_.stato))" } }
-  if ($parziali) {
+  if ($hostProblemi) { Log ''; Log 'Macchine raggiungibili via SSH che questa passata non ha potuto trattare:'; $hostProblemi | ForEach-Object { Log "  $($_.alias)  ($($_.motivo))" }; Log '  si sistema l accesso, oppure si escludono con ssh://<alias> in _notes/allineamento/esclusi.txt' }
+  if ($daConfermare) {
+    Log ''
+    Log 'Progetti nelle macchine via SSH non ancora approvati dal proprietario: non toccati'
+    $daConfermare | ForEach-Object { Log "  $($_.percorso)" }
+    Log "  si approvano in $fileApprovati oppure si escludono in esclusi.txt, su decisione del proprietario"
+  }
+  $tuttiParziali = @($parziali | ForEach-Object { $_.FullName }) + @($parzialiRemoti)
+  if ($tuttiParziali) {
     Log ''
     Log 'Hanno .claude ma non .claude/PROJECT-SYSTEM.md: la passata non li vede'
-    $parziali | ForEach-Object { Log "  $($_.FullName)" }
+    $tuttiParziali | ForEach-Object { Log "  $_" }
     Log '  si istanziano con la skill init-project-system, oppure si elencano in _notes/allineamento/esclusi.txt per non rivederli'
   }
   $applicati = @($progetti | Where-Object { $_.stato -eq 'applicato' })
@@ -519,7 +618,7 @@ try {
   Log "log e rapporti di questa corsa: $dirCorsa"
   if (-not $Applica) { Log 'a vuoto: nessun progetto e stato scritto. Rilanciare con -Applica.' }
   $pendenti = @($progetti | Where-Object { $_.stato -eq 'da-allineare' })
-  $esito = if ($amano -or (-not $Applica -and $pendenti)) { 1 } else { 0 }
+  $esito = if ($amano -or $hostProblemi -or $daConfermare -or (-not $Applica -and $pendenti)) { 1 } else { 0 }
 }
 finally {
   Remove-Item -LiteralPath $blocco -ErrorAction SilentlyContinue

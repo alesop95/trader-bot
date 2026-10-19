@@ -67,7 +67,8 @@ param(
   [int]$Tentativi = 3,
   [switch]$SoloPush,
   [switch]$SaltaPush,
-  [switch]$Autotest
+  [switch]$Autotest,
+  [string]$AutotestSsh = ''
 )
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Continue'
@@ -77,12 +78,11 @@ function Dividi([string[]]$v) { @($v | ForEach-Object { $_ -split ',' } | ForEac
 $Solo = Dividi $Solo; $Escludi = Dividi $Escludi
 
 function Esci-Guardia([string]$m) { Write-Host "GUARDIA: $m"; exit 2 }
-# Non si chiama Git: in PowerShell una funzione con quel nome copre git.exe e
-# richiamerebbe se stessa all'infinito.
-function Invoca-Git([string]$repo) {
-  $out = & git -C $repo @args 2>$null
-  return $out
-}
+# Invoca-Git ed Esiste valgono per un progetto locale e per uno ssh://<alias>/<percorso>:
+# per un progetto in una macchina via SSH commit e push girano sulla macchina, con
+# l'identita' git, il ramo, gli hook e le chiavi di quel progetto, che e' il suo
+# version control e non quello di questa postazione.
+. (Join-Path $PSScriptRoot 'trasporto-ssh.ps1')
 
 $ESITI_SCRITTI = @('NUOVO', 'VECCHIO', 'SUPERATO', 'MERGE', 'INNESCO')
 $MARCATORE = '.claude/allineamento-template.json'
@@ -126,12 +126,12 @@ function Smista([string]$prj, [string]$rapporto) {
 }
 
 function Ha-Remoto([string]$prj) {
-  & git -C $prj rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>$null | Out-Null
+  Invoca-Git $prj rev-parse --abbrev-ref --symbolic-full-name '@{u}' | Out-Null
   return ($LASTEXITCODE -eq 0)
 }
 
 function Avanti([string]$prj) {
-  $n = & git -C $prj rev-list --count '@{u}..HEAD' 2>$null
+  $n = Invoca-Git $prj rev-list --count '@{u}..HEAD'
   if ($LASTEXITCODE -ne 0) { return 0 }
   return [int]$n
 }
@@ -140,7 +140,7 @@ function Avanti([string]$prj) {
 # parte dello strumento, con attese crescenti. L'azione e' iniettabile per potere
 # provare la ripetizione senza una rete.
 function Spingi([string]$prj, [int]$tentativi, $azione, [int[]]$attese = @(5, 15, 30)) {
-  if (-not $azione) { $azione = { param($p) & git -C $p push 2>&1 | Out-Null; return $LASTEXITCODE } }
+  if (-not $azione) { $azione = { param($p) Invoca-Git $p push | Out-Null; return $LASTEXITCODE } }
   for ($i = 1; $i -le $tentativi; $i++) {
     $codice = & $azione $prj
     if ($codice -eq 0) { return [pscustomobject]@{ ok = $true; tentativi = $i } }
@@ -149,11 +149,52 @@ function Spingi([string]$prj, [int]$tentativi, $azione, [int[]]$attese = @(5, 15
   return [pscustomobject]@{ ok = $false; tentativi = $tentativi }
 }
 
+# Remoti oltre all'upstream su cui un progetto tiene lo stesso ramo, per decisione del
+# proprietario: _notes/allineamento/push-remoti.txt, una riga per progetto con il percorso
+# seguito dai nomi dei remoti, il motivo dopo il cancelletto. Nato il 2026-10-19 per un
+# progetto che tiene il ramo allineato su due remoti, dove spingere solo l'upstream
+# lasciava l'altro indietro di un commit a ogni passata.
+function Leggi-PushRemoti([string]$file) {
+  $m = @{}
+  if (-not (Test-Path -LiteralPath $file)) { return $m }
+  foreach ($r in (Get-Content -LiteralPath $file -Encoding UTF8)) {
+    $t = ($r -split '#', 2)[0].Trim()
+    if (-not $t) { continue }
+    $parti = @($t -split '\s+')
+    if ($parti.Count -lt 2) { continue }
+    $m[$parti[0].TrimEnd('\', '/').ToLowerInvariant()] = @($parti[1..($parti.Count - 1)])
+  }
+  return $m
+}
+
+# Spinge il ramo corrente su un remoto che non e' l'upstream, solo se quel remoto e'
+# indietro, e mai con forza: un ramo divergente resta un push fallito da guardare.
+function Spingi-Altro([string]$prj, [string]$remoto, [bool]$applica, [int]$tentativi) {
+  $branch = Invoca-Git $prj rev-parse --abbrev-ref HEAD
+  $null = Invoca-Git $prj fetch -q $remoto $branch
+  $dietro = Invoca-Git $prj rev-list --count "$remoto/${branch}..HEAD"
+  if ($LASTEXITCODE -eq 0 -and [int]$dietro -eq 0) { return "$remoto allineato" }
+  if (-not $applica) { return "$remoto da spingere" }
+  $azione = { param($p) Invoca-Git $p push $remoto "HEAD:refs/heads/$branch" | Out-Null; return $LASTEXITCODE }.GetNewClosure()
+  $e = Spingi $prj $tentativi $azione
+  if ($e.ok) { return "$remoto spinto" }
+  return "$remoto push fallito"
+}
+
 function Chiudi-Progetto([string]$prj, [string]$rapporto, [string]$messaggio,
+                         [bool]$applica, [int]$tentativi, [bool]$soloPush, [bool]$saltaPush, $azionePush, [string[]]$altriRemoti = @()) {
+  $r = Chiudi-ProgettoUpstream $prj $rapporto $messaggio $applica $tentativi $soloPush $saltaPush $azionePush
+  if ($saltaPush -or -not $altriRemoti -or $r.esito -in @('cartella sparita', 'non e un repository', 'head staccato', 'rapporto mancante', 'git add fallito', 'commit rifiutato')) { return $r }
+  $esiti = @($altriRemoti | ForEach-Object { Spingi-Altro $prj $_ $applica $tentativi })
+  $r.push = (@($r.push) + $esiti) -join ', '
+  return $r
+}
+
+function Chiudi-ProgettoUpstream([string]$prj, [string]$rapporto, [string]$messaggio,
                          [bool]$applica, [int]$tentativi, [bool]$soloPush, [bool]$saltaPush, $azionePush) {
   $r = [pscustomobject]@{ percorso = $prj; esito = ''; file = 0; lasciati = 0; commit = ''; push = ''; tentativi = 0 }
 
-  if (-not (Test-Path -LiteralPath $prj)) { $r.esito = 'cartella sparita'; return $r }
+  if (-not (Esiste $prj '' 'cartella')) { $r.esito = 'cartella sparita'; return $r }
   Invoca-Git $prj rev-parse --git-dir | Out-Null
   if ($LASTEXITCODE -ne 0) { $r.esito = 'non e un repository'; return $r }
   $branch = (Invoca-Git $prj rev-parse --abbrev-ref HEAD)
@@ -169,10 +210,10 @@ function Chiudi-Progetto([string]$prj, [string]$rapporto, [string]$messaggio,
         # portare centinaia di percorsi.
         for ($i = 0; $i -lt $s.miei.Count; $i += 60) {
           $blocco = @($s.miei[$i..([Math]::Min($i + 59, $s.miei.Count - 1))])
-          & git -C $prj add -- @blocco 2>&1 | Out-Null
+          Invoca-Git $prj add -- @blocco | Out-Null
           if ($LASTEXITCODE -ne 0) { $r.esito = 'git add fallito'; return $r }
         }
-        & git -C $prj commit -m $messaggio 2>&1 | Out-Null
+        Invoca-Git $prj commit -m $messaggio | Out-Null
         if ($LASTEXITCODE -ne 0) { $r.esito = 'commit rifiutato'; return $r }
         $r.commit = (Invoca-Git $prj rev-parse --short HEAD)
         $r.esito = 'committato'
@@ -290,6 +331,28 @@ function Esegui-Autotest {
     $ko = Spingi 'qualunque' 2 $instabile @(0, 0, 0)
     Prova "se i tentativi finiscono il push resta fallito, non riuscito" (-not $ko.ok)
 
+    # 11-13. un secondo remoto dichiarato riceve lo stesso ramo, ma mai con forza
+    function Nudo([string]$nome) { $p = Join-Path $radice $nome; & git init -q --bare -b main $p 2>&1 | Out-Null; return $p }
+    $up = Nudo 'up.git'; $altro = Nudo 'altro.git'
+    $f = Nuovo-Repo 'dueremoti'
+    Scrivi $f 'mio.md' "prima`n"
+    & git -C $f add -A | Out-Null; & git -C $f commit -q -m 'base' | Out-Null
+    & git -C $f remote add origin $up | Out-Null; & git -C $f remote add altro $altro | Out-Null
+    & git -C $f push -q -u origin main 2>&1 | Out-Null; & git -C $f push -q altro main 2>&1 | Out-Null
+    Scrivi $f 'mio.md' "cambiato`n"
+    $rF = Chiudi-Progetto $f $rapA $MSG $true 1 $false $false $null @('altro')
+    $testa = & git -C $f rev-parse HEAD
+    Prova "il secondo remoto dichiarato riceve il commit" ((& git -C $altro rev-parse main) -eq $testa)
+    Prova "l'upstream riceve il commit anche con un secondo remoto" ((& git -C $up rev-parse main) -eq $testa -and $rF.push -match '^spinto, altro spinto$')
+    $g = Join-Path $radice 'divergente'
+    & git clone -q $altro $g 2>&1 | Out-Null
+    & git -C $g config user.name prova | Out-Null; & git -C $g config user.email prova@esempio.invalid | Out-Null
+    Scrivi $g 'altrui.md' "altrove`n"; & git -C $g add -A | Out-Null; & git -C $g commit -q -m 'altrove' | Out-Null; & git -C $g push -q 2>&1 | Out-Null
+    $diAltro = & git -C $altro rev-parse main
+    Scrivi $f 'mio.md' "ancora`n"
+    $rG = Chiudi-Progetto $f $rapA $MSG $true 1 $false $false $null @('altro')
+    Prova "un secondo remoto divergente non si sovrascrive e il push risulta fallito" ((& git -C $altro rev-parse main) -eq $diAltro -and $rG.push -match 'altro push fallito')
+
     # 10. il messaggio rispetta il presidio dell'hook commit-msg
     $m = Messaggio-Predefinito 'abc1234567890'
     Prova "il messaggio sta nei 72 caratteri e non porta attribuzioni" (
@@ -311,13 +374,53 @@ function Messaggio-Predefinito([string]$commit) {
   return "Allineamento dal template al commit $breve"
 }
 
+# La stessa prova dello stage selettivo, ma su un progetto in una macchina via SSH:
+# le prove qui sopra non passano mai dal trasporto, e un trasporto che cita male un
+# percorso o perde un codice di uscita le lascerebbe verdi. Il repository di prova
+# vive in ~/.cache della macchina e si cancella alla fine; nessun progetto si tocca.
+function Esegui-AutotestSsh([string]$alias) {
+  $script:casi = @()
+  function Prova([string]$nome, [bool]$esito) { $script:casi += [pscustomobject]@{ nome = $nome; ok = $esito } }
+  $dir = '.cache/autotest-chiudi-allineamento-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
+  $abs = @(Esegui-Ssh $alias ('d="$HOME/' + $dir + '"; mkdir -p "$d/.claude/norme" && cd "$d" && git init -q -b main && git config user.name prova && git config user.email prova@esempio.invalid && git config commit.gpgsign false && echo prima > "con spazio.md" && echo prima > suo.md && git add -A && git commit -q -m base && echo aggiornato > "con spazio.md" && echo altrui > suo.md && echo nuova > .claude/norme/nuova.md && echo "$d"'))
+  if (-not $abs -or $abs[-1] -notlike '/*') { Write-Host "  KO  repository di prova non creato su $alias"; return 1 }
+  $prj = "ssh://$alias" + $abs[-1]
+  $rap = Join-Path ([System.IO.Path]::GetTempPath()) ("autotest-ssh-" + [guid]::NewGuid().ToString('N').Substring(0, 8) + '.json')
+  try {
+    [System.IO.File]::WriteAllText($rap, (ConvertTo-Json @(
+      @{ file = 'con spazio.md'; template = 'con spazio.md'; esito = 'VECCHIO' },
+      @{ file = '.claude/norme/nuova.md'; template = '.claude/norme/nuova.md'; esito = 'NUOVO' }) -Depth 3), $utf8)
+    Prova 'il progetto remoto esiste visto dal trasporto' (Esiste $prj '' 'cartella')
+    Prova 'un percorso remoto assente non esiste' (-not (Esiste $prj 'manca.md'))
+    $r = Chiudi-Progetto $prj $rap "Allineamento dal template al commit abc1234" $true 1 $false $true $null
+    $dentro = @(Invoca-Git $prj show --name-only --pretty=format: HEAD | Where-Object { $_ })
+    Prova 'via ssh il file con uno spazio nel nome entra nel commit' ($dentro -contains 'con spazio.md')
+    Prova 'via ssh il file nuovo in una cartella nuova entra nel commit' ($dentro -contains '.claude/norme/nuova.md')
+    Prova "via ssh il file di un'altra sessione resta fuori" (-not ($dentro -contains 'suo.md'))
+    Prova 'via ssh il commit porta il messaggio intero' ((@(Invoca-Git $prj log -1 --format=%s) -join '') -eq 'Allineamento dal template al commit abc1234')
+    Prova 'via ssh esito e conteggi tornano giusti' ($r.esito -eq 'committato' -and $r.file -eq 2 -and $r.lasciati -eq 1)
+    Prova 'via ssh un progetto senza upstream non ha remoto' (-not (Ha-Remoto $prj))
+  }
+  finally {
+    Remove-Item -LiteralPath $rap -Force -ErrorAction SilentlyContinue
+    $null = Esegui-Ssh $alias ('rm -rf "$HOME/' + $dir + '"')
+  }
+  $caduti = @($casi | Where-Object { -not $_.ok })
+  foreach ($c in $casi) { $segno = 'ok'; if (-not $c.ok) { $segno = 'KO' }; Write-Host ("  {0}  {1}" -f $segno, $c.nome) }
+  Write-Host ("{0} casi su {1}, {2} falliti" -f $casi.Count, $alias, $caduti.Count)
+  if ($caduti) { return 1 }
+  return 0
+}
+
 if ($Autotest) { exit (Esegui-Autotest) }
+if ($AutotestSsh) { exit (Esegui-AutotestSsh $AutotestSsh) }
 
 # --- guardie ----------------------------------------------------------------
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Esci-Guardia 'git non e nel PATH' }
 if (-not $Template) { $Template = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path }
 if (-not (Test-Path -LiteralPath (Join-Path $Template '.claude\PROJECT-SYSTEM.md'))) { Esci-Guardia "$Template non sembra il template" }
 $fileRegistro = Join-Path $Template '_notes\allineamento\registro.json'
+$pushRemoti = Leggi-PushRemoti (Join-Path $Template '_notes\allineamento\push-remoti.txt')
 if (-not (Test-Path -LiteralPath $fileRegistro)) { Esci-Guardia "registro assente: lanciare prima allinea-tutti.ps1 (${fileRegistro})" }
 
 $registro = @{}
@@ -328,7 +431,7 @@ $voci = @()
 foreach ($k in ($registro.Keys | Sort-Object)) {
   $v = $registro[$k]
   if ($v.stato -ne 'applicato') { continue }
-  $nome = Split-Path $k -Leaf
+  $nome = Nome-Progetto $k
   if ($Solo -and -not ($Solo | Where-Object { $nome -like "*$_*" })) { continue }
   if ($Escludi | Where-Object { $nome -like "*$_*" }) { continue }
   $voci += [pscustomobject]@{ percorso = $k; nome = $nome; rapporto = $v.rapporto; commit = $v.template_commit; misurato = $v.misurato_il }
@@ -365,7 +468,8 @@ Write-Host ''
 
 $esiti = @()
 foreach ($v in $voci) {
-  $r = Chiudi-Progetto $v.percorso $v.rapporto $msg ([bool]$Applica) $Tentativi ([bool]$SoloPush) ([bool]$SaltaPush) $null
+  $altri = @(); $kp = $v.percorso.TrimEnd('\', '/').ToLowerInvariant(); if ($pushRemoti.ContainsKey($kp)) { $altri = $pushRemoti[$kp] }
+  $r = Chiudi-Progetto $v.percorso $v.rapporto $msg ([bool]$Applica) $Tentativi ([bool]$SoloPush) ([bool]$SaltaPush) $null $altri
   $esiti += $r
   $coda = ''
   if ($r.commit) { $coda = $r.commit }
@@ -374,9 +478,9 @@ foreach ($v in $voci) {
 }
 
 Write-Host ''
-$falliti = @($esiti | Where-Object { $_.push -eq 'push fallito' -or $_.esito -in @('commit rifiutato', 'git add fallito', 'rapporto mancante', 'non e un repository', 'head staccato', 'cartella sparita') })
+$falliti = @($esiti | Where-Object { $_.push -match 'push fallito' -or $_.esito -in @('commit rifiutato', 'git add fallito', 'rapporto mancante', 'non e un repository', 'head staccato', 'cartella sparita') })
 $committati = @($esiti | Where-Object { $_.esito -eq 'committato' })
-$spinti = @($esiti | Where-Object { $_.push -eq 'spinto' })
+$spinti = @($esiti | Where-Object { $_.push -match '^spinto' })
 Write-Host ("committati {0}, spinti {1}, da riprendere {2}" -f $committati.Count, $spinti.Count, $falliti.Count)
 if ($falliti) {
   Write-Host ''

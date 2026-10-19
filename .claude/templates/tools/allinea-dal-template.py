@@ -272,12 +272,38 @@ def sostituite_localmente(base: bytes, locale: bytes, storiche: set[str]) -> col
         for r in nuove:
             migliore, punteggio = None, 0.6
             for i, v in enumerate(vecchie):
-                q = difflib.SequenceMatcher(None, v, r, autojunk=False).ratio()
+                q = somiglianza(v, r, punteggio)
                 if q >= punteggio:
                     migliore, punteggio = i, q
             if migliore is not None:
                 perdonate[vecchie.pop(migliore)] += 1
     return perdonate
+
+
+_somiglianze: dict[tuple[str, str], float] = {}
+
+
+def somiglianza(v: str, r: str, soglia: float) -> float:
+    """La ratio di difflib fra due righe, o un valore sotto soglia quando non serve calcolarla.
+
+    Perché esiste: su un progetto mai allineato, fermo da mesi, le basi candidate
+    sono centinaia e i blocchi sostituiti lunghi, e le righe sono paragrafi interi
+    di migliaia di caratteri; la ratio piena su ogni coppia, ricalcolata per ogni
+    base, ha tenuto un processo a piena CPU per oltre nove minuti su un solo
+    progetto il 2026-10-19 (portale-asset-it, prima passata via SSH). Il risultato
+    non cambia: real_quick_ratio e quick_ratio sono limiti superiori della ratio,
+    quindi una coppia che non li supera non avrebbe superato la soglia, e una
+    coppia gia' calcolata per un'altra base ha la stessa ratio."""
+    if difflib.SequenceMatcher(None, v, r, autojunk=False).real_quick_ratio() < soglia:
+        return 0.0
+    k = (v, r)
+    q = _somiglianze.get(k)
+    if q is None:
+        sm = difflib.SequenceMatcher(None, v, r, autojunk=False)
+        q = sm.ratio() if sm.quick_ratio() >= soglia else -1.0
+        if q >= 0:
+            _somiglianze[k] = q
+    return q if q >= 0 else 0.0
 
 
 def nota_verifica(perse: int, duplicate: int, anteriori: int) -> str:
