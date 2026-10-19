@@ -245,6 +245,30 @@ def ancora_solo_indietro_di_memoria(dichiarato, radice=None):
     return all(t.startswith(NON_SPOSTANO_ANCORA) for t in toccati)
 
 
+def ancora_del_commit_di_chiusura(documento, dichiarato, radice=None):
+    """Vero se l'ancora è il commit da cui parte la chiusura che ha scritto il documento.
+
+    Uno snapshot scritto nel commit che chiude un giro non può nominare quel commit, perché il
+    suo hash nasce dopo: dichiara il commit di partenza. Quando quella chiusura contiene codice,
+    la tolleranza di `ancora_solo_indietro_di_memoria` non basta e ogni chiusura di un passo di
+    codice risultava una divergenza, anche con la memoria scritta per intero (osservato il
+    2026-10-16). Qui l'ancora vale se è il genitore dell'ultimo commit che ha toccato il
+    documento e se dopo quel commit sono arrivati solo percorsi che non spostano l'ancora. Un
+    commit di codice successivo torna a essere una divergenza.
+    """
+    rel = documento.replace(os.sep, "/")
+    try:
+        ultimo = git("log", "-1", "--format=%H", "--", rel, radice=radice).strip()
+        if not ultimo:
+            return False
+        genitori = git("rev-list", "--parents", "-n", "1", ultimo, radice=radice).split()[1:]
+        pieno = git("rev-parse", "--verify", dichiarato + "^{commit}", radice=radice).strip()
+        toccati = git("diff", "--name-only", ultimo + "..HEAD", radice=radice).split()
+    except Errore:
+        return False
+    return pieno in genitori and all(x.startswith(NON_SPOSTANO_ANCORA) for x in toccati)
+
+
 def schede_indietro(radice=None):
     """Le schede di contesto il cui commit di verifica non è fra gli antenati di HEAD.
 
@@ -387,6 +411,12 @@ def confronta(radice=None):
                     + ", ma i commit in mezzo toccano solo memoria, skill, strumenti o appunti: "
                     "l'ancora fotografa ancora il presente.")
                 continue
+            if ancora_del_commit_di_chiusura(documento, dichiarato, radice=radice):
+                note.append(
+                    documento + " dichiara " + dichiarato + ", il commit da cui parte la "
+                    "chiusura che lo ha scritto, e dopo quella chiusura non è arrivato codice: "
+                    "l'ancora fotografa ancora il presente.")
+                continue
             divergenze.append(
                 documento + " dichiara il commit " + dichiarato + " mentre HEAD è "
                 + adesso["commit"][:9] + ": " + ruolo + ", quindi lo stato che la sessione nuova "
@@ -518,6 +548,28 @@ def self_test():
         git("commit", "-q", "-m", "codice dopo l'ancora", radice=tmp)
         div, note = confronta(radice=tmp)
         prova("un commit di codice dopo l'ancora torna a essere una divergenza",
+              any("index.md dichiara il commit" in d for d in div), str(div))
+
+        # La chiusura di un passo di codice: snapshot e codice nello stesso commit, con l'ancora
+        # al commit di partenza. Non è una divergenza, ed è il caso ordinario di ogni chiusura.
+        partenza = git("rev-parse", "--short", "HEAD", radice=tmp).strip()
+        io.open(os.path.join(tmp, INDICE), "w", encoding="utf-8").write(
+            "Commit di riferimento: " + partenza + "\n")
+        io.open(os.path.join(tmp, "codice.txt"), "a", encoding="utf-8").write("quattro\n")
+        git("add", INDICE, "codice.txt", radice=tmp)
+        git("commit", "-q", "-m", "chiusura di un passo di codice", radice=tmp)
+        div, note = confronta(radice=tmp)
+        prova("negativo: lo snapshot scritto nella chiusura di codice non diverge",
+              not any("index.md dichiara il commit" in d for d in div), str(div))
+        prova("lo snapshot della chiusura di codice lo dice fra le note",
+              any("commit da cui parte la chiusura" in n for n in note), str(note))
+
+        # E un commit di codice dopo quella chiusura torna a essere una divergenza.
+        io.open(os.path.join(tmp, "codice.txt"), "a", encoding="utf-8").write("cinque\n")
+        git("add", "codice.txt", radice=tmp)
+        git("commit", "-q", "-m", "codice dopo la chiusura", radice=tmp)
+        div, note = confronta(radice=tmp)
+        prova("un commit di codice dopo la chiusura con snapshot diverge di nuovo",
               any("index.md dichiara il commit" in d for d in div), str(div))
 
         # Una scheda ancorata a un commit che non esiste.

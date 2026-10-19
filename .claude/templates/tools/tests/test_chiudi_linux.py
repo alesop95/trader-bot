@@ -77,6 +77,20 @@ esac
         self.assertEqual(result.returncode, 1)
         self.assertFalse(marker.exists())
 
+    def test_no_push_skips_push_and_still_registers(self):
+        # --no-push (2026-10-16): il commit resta locale, nessun push e nessuna verifica del
+        # remoto, ma l'impronta si registra perche' la ripresa confronta HEAD e albero.
+        verifier = self.repo / "tools" / "verifica-ripresa.py"
+        verifier.write_text("import os\nfrom pathlib import Path\nPath(os.environ['VERIFY_MARKER']).write_text('ok')\n")
+        marker = self.base / "verified"
+        env = dict(self.env, VERIFY_MARKER=str(marker))
+        result = self.run_cmd("bash", str(TOOLS / "chiudi-sessione.sh"), "--radice", str(self.repo), "--no-wipe", "--no-push", env=env)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("push", self.gitlog.read_text())
+        self.assertNotIn("ls-remote", self.gitlog.read_text())
+        self.assertIn("push saltato su richiesta", result.stdout)
+        self.assertTrue(marker.exists())
+
     def test_wipe_accepts_account_path_with_spaces(self):
         home = self.base / "home"
         hooks = home / ".claude-account 2" / "hooks"

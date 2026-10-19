@@ -160,6 +160,7 @@ Si lancia dal proprio terminale dopo aver chiuso Claude Code, perché il wipe la
 .\tools\chiudi-sessione.ps1 -SoloControlli
 .\tools\chiudi-sessione.ps1 -Messaggio "Aggiornato X: cosa cambia" -Si
 .\tools\chiudi-sessione.ps1 -NoWipe
+.\tools\chiudi-sessione.ps1 -NoPush
 .\tools\chiudi-sessione.ps1 -Account account2
 ```
 
@@ -168,6 +169,7 @@ bash tools/chiudi-sessione.sh
 bash tools/chiudi-sessione.sh --solo-controlli
 bash tools/chiudi-sessione.sh -m "Aggiornato X: cosa cambia" --si
 bash tools/chiudi-sessione.sh --no-wipe
+bash tools/chiudi-sessione.sh --no-push
 bash tools/chiudi-sessione.sh --account account2
 ```
 

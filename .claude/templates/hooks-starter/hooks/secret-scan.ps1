@@ -22,7 +22,12 @@ $raw = [Console]::In.ReadToEnd()
 # Interviene solo se il payload contiene un git commit; altrimenti lascia passare subito.
 if ($raw -notmatch 'git\s+commit') { exit 0 }
 
-$staged = (git diff --cached) -join "`n"
+# Solo le righe AGGIUNTE (-U0, righe che iniziano con '+'), non il contesto: un repository che ha
+# gia' committato un valore di prova fermerebbe ogni commit vicino a quella riga. Una riga che
+# porta il marcatore `segreto-scan: ignora` e' un'esenzione dichiarata accanto al valore.
+$staged = ((git diff --cached -U0) | Where-Object {
+    $_ -match '^\+' -and $_ -notmatch '^\+\+\+ ' -and $_ -notmatch 'segreto-scan: ignora'
+}) -join "`n"
 if (-not $staged) { exit 0 }
 
 # Pattern di secret: chiavi AWS, blocchi di chiave privata, token GitHub/OpenAI/Slack,
@@ -40,7 +45,7 @@ $patterns = @(
 
 foreach ($p in $patterns) {
     if ($staged -match $p) {
-        [Console]::Error.WriteLine("Possibile secret rilevato nel diff in stage (hook secret-scan). Rimuoverlo dallo stage prima di committare; se e' un falso positivo, adattare i pattern in .claude/hooks/secret-scan.ps1.")
+        [Console]::Error.WriteLine("Possibile secret rilevato nel diff in stage (hook secret-scan). Rimuoverlo dallo stage prima di committare; se e' un falso positivo, aggiungere sulla stessa riga il commento 'segreto-scan: ignora'.")
         exit 2
     }
 }

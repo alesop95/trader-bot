@@ -31,6 +31,7 @@ richiesti solo dai rispettivi flag.
 """
 
 import argparse
+import importlib.util
 import hashlib
 import json
 import os
@@ -42,6 +43,19 @@ SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".pptx", ".xlsx", ".html", ".htm"}
 MANIFEST_NAME = ".manifest.json"
 INDEX_NAME = "_INDEX.md"
 OCR_MIN_CHARS = 200  # sotto questa soglia di testo estratto, un .pdf è sospetto scan
+_STORAGE = None
+
+
+def storage_tool():
+    global _STORAGE
+    if _STORAGE is None:
+        path = Path(__file__).with_name('cache-storage.py')
+        if not path.is_file():
+            raise RuntimeError('Istanziare anche cache-storage.py dal pacchetto doc-ingest.')
+        spec = importlib.util.spec_from_file_location('doc_ingest_cache_storage', path)
+        _STORAGE = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_STORAGE)
+    return _STORAGE
 
 
 # --- hashing e manifest ------------------------------------------------------
@@ -199,9 +213,11 @@ def iter_source_files(source_dir, cache_dir, esclusi=None):
                 yield path
 
 
-def run(source_dir, cache_dir, engine, ocr, force, esclusi=None):
+def run(source_dir, cache_dir, engine, ocr, force, esclusi=None, compression='plain'):
     source_dir = Path(source_dir)
     cache_dir = Path(cache_dir)
+    if source_dir.resolve() == cache_dir.resolve():
+        raise ValueError('La cache deve essere distinta dalla sorgente.')
     cache_dir.mkdir(parents=True, exist_ok=True)
 
     manifest = {} if force else load_manifest(cache_dir)
@@ -213,10 +229,11 @@ def run(source_dir, cache_dir, engine, ocr, force, esclusi=None):
         source_rel = str(path.relative_to(source_dir))
         digest = sha256_of(path)
         cache_rel = source_rel + ".md"
-        cache_path = cache_dir / cache_rel
+        cache_base = cache_dir / cache_rel
+        cache_path = storage_tool().cache_variant(cache_base)
 
         previous = manifest.get(source_rel)
-        if previous == digest and cache_path.exists():
+        if previous == digest and cache_path is not None:
             status = "invariato"
         else:
             status = "aggiornato" if previous else "nuovo"
@@ -224,7 +241,8 @@ def run(source_dir, cache_dir, engine, ocr, force, esclusi=None):
         new_manifest[source_rel] = digest
 
         if status == "invariato":
-            text = cache_path.read_text(encoding="utf-8")
+            with storage_tool().open_text(cache_path) as stream:
+                text = stream.read()
             note = None
         else:
             try:
@@ -233,8 +251,11 @@ def run(source_dir, cache_dir, engine, ocr, force, esclusi=None):
                 print(f"[errore] {source_rel}: {exc}", file=sys.stderr)
                 counts["errore"] += 1
                 continue
-            cache_path.parent.mkdir(parents=True, exist_ok=True)
-            cache_path.write_text(text, encoding="utf-8")
+
+        # Re-encode an unchanged mirror without re-running extraction; publish before retiring
+        # legacy encodings. Every stored text is decoded and compared before the old one goes.
+        cache_path = storage_tool().write_cached_text(cache_base, text, compression)
+        cache_rel = str(cache_path.relative_to(cache_dir))
 
         counts[status] += 1
         analysis = analyze_markdown(text)
@@ -318,7 +339,10 @@ def main():
     if "--autotest" in sys.argv[1:]:
         sys.exit(autotest())
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[2])
-    parser.add_argument("source", help="Cartella sorgente da scansionare ricorsivamente")
+    parser.add_argument("source", nargs='?', help="Cartella sorgente da scansionare ricorsivamente")
+    parser.add_argument('--compression', choices=['plain', 'auto', 'gzip', 'bzip2', 'xz'], default='plain',
+                        help='Storage dei mirror: auto sceglie il minore verificato; plain conserva il formato storico')
+    parser.add_argument('--read-cache', type=Path, help='Legge un mirror anche compresso, senza estrarlo su disco')
     parser.add_argument(
         "--out",
         default="_notes/.tmp-doc-cache",
@@ -346,8 +370,15 @@ def main():
              "(regola documenti-personali.md; esempio in esclusi-personali.esempio.txt)",
     )
     args = parser.parse_args()
+    if args.read_cache:
+        with storage_tool().open_text(args.read_cache) as stream:
+            for line in stream:
+                print(line, end='')
+        return
+    if not args.source:
+        parser.error('Indicare source oppure --read-cache')
     esclusi = carica_esclusi(args.esclusi) if args.esclusi else None
-    ok = run(args.source, args.out, args.engine, args.ocr, args.force, esclusi)
+    ok = run(args.source, args.out, args.engine, args.ocr, args.force, esclusi, args.compression)
     sys.exit(0 if ok else 1)
 
 

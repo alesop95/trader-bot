@@ -1,0 +1,34 @@
+# Laboratorio isolato cyber-lab. La rete e' interna: nessun servizio pubblica porte verso l'host, nessun instradamento verso l'esterno.
+# Le immagini arrivano per digest dalle variabili di cyber-lab.valori.sh, che tools/su.sh carica prima di chiamare docker compose.
+# su.sh rifiuta di partire se trova una chiave "ports:" o una rete non interna: il vincolo sta nella forma dell'ambiente, non nella memoria di chi lo usa.
+
+name: cyber-lab
+
+networks:
+  cyber-lab-interna:
+    name: ${LAB_RETE}
+    internal: true
+
+services:
+  console:
+    image: ${IMG_GREENBONE}
+    networks: [cyber-lab-interna]
+    restart: "no"
+
+  scanner:
+    image: ${IMG_SCANNER}
+    networks: [cyber-lab-interna]
+    restart: "no"
+    command: ["sleep", "infinity"]
+
+  detect:
+    image: ${IMG_DETECT}
+    networks: [cyber-lab-interna]
+    restart: "no"
+
+  # Il bersaglio di studio e' opzionale e lo fornisce l'utente nei valori. Resta nella rete interna.
+  bersaglio:
+    image: ${IMG_BERSAGLIO}
+    networks: [cyber-lab-interna]
+    restart: "no"
+    profiles: ["con-bersaglio"]

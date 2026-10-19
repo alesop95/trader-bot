@@ -1,0 +1,12 @@
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: main.py", "atteso": "codice"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: README.md", "atteso": "documento"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: settings.json", "atteso": "configurazione"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: vendite.csv", "atteso": "dato"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: utils.c", "atteso": "codice"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: GUIDA.txt", "atteso": "documento"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: docker-compose.yaml", "atteso": "configurazione"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: misure.parquet", "atteso": "dato"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: index.html", "atteso": "codice"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: .gitignore", "atteso": "configurazione"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: tesi.pdf", "atteso": "documento"}
+{"prompt": "Classifica questo nome di file in una sola parola fra: codice, documento, configurazione, dato. Rispondi solo con la parola.\nNome: dump.sql", "atteso": "dato"}

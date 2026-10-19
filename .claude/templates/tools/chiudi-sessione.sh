@@ -13,10 +13,11 @@
 #   bash tools/chiudi-sessione.sh --si                 senza conferma
 #   bash tools/chiudi-sessione.sh --solo-controlli     stato e controlli, nient'altro
 #   bash tools/chiudi-sessione.sh --no-wipe            salta il wipe
+#   bash tools/chiudi-sessione.sh --no-push            committa ma non pusha; l'impronta si registra sul commit locale
 #   bash tools/chiudi-sessione.sh --account account2   wipe del solo ~/.claude-account2
 set -u
 
-messaggio=""; si=0; solo=0; nowipe=0; account=""; radice=""
+messaggio=""; si=0; solo=0; nowipe=0; nopush=0; account=""; radice=""
 while [ $# -gt 0 ]; do
     case "$1" in
         -m|--messaggio|--account|--radice)
@@ -30,6 +31,7 @@ while [ $# -gt 0 ]; do
         --si) si=1; shift ;;
         --solo-controlli) solo=1; shift ;;
         --no-wipe) nowipe=1; shift ;;
+        --no-push) nopush=1; shift ;;
         *) echo "opzione sconosciuta: $1" >&2; exit 2 ;;
     esac
 done
@@ -137,7 +139,8 @@ if [ "$ncambi" != 0 ]; then
     nota "$ncambi file  ->  \"$messaggio\""
     nota "autore: $nome <$email>"
     if [ $si = 0 ]; then
-        read -r -p "   Committo tutto e pusho su '$ramo'? [s/N] " r || { echo "Input non disponibile: niente e' stato committato."; exit 1; }
+        if [ $nopush = 1 ]; then azione="Committo tutto, senza push,"; else azione="Committo tutto e pusho"; fi
+        read -r -p "   $azione su '$ramo'? [s/N] " r || { echo "Input non disponibile: niente e' stato committato."; exit 1; }
         case "$r" in s|si|y|yes) ;; *) echo "Annullato: niente e' stato committato."; exit 1 ;; esac
     fi
     git add -A || { echo "Stage fallito: niente e' stato committato."; exit 1; }
@@ -146,7 +149,9 @@ if [ "$ncambi" != 0 ]; then
 fi
 
 titolo "Push"
-if [ $haorigin = 0 ]; then nota "nessun remoto 'origin': push saltato, il commit resta locale"
+# --no-push (2026-10-16): vedi la variante PowerShell. Il commit resta locale, l'impronta lo registra.
+if [ $nopush = 1 ]; then nota "push saltato su richiesta (--no-push): il commit resta locale su '$ramo'"
+elif [ $haorigin = 0 ]; then nota "nessun remoto 'origin': push saltato, il commit resta locale"
 elif ! git rev-parse -q --verify HEAD >/dev/null; then nota "nessun commit sul ramo: niente da pushare"
 else
     # Destinazione esplicita: un upstream diverso da origin non deve deviare la chiusura.

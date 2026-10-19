@@ -15,7 +15,10 @@ if ! printf '%s' "$input" | grep -qE 'git[[:space:]]+commit'; then
   exit 0
 fi
 
-staged="$(git diff --cached 2>/dev/null || true)"
+# Solo le righe AGGIUNTE (-U0, righe che iniziano con '+'), non il contesto: un repository che ha
+# gia' committato un valore di prova fermerebbe ogni commit vicino a quella riga. Una riga che
+# porta il marcatore `segreto-scan: ignora` e' un'esenzione dichiarata accanto al valore.
+staged="$(git diff --cached -U0 2>/dev/null | grep -E '^\+' | grep -vE '^\+\+\+ ' | grep -v 'segreto-scan: ignora' || true)"
 [ -z "$staged" ] && exit 0
 
 # Pattern di secret: chiavi AWS, blocchi di chiave privata, token GitHub/OpenAI/Slack,
@@ -23,7 +26,7 @@ staged="$(git diff --cached 2>/dev/null || true)"
 patterns='(AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{22,}|sk-[A-Za-z0-9_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|api[_-]?key["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"'][A-Za-z0-9_\-]{16,}|password["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"']{6,})'
 
 if printf '%s' "$staged" | grep -qiE "$patterns"; then
-  echo "Possibile secret rilevato nel diff in stage (hook secret-scan). Rimuoverlo dallo stage prima di committare; se e' un falso positivo, adattare i pattern in .claude/hooks/secret-scan.sh." >&2
+  echo "Possibile secret rilevato nel diff in stage (hook secret-scan). Rimuoverlo dallo stage prima di committare; se e' un falso positivo, aggiungere sulla stessa riga il commento 'segreto-scan: ignora'." >&2
   exit 2
 fi
 
