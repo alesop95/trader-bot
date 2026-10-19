@@ -137,7 +137,7 @@ def commit_arretrati():
         ["git", "log", f"{impronta}..HEAD", "--format=%cs %s", "--", WORKLOG],
         capture_output=True, text=True
     )
-    righe = [l for l in r.stdout.strip().split("\n") if l.strip()]
+    righe = [riga for riga in r.stdout.strip().split("\n") if riga.strip()]
     return quando, righe
 
 

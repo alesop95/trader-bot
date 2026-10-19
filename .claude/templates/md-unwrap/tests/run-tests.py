@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import difflib
 import importlib.util
-import io
 import os
 import shutil
 import subprocess

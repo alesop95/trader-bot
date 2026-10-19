@@ -181,13 +181,32 @@ function Scopri-Remoti([string]$alias, [string[]]$radici, [int]$profondita = 5) 
     "  case `"`$p`" in */.claude/*) continue;; esac`n" +
     "  if [ -f `"`$c/PROJECT-SYSTEM.md`" ]; then echo `"P `$p`"; else echo `"Q `$p`"; fi`n" +
     "done"
-  $out = @(Esegui-Ssh $alias $cmd)
+  $out = @(Esegui-Ssh $alias ('echo "H $HOME"' + "`n" + $cmd))
   $raggiunto = ($out -contains 'STRUMENTI') -or ($out -contains 'SENZA-STRUMENTI')
+  $casa = @($out | Where-Object { $_ -like 'H /*' } | ForEach-Object { $_.Substring(2) }) | Select-Object -First 1
+  $progetti = @($out | Where-Object { $_ -like 'P /*' } | ForEach-Object { $_.Substring(2) })
+  $parziali = @($out | Where-Object { $_ -like 'Q /*' } | ForEach-Object { $_.Substring(2) } |
+    Where-Object { -not (Parziale-Rumore $_ $casa $progetti) })
   return [pscustomobject]@{
     alias = $alias; raggiunto = $raggiunto; strumenti = ($out -contains 'STRUMENTI')
-    progetti = @($out | Where-Object { $_ -like 'P /*' } | ForEach-Object { "ssh://$alias" + $_.Substring(2) })
-    parziali = @($out | Where-Object { $_ -like 'Q /*' } | ForEach-Object { "ssh://$alias" + $_.Substring(2) })
+    progetti = @($progetti | ForEach-Object { "ssh://$alias" + $_ })
+    parziali = @($parziali | ForEach-Object { "ssh://$alias" + $_ })
   }
+}
+
+# Una cartella con .claude ma senza PROJECT-SYSTEM.md e' rumore, non un progetto da
+# istanziare, in tre casi misurati alla prima passata via SSH del 2026-10-19, che ne
+# aveva elencate sette su quattro macchine e nessuna era un progetto: la home di un
+# utente, perche' ~/.claude e' la configurazione di Claude Code; un percorso con una
+# cartella nascosta, come le estensioni di un editor; e una cartella dentro un progetto
+# gia' trovato, che appartiene a quel progetto. Il confronto con la home si fa anche
+# sulle altre home sotto /home, che la scoperta attraversa.
+function Parziale-Rumore([string]$p, [string]$casa, [string[]]$progetti) {
+  if ($casa -and $p -eq $casa) { return $true }
+  if ($p -match '^/home/[^/]+$' -or $p -eq '/root') { return $true }
+  if ($p -match '/\.[^/]') { return $true }
+  foreach ($q in $progetti) { if ($p.StartsWith($q + '/')) { return $true } }
+  return $false
 }
 
 # Porta il template sulla macchina allo stesso commit di quello locale e restituisce

@@ -137,7 +137,8 @@ class WipePerSessione(unittest.TestCase):
     def test_sei_scenari(self):
         T = self.T
         vivo = self.magazzino()
-        c = lambda rel: (T / rel).exists()
+        def c(rel):
+            return (T / rel).exists()
 
         # 1. senza libreria: rinvio totale
         self.installa(T, libreria=False)

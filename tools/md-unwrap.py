@@ -364,15 +364,20 @@ class Scanner:
 
     def consume_html(self, i: int, bq: bool, kind: str, s: str) -> int:
         if kind == 'html-raw':
-            end = lambda t: bool(RE_HTML_RAW_END.search(t))
+            def end(t):
+                return bool(RE_HTML_RAW_END.search(t))
         elif kind == 'html-comment':
-            end = lambda t: '-->' in t
+            def end(t):
+                return '-->' in t
         elif kind == 'html-pi':
-            end = lambda t: '?>' in t
+            def end(t):
+                return '?>' in t
         elif kind == 'html-cdata':
-            end = lambda t: ']]>' in t
+            def end(t):
+                return ']]>' in t
         elif kind == 'html-decl':
-            end = lambda t: '>' in t
+            def end(t):
+                return '>' in t
         else:
             end = None  # tipo 6: si chiude sulla prima riga vuota
         if end is not None and end(s):
@@ -588,7 +593,9 @@ def check_invariant(before: str, after: str):
     citazione a inizio riga, che l'unione di una citazione assorbe per definizione,
     il flusso dei caratteri deve restare identico. Che i marcatori di citazione
     restino al posto giusto lo verifica poi l'oracolo di rendering."""
-    strip = lambda t: re.sub(r'\s+', '', RE_LINE_BQ_PREFIX.sub('', t))
+    def strip(t):
+        return re.sub(r'\s+', '', RE_LINE_BQ_PREFIX.sub('', t))
+
     if strip(before) != strip(after):
         return 'il flusso dei caratteri non-spazio e cambiato'
     return None
@@ -620,7 +627,9 @@ def render_equal(before: str, after: str):
     md = get_oracle()
     if md is None:
         return None
-    norm = lambda t: re.sub(r'\s+', ' ', md.render(t)).strip()
+    def norm(t):
+        return re.sub(r'\s+', ' ', md.render(t)).strip()
+
     if norm(before) != norm(after):
         return 'il rendering HTML normalizzato differisce'
     return None

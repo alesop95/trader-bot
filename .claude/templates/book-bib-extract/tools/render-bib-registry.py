@@ -18,7 +18,6 @@ va passato esplicitamente il percorso reale del .bib del progetto.
 
 import argparse
 import json
-import os
 import re
 from pathlib import Path
 

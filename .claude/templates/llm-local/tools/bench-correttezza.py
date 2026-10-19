@@ -15,7 +15,12 @@ Uso:
         --lotto fixtures/classi-esempio.jsonl [--max-tokens 24]
 """
 from __future__ import annotations
-import argparse, json, re, sys, urllib.request, urllib.error
+import argparse
+import json
+import re
+import sys
+import urllib.request
+import urllib.error
 
 
 def chiedi(base_url, model, api_key, prompt, max_tokens):

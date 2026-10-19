@@ -93,7 +93,7 @@ def measure_git():
         'data_commit': git('log', '-1', '--format=%ad', '--date=short'),
         'oggetto': git('log', '-1', '--format=%s'),
         'pulito': git('status', '--porcelain') == '',
-        'modificati': [l[3:] for l in git('status', '--porcelain').splitlines() if l],
+        'modificati': [riga[3:] for riga in git('status', '--porcelain').splitlines() if riga],
     }
 
 
@@ -275,15 +275,15 @@ def _intestazione_righe(s):
     for c in s['controlli']:
         etichetta = c['nome'][0].upper() + c['nome'][1:]
         righe.append((etichetta, ('ok, ' if c['ok'] else 'da sistemare, ') + c['dettaglio']))
-    l = s['link']
-    if l and l.get('eseguito'):
-        n = l['conteggi']
+    link = s['link']
+    if link and link.get('eseguito'):
+        n = link['conteggi']
         righe.append(('Link', '%d raggiungibili, %d rotti, %d errori di rete, %d saltati, %d di sola forma'
                       % (n['ok'], n['fail'], n['warn'], n['skip'], n['forma'])))
-        for rosso in l['rossi']:
+        for rosso in link['rossi']:
             righe.append(('  da guardare', rosso))
-    elif l:
-        righe.append(('Link', l.get('nota', 'non verificati')))
+    elif link:
+        righe.append(('Link', link.get('nota', 'non verificati')))
     else:
         righe.append(('Link', 'non verificati in questa esecuzione, usa --link-check'))
     return righe

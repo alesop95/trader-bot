@@ -18,7 +18,12 @@ Uso:
         --ingresso lotto.jsonl --uscita esiti.jsonl [--max-tokens 64] [--ogni 25]
 """
 from __future__ import annotations
-import argparse, json, sys, time, urllib.request, urllib.error
+import argparse
+import json
+import sys
+import time
+import urllib.request
+import urllib.error
 
 
 def chiedi(base_url, model, api_key, prompt, max_tokens):

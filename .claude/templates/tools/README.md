@@ -323,3 +323,23 @@ Dice se il `.claude` del template è cambiato dall'ultima passata di `allinea-tu
 ```powershell
 python .claude/templates/tools/passata-in-sospeso.py
 ```
+
+## cerca-pacchetto.py
+
+Cerca nel catalogo `PACKAGES.md` le voci che rispondono al lavoro in corso, confrontando le parole della domanda con la colonna «Quando offrirlo», che è l'innesco di ogni voce, con il nome e con «Cosa fa». È lo strumento della skill di sistema `cerca-pacchetto`, cioè del terzo momento del gate descritto nella sezione 23 di `PROJECT-SYSTEM.md`: fra un'inizializzazione e un allineamento il catalogo arriva nel progetto ma nessun punto letto in sessione lo nomina, e il 2026-10-19 un progetto istanziato ha ricostruito a mano una mappa che `craft-apps` conteneva già. Vive sotto `.claude/templates/tools/` e non sotto `tools/` del progetto, così l'allineamento lo porta ovunque senza istanziarlo.
+
+```powershell
+python .claude/templates/tools/cerca-pacchetto.py --progetto . applicazioni grafica pdf impaginazione
+python .claude/templates/tools/cerca-pacchetto.py --elenco
+python .claude/templates/tools/cerca-pacchetto.py --autotest
+```
+
+La ricerca è deterministica e non giudica: riduce le parole alle prime sei lettere senza accenti, il che basta a far combaciare plurali e coniugazioni, e ordina per punteggio. Con `--progetto` segna una voce come istanziata se il progetto ha la skill omonima o uno strumento del pacchetto sotto `tools/`; un pacchetto che istanzia solo schede o regole non si riconosce così, e per questo l'assenza si stampa come «non rilevato» e non come «non adottato». Rieseguita il 2026-10-19 sui due casi del progetto che ha segnalato il difetto, ha messo in testa `craft-apps` per «suite di applicazioni per documentazione, immagini e PDF» e `stack-profiles` per «dipendenze pinnate, lint, controllo dei tipi». L'`--autotest` ha 8 casi su un catalogo finto: le tre forme di riga, la cella con una barra protetta, l'ordinamento per innesco, plurali e accenti, la domanda estranea che non trova niente, la skill omonima che segna l'istanziazione.
+
+## lint-strumenti.py
+
+Esegue ruff, alle regole predefinite, sugli strumenti Python del template, ed è fra i controlli di chiusura del solo template. Attua la regola della sezione 16 di `PROJECT-SYSTEM.md` sui controlli di qualità adottati da un progetto: il 2026-10-19 un progetto istanziato ha trovato con ruff riscontri in quattro copie del template, e misurati qui con le stesse regole erano 42 in 17 strumenti, corretti alla fonte. Le regole sono `E4,E7,E9,F`, scritte nello strumento e non lasciate al predefinito di ruff: sono il predefinito fino alla 0.14, cioè il minimo che un progetto adotta senza configurare niente, e il predefinito cambia con la versione. Al primo commit lo stesso albero, a zero con ruff 0.14.2, dava 1.098 riscontri con la 0.17.1, tutti di regole entrate nel predefinito dopo. Le fixture di `md-unwrap` restano fuori, perché sono materiale di confronto byte per byte. Se ruff non è installato il controllo fallisce e dice come installarlo, invece di saltarsi da solo.
+
+```powershell
+python .claude/templates/tools/lint-strumenti.py
+```

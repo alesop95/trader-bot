@@ -22,7 +22,7 @@ Questa skill dà il quadro completo del progetto a chi parte da zero. È distint
 
 ## Cosa legge, e in quest'ordine
 
-1. `CLAUDE.md` di radice, che indicizza i file satellite tracciati e replica la procedura di ripresa.
+1. `CLAUDE.md` di radice, che indicizza i file satellite tracciati e rimanda alla procedura di ripresa della skill `riprendi`.
 2. `.claude/memory/index.md`, per branch, commit di riferimento, stato di verifica di ogni scheda e prossima azione concreta.
 3. `.claude/context/current-work.md`, per la feature in corso, la definition of done e le domande aperte.
 4. Le schede di `.claude/context/`: `STACK.md` con stack, flussi di codice e alternative deliberatamente escluse, `design-and-security.md`, `deployment.md`, `dev-testing.md`, `roadmap.md`.

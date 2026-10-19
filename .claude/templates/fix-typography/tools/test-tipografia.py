@@ -374,9 +374,7 @@ def prova_stringhe_python():
     che sui file Python non fa piu' nulla, che sarebbe un modo di superare la prova senza
     risolvere il problema.
     """
-    AP = chr(39)
     E_ACUTA = chr(0x00E9)
-    A_GRAVE = chr(0x00E0)
     CHIAVE = "profondit" + "a"
     TRIPLO = chr(34) * 3
     # Il sorgente di prova si compone per concatenazione come tutte le forme di questo file,

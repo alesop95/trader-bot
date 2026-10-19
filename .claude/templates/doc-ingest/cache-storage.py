@@ -10,7 +10,6 @@ import json
 import lzma
 import os
 from pathlib import Path
-import stat
 import subprocess
 import tempfile
 import time

@@ -238,54 +238,54 @@ def legami(processi, magazzino):
                 break
         out.append({'processo': pr, 'file': f, 'certo': f is not None, 'candidati': [], 'protette': [],
                     'ambito': None, 'account': None, 'slug': None})
-    rivendicati = {l['file']['sessionId'] for l in out if l['certo'] and l['file'].get('sessionId')}
-    for l in out:
-        if l['certo']:
+    rivendicati = {leg['file']['sessionId'] for leg in out if leg['certo'] and leg['file'].get('sessionId')}
+    for leg in out:
+        if leg['certo']:
             continue
-        avvio = l['processo']['avvio']
+        avvio = leg['processo']['avvio']
         c = [t for t in tutti_v if t[2]['id'] not in rivendicati and t[2]['ultima'] >= avvio]
-        ctx = l['processo'].get('contesto')
+        ctx = leg['processo'].get('contesto')
         if ctx and ctx.get('config_dir'):
             # Account e cartella dichiarati dal processo: candidate solo in quel progetto di
             # quell'account, tutte protette.
             acc = next((a for a in magazzino['account'] if os.path.realpath(a['base']) == os.path.realpath(ctx['config_dir'])), None)
-            l['ambito'] = 'processo'
-            l['account'] = acc['nome'] if acc else re.sub(r'^\.claude-', '', os.path.basename(ctx['config_dir']))
-            l['slug'] = slug_di(ctx['cwd']) if ctx.get('cwd') else None
-            c = [t for t in c if acc and t[0] == acc['nome'] and (not l['slug'] or t[1].lower() == l['slug'].lower())]
+            leg['ambito'] = 'processo'
+            leg['account'] = acc['nome'] if acc else re.sub(r'^\.claude-', '', os.path.basename(ctx['config_dir']))
+            leg['slug'] = slug_di(ctx['cwd']) if ctx.get('cwd') else None
+            c = [t for t in c if acc and t[0] == acc['nome'] and (not leg['slug'] or t[1].lower() == leg['slug'].lower())]
         else:
-            l['ambito'] = 'ipotesi'
+            leg['ambito'] = 'ipotesi'
         nuovi = sorted((t for t in c if t[2]['prima'] and t[2]['prima'] >= avvio - 60), key=lambda t: t[2]['prima'])
         ripresi = sorted((t for t in c if not (t[2]['prima'] and t[2]['prima'] >= avvio - 60)), key=lambda t: t[2]['ultima'], reverse=True)
-        l['candidati'] = nuovi + ripresi
-        l['protette'] = l['candidati'] if l['ambito'] == 'processo' else l['candidati'][:3]
+        leg['candidati'] = nuovi + ripresi
+        leg['protette'] = leg['candidati'] if leg['ambito'] == 'processo' else leg['candidati'][:3]
     return out
 
 
 def protezione(lg):
     ids, primo, incerti, acc_vivi, vive = {}, None, [], set(), []
     slug_account, slug_comune = {}, {}
-    for l in lg:
-        pr = l['processo']
+    for leg in lg:
+        pr = leg['processo']
         if pr['proprio']:
             continue
         vive.append(pr['pid'])
         primo = pr['avvio'] if primo is None else min(primo, pr['avvio'])
-        if l['certo']:
-            if l['file'].get('sessionId'):
-                ids[l['file']['sessionId']] = 'PID %d, certa' % pr['pid']
-            acc_vivi.add(l['file']['account'])
+        if leg['certo']:
+            if leg['file'].get('sessionId'):
+                ids[leg['file']['sessionId']] = 'PID %d, certa' % pr['pid']
+            acc_vivi.add(leg['file']['account'])
         else:
             incerti.append(pr['pid'])
-            etichetta = ('PID %d, stesso account e progetto' if l['ambito'] == 'processo' else 'forse PID %d') % pr['pid']
-            for acc, _slug, v in l['protette']:
+            etichetta = ('PID %d, stesso account e progetto' if leg['ambito'] == 'processo' else 'forse PID %d') % pr['pid']
+            for acc, _slug, v in leg['protette']:
                 ids.setdefault(v['id'], etichetta)
                 acc_vivi.add(acc)
-            if l['ambito'] == 'processo':
-                if l['account']:
-                    acc_vivi.add(l['account'])
-                if l['slug']:
-                    for tab, k in ((slug_account, ('%s|%s' % (l['account'], l['slug'])).lower()), (slug_comune, l['slug'].lower())):
+            if leg['ambito'] == 'processo':
+                if leg['account']:
+                    acc_vivi.add(leg['account'])
+                if leg['slug']:
+                    for tab, k in ((slug_account, ('%s|%s' % (leg['account'], leg['slug'])).lower()), (slug_comune, leg['slug'].lower())):
                         tab[k] = min(tab.get(k, pr['avvio']), pr['avvio'])
     return {'ids': ids, 'primo': primo, 'incerti': incerti, 'account_vivi': sorted(acc_vivi), 'vive': vive,
             'slug_account': slug_account, 'slug_comune': slug_comune}
@@ -303,24 +303,24 @@ def data(e):
 
 
 def compatto(mag, lg, senza_testi):
-    aperte = {l['file']['sessionId']: l['processo']['pid'] for l in lg if l['certo'] and l['file'].get('sessionId')}
+    aperte = {leg['file']['sessionId']: leg['processo']['pid'] for leg in lg if leg['certo'] and leg['file'].get('sessionId')}
     forse = {}
-    for l in lg:
-        if not l['certo']:
-            for _a, _s, v in l['protette']:
-                forse.setdefault(v['id'], []).append(l['processo']['pid'])
+    for leg in lg:
+        if not leg['certo']:
+            for _a, _s, v in leg['protette']:
+                forse.setdefault(v['id'], []).append(leg['processo']['pid'])
     print('\n== Magazzino di Claude Code, %s   (sola lettura)' % time.strftime('%Y-%m-%d %H:%M'))
     print('\nAPERTE ORA, con un processo vivo: %d' % len(lg))
-    for l in sorted(lg, key=lambda x: x['processo']['avvio']):
-        pr = l['processo']
+    for leg in sorted(lg, key=lambda x: x['processo']['avvio']):
+        pr = leg['processo']
         mia = '   [questa]' if pr['proprio'] else ''
-        if l['certo']:
-            v = next((v for a in mag['account'] for p in a['progetti'] for v in p['verbali'] if v['id'] == l['file']['sessionId']), None)
+        if leg['certo']:
+            v = next((v for a in mag['account'] for p in a['progetti'] for v in p['verbali'] if v['id'] == leg['file']['sessionId']), None)
             tit = '' if senza_testi or not v else '  "%s"' % breve(v['titolo'], 50)
-            print('  PID %-7d %-9s %s%s   dal %s%s' % (pr['pid'], l['file']['account'], l['file'].get('cwd') or '', tit, data(pr['avvio']), mia))
-        elif l['ambito'] == 'processo':
-            seguito = ("le righe 'forse %d' sotto sono sue" % pr['pid']) if l['protette'] else 'nessun suo verbale su disco'
-            print('  PID %-7d %-9s %s   dal %s   senza file di sessione: account e cartella letti dal processo, %s.%s' % (pr['pid'], l['account'], pr['contesto']['cwd'], data(pr['avvio']), seguito, mia))
+            print('  PID %-7d %-9s %s%s   dal %s%s' % (pr['pid'], leg['file']['account'], leg['file'].get('cwd') or '', tit, data(pr['avvio']), mia))
+        elif leg['ambito'] == 'processo':
+            seguito = ("le righe 'forse %d' sotto sono sue" % pr['pid']) if leg['protette'] else 'nessun suo verbale su disco'
+            print('  PID %-7d %-9s %s   dal %s   senza file di sessione: account e cartella letti dal processo, %s.%s' % (pr['pid'], leg['account'], pr['contesto']['cwd'], data(pr['avvio']), seguito, mia))
         else:
             print("  PID %-7d %-9s account non determinabile, dal %s: nessun file di sessione e processo non leggibile. Le righe 'forse %d' sotto sono le candidate per ipotesi.%s" % (pr['pid'], '?', data(pr['avvio']), pr['pid'], mia))
     chiuse = [(a['nome'], p['slug'], v) for a in mag['account'] for p in a['progetti'] for v in p['verbali'] if v['id'] not in aperte]
@@ -331,7 +331,7 @@ def compatto(mag, lg, senza_testi):
         print('  %-9s %-34s %s  ultima %s%s%s' % (acc, breve(slug, 34), v['id'][:8], data(v['ultima']), tit, fs))
     print('\nCOSA FARE')
     niente = True
-    vivi = {l['processo']['pid'] for l in lg}
+    vivi = {leg['processo']['pid'] for leg in lg}
     for a in mag['account']:
         n = sum(1 for c in chiuse if c[0] == a['nome'])
         if not n:
@@ -359,7 +359,7 @@ def compatto(mag, lg, senza_testi):
         print("  VS Code e' aperto dal %s: il suo pannello delle sessioni puo' mostrare sessioni gia' cancellate finche' non lo chiudi del tutto e lo riapri. L'estensione offre solo Archive, che nasconde senza cancellare." % data(min(x['avvio'] for x in code)))
     if niente:
         print('  niente da pulire.')
-    elif any(not l['processo']['proprio'] for l in lg):
+    elif any(not leg['processo']['proprio'] for leg in lg):
         print("  Il wipe toglie le chiuse e conserva le aperte e le righe forse. Le aperte si puliscono quando le chiudi. Per chiudere un PID: --chiudi <PID>.")
     print()
 
@@ -413,10 +413,10 @@ def autotest():
                  {'pid': 222, 'avvio': avvio, 'args': 'claude', 'proprio': False},
                  {'pid': 333, 'avvio': avvio, 'args': 'claude', 'proprio': True}]
         lg = legami(procs, m)
-        l = {x['processo']['pid']: x for x in lg}
-        ids222 = [t[2]['id'] for t in l[222]['candidati']]
-        atteso('file di sessione scritto dopo l\'avvio: legame certo', l[111]['certo'])
-        atteso('file di sessione piu\' vecchio del processo (PID riusato): non certo', not l[333]['certo'])
+        leg = {x['processo']['pid']: x for x in lg}
+        ids222 = [t[2]['id'] for t in leg[222]['candidati']]
+        atteso('file di sessione scritto dopo l\'avvio: legame certo', leg[111]['certo'])
+        atteso('file di sessione piu\' vecchio del processo (PID riusato): non certo', not leg[333]['certo'])
         atteso('PID senza file: verbale nato dopo l\'avvio per primo', ids222[:1] == ['bbbbbbbb-2'])
         atteso('PID senza file: verbale fermo prima dell\'avvio escluso', 'cccccccc-3' not in ids222)
         atteso('PID senza file: verbale rivendicato escluso', 'aaaaaaaa-1' not in ids222)
@@ -493,7 +493,7 @@ def main():
         if p['proprio']:
             print("il PID %d e' la sessione da cui gira questo strumento: rifiuto." % a.chiudi)
             return 1
-        compatto(mag, [l for l in lg if l['processo']['pid'] == a.chiudi], a.senza_testi)
+        compatto(mag, [leg for leg in lg if leg['processo']['pid'] == a.chiudi], a.senza_testi)
         print("Chiudere il PID %d termina la sessione senza che il suo hook SessionEnd parta: il verbale resta e il wipe va rilanciato dopo." % a.chiudi)
         if not sys.stdin.isatty():
             print('nessuna tastiera disponibile: annullato.')

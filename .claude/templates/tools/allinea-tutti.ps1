@@ -368,8 +368,13 @@ if ($Autotest) {
   Caso 'un percorso locale si trova senza distinguere le maiuscole' @('locale') (In-Elenco $elencoFinto 'D:\Locale\')
   $b64 = (Comando-Ssh "echo 'x'") -replace '^echo (\S+) \|.*$', '$1'
   Caso 'il comando remoto torna identico dal base64' @("echo 'x'") ([System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($b64)))
+  $progFinti = @('/opt/app')
+  Caso 'la home di un utente non e un progetto parziale' @($true, $true) @((Parziale-Rumore '/home/dev' '/home/dev' $progFinti), (Parziale-Rumore '/home/altro' '/home/dev' $progFinti))
+  Caso 'un percorso con una cartella nascosta e rumore' @($true) (Parziale-Rumore '/home/dev/.vscode/extensions/x' '/home/dev' $progFinti)
+  Caso 'una cartella dentro un progetto trovato e del progetto' @($true) (Parziale-Rumore '/opt/app/_notes/MCP-docx' '/home/dev' $progFinti)
+  Caso 'una cartella vera con .claude senza PROJECT-SYSTEM resta elencata' @($false) (Parziale-Rumore '/home/dev/Scrivania/nuovo' '/home/dev' $progFinti)
   Write-Host ''
-  Write-Host "$(15 - $rossi) casi superati su 15"
+  Write-Host "$(19 - $rossi) casi superati su 19"
   Remove-Item -LiteralPath $blocco -Force -ErrorAction SilentlyContinue
   exit $(if ($rossi) { 1 } else { 0 })
 }

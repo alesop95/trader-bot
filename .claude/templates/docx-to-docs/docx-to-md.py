@@ -87,7 +87,6 @@ def cleanup_text(content):
 # --- numbering.xml: classifica liste numerate vs puntate --------------------
 def build_numbering_map(document):
     """Ritorna funzione (numId, ilvl) -> 'bullet'|'ordered'."""
-    fmt = {}  # numId -> {ilvl -> numFmt}
     try:
         npart = document.part.numbering_part
     except Exception:

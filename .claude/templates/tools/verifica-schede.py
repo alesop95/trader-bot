@@ -141,9 +141,15 @@ def self_test():
     prova("una lista vuota non è assenza di lista", fm == ([], None), str(fm))
     prova("un file senza frontmatter non è una scheda", leggi_frontmatter("# titolo\n") is None)
 
-    tutto = lambda p: True
-    niente_cambiato = lambda a, ps: []
-    valido = lambda a: a == "abc"
+    def tutto(p):
+        return True
+
+    def niente_cambiato(a, ps):
+        return []
+
+    def valido(a):
+        return a == "abc"
+
     d, s = classifica("x", ["a.ts"], None, tutto, valido, niente_cambiato)
     prova("percorsi senza ancora sono un difetto", len(d) == 1 and "nessun" in d[0], str(d))
     d, s = classifica("x", ["a.ts"], "PENDING-FIRST-COMMIT", tutto, valido, niente_cambiato)

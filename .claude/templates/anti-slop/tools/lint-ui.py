@@ -107,13 +107,13 @@ def contrasto(a, b):
 
 
 def caldo_chiaro(c):
-    h, l, s = colorsys.rgb_to_hls(*c)
-    return l >= 0.88 and 0.02 <= s <= 0.75 and 20 / 360 <= h <= 60 / 360
+    h, luce, s = colorsys.rgb_to_hls(*c)
+    return luce >= 0.88 and 0.02 <= s <= 0.75 and 20 / 360 <= h <= 60 / 360
 
 
 def accento_caldo(c):
-    h, l, s = colorsys.rgb_to_hls(*c)
-    return 0.35 <= l <= 0.75 and s >= 0.5 and 8 / 360 <= h <= 48 / 360
+    h, luce, s = colorsys.rgb_to_hls(*c)
+    return 0.35 <= luce <= 0.75 and s >= 0.5 and 8 / 360 <= h <= 48 / 360
 
 
 def cammina(radice):

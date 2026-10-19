@@ -99,7 +99,7 @@ SKILL_SISTEMA = [
     "init-project-system", "sync-context", "git-sync", "repo-status",
     "gate-pacchetti", "riprendi", "onboard",
     "prove-che-misurano", "fonti-non-recuperabili", "alberi-di-lavoro",
-    "separazione-ambienti", "identita-git",
+    "separazione-ambienti", "identita-git", "cerca-pacchetto",
 ]
 IGNORA = {"__pycache__", ".pytest_cache"}
 CODICE = {".py", ".ps1", ".sh", ".js", ".mjs"}
@@ -259,13 +259,13 @@ def sostituite_localmente(base: bytes, locale: bytes, storiche: set[str]) -> col
     ogni riga propria perdona al più una riga della base, e soltanto se le
     somiglia per almeno il sessanta per cento dei caratteri."""
     b = [r for r in base.decode("utf-8", errors="replace").splitlines()]
-    l = [r for r in locale.decode("utf-8", errors="replace").splitlines()]
+    loc_righe = [r for r in locale.decode("utf-8", errors="replace").splitlines()]
     perdonate: collections.Counter = collections.Counter()
-    sm = difflib.SequenceMatcher(None, b, l, autojunk=False)
+    sm = difflib.SequenceMatcher(None, b, loc_righe, autojunk=False)
     for op, i1, i2, j1, j2 in sm.get_opcodes():
         if op != "replace":
             continue
-        nuove = [r for r in l[j1:j2] if r.strip()]
+        nuove = [r for r in loc_righe[j1:j2] if r.strip()]
         if not nuove or any(r in storiche for r in nuove):
             continue
         vecchie = [r for r in b[i1:i2] if r.strip() and not r.startswith(MARCATORI)]
@@ -461,7 +461,9 @@ def righe_proprie(template: Path, candidati: set[str], locale: bytes, percorso: 
 def merge3(locale: bytes, base: bytes, testa: bytes) -> tuple[bytes, int]:
     with tempfile.TemporaryDirectory() as d:
         a, b, c = (Path(d) / n for n in ("locale", "base", "template"))
-        a.write_bytes(locale); b.write_bytes(base); c.write_bytes(testa)
+        a.write_bytes(locale)
+        b.write_bytes(base)
+        c.write_bytes(testa)
         r = subprocess.run(["git", "merge-file", "-p", "-L", "locale", "-L", "base", "-L", "template",
                             str(a), str(b), str(c)], capture_output=True)
         if r.returncode < 0:
@@ -515,7 +517,8 @@ def main():
                 return
             loc = lf(dest.read_bytes())
             voce["esito"] = "RIMOSSO" if blob_id(loc) in storici else "LOCALE"
-            esiti.append(voce); return
+            esiti.append(voce)
+            return
         t = lf(leggi_blob(tpl, testa[tpl_rel]))
         if not dest.exists():
             voce["esito"], voce["_dati"] = "NUOVO", t
@@ -531,7 +534,8 @@ def main():
                 voce["esito"] = "ADATTATO"
                 voce["nota"] = f"risolto a mano il {RISOLTI[dest_rel].get('il', '?')}, testa invariata"
             elif not storici:
-                voce["esito"] = "CONFLITTO"; voce["nota"] = "nessuna base storica"
+                voce["esito"] = "CONFLITTO"
+                voce["nota"] = "nessuna base storica"
             else:
                 unito, n, perse, duplicate, ok, fuori = fondi(tpl, storici, loc, t)
                 if ok:

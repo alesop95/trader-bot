@@ -77,7 +77,7 @@ def lint(path):
 
 def check_block(path, info, start, block):
     is_shell = bool(SHELL_INFO.match(info))
-    has_cmd = any(CMD_START.match(l) for _, l in block)
+    has_cmd = any(CMD_START.match(riga) for _, riga in block)
     # Un blocco conta come shell solo se lo dichiara la info string, oppure se non
     # ha info string e contiene comandi: un blocco `markdown` o `text` che cita un
     # comando resta prosa, e la prosa può legittimamente finire con un backtick.

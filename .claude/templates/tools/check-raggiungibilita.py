@@ -77,6 +77,7 @@ SEMPRE_ATTIVE = {
     "regola:manual-screenshots": "riscontro visivo dei passi manuali, vale in ogni progetto",
     "regola:security-permissions": "modalità di permesso e sandbox, vale in ogni sessione",
     "regola:token-economy": "economia del contesto, vale in ogni sessione",
+    "skill:cerca-pacchetto": "skill di sistema in ogni progetto: e' essa stessa l'ingresso al catalogo fra un gate e l'altro",
 }
 
 

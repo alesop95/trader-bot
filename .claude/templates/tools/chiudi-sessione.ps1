@@ -158,6 +158,9 @@ $controlli = @(
     @{ n = "check-copie-modelli.py";  a = @(); solobundle = $true },
     @{ n = "check-catalogo.py";       a = @(); solobundle = $true },
     @{ n = "check-raggiungibilita.py"; a = @(); solobundle = $true },
+    # Dal 2026-10-19: i controlli di qualita' che un progetto adotta valgono anche sulle copie del
+    # template, quindi il template li tiene a zero sui propri strumenti (PROJECT-SYSTEM.md, sez. 16).
+    @{ n = "lint-strumenti.py";       a = @(); solobundle = $true },
     @{ n = "test-tipografia.py";      a = @(); solobundle = $true },
     @{ n = "test-documenti-personali.py"; a = @(); solobundle = $true },
     @{ n = "verifica-link-progetto.py"; a = @("--prova"); solobundle = $true }
