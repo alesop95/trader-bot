@@ -112,6 +112,20 @@
     "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
   },
   {
+    "progetto": "my-wedding-day",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/dev-skills/skills/security-review/SKILL.md, punto 4: audit del gestore del lockfile presente, forma grezza, prima di aggiungere una dipendenza"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: l'assenza si misura sull'artefatto, non sui soli file versionati"
+  },
+  {
     "progetto": "network-design",
     "id": "L-001",
     "commit": "",

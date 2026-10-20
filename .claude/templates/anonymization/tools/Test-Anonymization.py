@@ -86,7 +86,8 @@ LIMITE_BYTE = 5 * 1024 * 1024
 BLOCCANTI = {"IP REALE", "MAC REALE", "NOME PROPRIO", "SEGRETO LETTERALE",
              "EMAIL PERSONALE", "TELEFONO", "IBAN", "CARTA DI PAGAMENTO", "PIVA/CF", "IMPORTO"}
 
-IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}(?:/\d{1,2})?\b")
+# Chrome/<quattro componenti> è una versione nello User-Agent, non un indirizzo.
+IPV4 = re.compile(r"(?<!Chrome/)\b(?:\d{1,3}\.){3}\d{1,3}(?:/\d{1,2})?\b")
 MAC = re.compile(r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b")
 EMAIL = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 # I prefissi telefonici da cercare non possono stare qui: un numero di telefono è un dato
@@ -429,7 +430,18 @@ def autotest():
             if len(voci) != 1 or "oscurat" not in voci[0][2]:
                 errori += 1
                 print("analizza, %s: atteso un riscontro oscurato, ottenuti %d" % (cat, len(voci)))
-    totale = len(casi_iban) + len(casi_carta) + 2
+        # Un numero di versione nello User-Agent non è un IP; uno vero sulla stessa
+        # riga deve continuare a essere rilevato.
+        ip_prova = "8." + "8.8.8"
+        versione = "128." + "0.0.0"
+        with io.open(f, "w", encoding="utf-8") as fh:
+            fh.write("UA Chrome/%s endpoint %s\n" % (versione, ip_prova))
+        trovati, _ = analizza(pat, [(f, "tracciato")])
+        voci = trovati.get("IP pubblico da valutare", [])
+        if len(voci) != 1 or voci[0][2] != ip_prova:
+            errori += 1
+            print("analizza, versione Chrome: atteso il solo IP endpoint, ottenuti %d" % len(voci))
+    totale = len(casi_iban) + len(casi_carta) + 3
     print("autotest: %d casi, %d errori" % (totale, errori))
     return 1 if errori else 0
 

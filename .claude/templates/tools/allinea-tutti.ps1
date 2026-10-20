@@ -382,7 +382,7 @@ if ($Autotest) {
   Caso 'una cartella non tracciata copre cio che sta sotto' @('.claude/skills/attrezzo/SKILL.md') (Collisione $esitiFinti @('.claude/skills/attrezzo/'))
 
   # Il trasporto verso le macchine raggiungibili via SSH, nelle parti che non chiedono una rete.
-  $configFinta = "Host github-corp`n  HostName github.com`nHost vm-a vm-b`n  HostName 10.0.0.1`nHost *.interno`n  User x`nHost github.com`n  HostName github.com`nHost gh-lavoro`n  HostName ssh.github.com`nHost studio`n  HostName studio.lan"
+  $configFinta = "Host github-corp`n  HostName github.com`nHost vm-a vm-b`n  HostName 192.0.2.1`nHost *.interno`n  User x`nHost github.com`n  HostName github.com`nHost gh-lavoro`n  HostName ssh.github.com`nHost studio`n  HostName studio.lan"
   Caso 'gli alias GitHub e quelli con jolly non sono macchine' @('vm-a', 'vm-b', 'studio') (Host-Ssh $configFinta)
   Caso "l'apice singolo si cita senza aprire la stringa" @("'a'\''b'") (Q "a'b")
   Caso 'un progetto remoto si divide in alias e percorso' @('vm-a', '/opt/x') (@((Dividi-Remoto 'ssh://vm-a/opt/x/') | ForEach-Object { $_.alias; $_.percorso }))

@@ -83,7 +83,7 @@ ATTRIBUZIONE_VAGA = [
     r"\b(numerosi |diversi |molti |recenti |alcuni )?studi (dimostrano|mostrano|suggeriscono|indicano|confermano|hanno (dimostrato|mostrato|rilevato))\b",
     r"\b(la |le )?ricerch?[ae] (dimostra|mostra|suggerisce|indica|conferma)(no)?\b",
     r"\bi ricercatori hanno (scoperto|trovato|dimostrato|osservato)\b",
-    r"\bè (ormai |ampiamente )?(noto|dimostrato|riconosciuto|accertato) che\b",
+    r"(?<!non )\bè (ormai |ampiamente )?(noto|dimostrato|riconosciuto|accertato) che\b",
     r"\b(experts|analysts|scientists) (say|believe|agree|suggest|warn|argue)\b",
     r"\baccording to (experts|studies|research|researchers|analysts)\b",
     r"\b(many |several |recent |some )?studies (show|suggest|indicate|have (shown|found))\b",
@@ -347,6 +347,11 @@ def self_test():
           "P2" in famiglie("Gli esperti ritengono che cambierà il settore.\n"))
     prova("negativo P2: la stessa frase con un rimando non si segnala",
           "P2" not in famiglie("Gli esperti ritengono che cambierà il settore [F13].\n"))
+    prova("negativo P2: una negazione non attribuisce certezza a una fonte vaga",
+          "P2" not in famiglie("Non è dimostrato che l'elevazione causi il difetto.\n")
+          and "P2" not in famiglie("Non è accertato che fosse la stessa finestra.\n"))
+    prova("P2: una certezza senza fonte continua a essere segnalata",
+          "P2" in famiglie("È dimostrato che l'elevazione causi il difetto.\n"))
     prova("P2: 'studies suggest' in inglese si segnala",
           "P2" in famiglie("Studies suggest that 67% of people agree.\n"))
 
