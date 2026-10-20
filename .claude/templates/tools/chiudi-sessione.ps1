@@ -150,7 +150,10 @@ if ($cambi.Count -eq 0) {
     if (& git rev-parse -q --verify HEAD) { & git --no-pager diff --stat HEAD }
 }
 
+# Anche il nome storico con il trattino basso, che riprendi e verifica-ripresa accettano gia': un
+# progetto che lo usa lo aveva cambiato a mano in questa riga, e la propagazione lo sovrascriveva.
 $resume = "_notes\RESUME-PROMPT.md"
+if (-not (Test-Path $resume) -and (Test-Path "_notes\RESUME_PROMPT.md")) { $resume = "_notes\RESUME_PROMPT.md" }
 if (Test-Path $resume) {
     if ((Get-Item $resume).LastWriteTime.Date -lt (Get-Date).Date) {
         Write-Host "   attenzione: $resume non e' stato aggiornato oggi; l'impronta dira' che git e' noto, non dove eravamo" -ForegroundColor Yellow
@@ -196,6 +199,10 @@ $controlli = @(
     @{ n = "lint-strumenti.py";       a = @(); solobundle = $true },
     @{ n = "test-tipografia.py";      a = @(); solobundle = $true },
     @{ n = "test-documenti-personali.py"; a = @(); solobundle = $true },
+    # Dal 2026-10-20: il controllo delle fonti a monte e i segni della retrospettiva.
+    @{ n = "fonti-a-monte.py";        a = @("--autotest"); solobundle = $true },
+    @{ n = "retro-segnali.py";        a = @("--autotest"); solobundle = $true },
+    @{ n = "lint-cultura.py";         a = @("--autotest"); solobundle = $true },
     @{ n = "verifica-link-progetto.py"; a = @("--prova"); solobundle = $true }
 )
 
@@ -248,6 +255,28 @@ if ($python -and (Test-Path $lezioni)) {
     $righe = @($uscitaLez | Where-Object { "$_".Trim() })
     if ($bundle) { $righe = @($righe | Select-Object -Last 3) }
     if ($righe.Count -gt 0) { Titolo "Lezioni per il template"; $righe | ForEach-Object { Write-Host "   $_" } }
+}
+
+# Le fonti a monte, dal 2026-10-20: nel template un repository citato e non censito ferma il
+# commit, cosi' registro e schede entrano insieme; nel progetto il censimento avvisa e basta.
+$fonti = ".claude\templates\tools\fonti-a-monte.py"
+if ($python -and (Test-Path $fonti)) {
+    $uscitaF = & $python $fonti censisci --check 2>&1
+    $codiceF = $LASTEXITCODE
+    $righeF = @($uscitaF | Where-Object { "$_".Trim() -and "$_" -notmatch '^censimento: 0 nuovi, 0 tolti' })
+    if ($righeF.Count -gt 0) { Titolo "Fonti a monte"; $righeF | ForEach-Object { Write-Host "   $_" } }
+    if ($codiceF -ne 0) { $falliti += "fonti-a-monte.py" }
+}
+
+# Le conversioni PowerShell che dipendono dalla cultura di sistema, dal 2026-10-20 (lezione di un
+# progetto istanziato): nel template fermano il commit, nel progetto avvisano.
+$cultura = ".claude\templates\tools\lint-cultura.py"
+if ($python -and (Test-Path $cultura)) {
+    $uscitaC = & $python $cultura . 2>&1
+    $codiceC = $LASTEXITCODE
+    $righeC = @($uscitaC | Where-Object { "$_".Trim() -and "$_" -notmatch '^lint-cultura: nessuna' })
+    if ($righeC.Count -gt 0) { Titolo "Cultura nelle conversioni"; $righeC | Select-Object -Last 12 | ForEach-Object { Write-Host "   $_" } }
+    if ($codiceC -ne 0) { $falliti += "lint-cultura.py" }
 }
 
 if ($falliti.Count -gt 0) {

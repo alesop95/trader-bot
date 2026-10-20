@@ -73,6 +73,8 @@ ncambi="$(git status --porcelain | wc -l | tr -d ' ')"
 if [ "$ncambi" = 0 ]; then nota "albero pulito: niente da committare"
 else git --no-pager status --short; git rev-parse -q --verify HEAD >/dev/null && git --no-pager diff --stat HEAD; fi
 resume="_notes/RESUME-PROMPT.md"
+# Anche il nome storico con il trattino basso, che riprendi accetta gia'.
+[ ! -f "$resume" ] && [ -f _notes/RESUME_PROMPT.md ] && resume="_notes/RESUME_PROMPT.md"
 if [ -f "$resume" ] && [ -n "$(find "$resume" -mtime +0 2>/dev/null)" ]; then
     nota "attenzione: $resume non e' stato aggiornato nelle ultime 24 ore"
 fi
@@ -102,6 +104,9 @@ check-catalogo.py|||1
 check-raggiungibilita.py|||1
 test-tipografia.py|||1
 test-documenti-personali.py|||1
+fonti-a-monte.py|--autotest||1
+retro-segnali.py|--autotest||1
+lint-cultura.py|--autotest||1
 verifica-link-progetto.py|--prova||1"
 
 falliti=""
@@ -127,6 +132,24 @@ if [ -n "$python" ] && [ -f .claude/templates/tools/lezioni-template.py ]; then
     lez=$("$python" .claude/templates/tools/lezioni-template.py $modo 2>&1 | grep -v '^[[:space:]]*$')
     [ $bundle = 1 ] && lez=$(printf '%s\n' "$lez" | tail -n 3)
     if [ -n "$lez" ]; then titolo "Lezioni per il template"; printf '%s\n' "$lez" | sed 's/^/   /'; fi
+fi
+# Le fonti a monte, dal 2026-10-20: nel template un repository citato e non censito ferma il
+# commit; nel progetto il censimento avvisa e basta.
+if [ -n "$python" ] && [ -f .claude/templates/tools/fonti-a-monte.py ]; then
+    cf=0
+    fon=$("$python" .claude/templates/tools/fonti-a-monte.py censisci --check 2>&1) || cf=$?
+    fon=$(printf '%s\n' "$fon" | grep -v '^[[:space:]]*$' | grep -v '^censimento: 0 nuovi, 0 tolti' || true)
+    if [ -n "$fon" ]; then titolo "Fonti a monte"; printf '%s\n' "$fon" | sed 's/^/   /'; fi
+    if [ "$cf" != 0 ]; then falliti="$falliti fonti-a-monte.py"; fi
+fi
+# Le conversioni PowerShell che dipendono dalla cultura di sistema, dal 2026-10-20: nel template
+# fermano il commit, nel progetto avvisano.
+if [ -n "$python" ] && [ -f .claude/templates/tools/lint-cultura.py ]; then
+    cc=0
+    cul=$("$python" .claude/templates/tools/lint-cultura.py . 2>&1) || cc=$?
+    cul=$(printf '%s\n' "$cul" | grep -v '^[[:space:]]*$' | grep -v '^lint-cultura: nessuna' | tail -n 12 || true)
+    if [ -n "$cul" ]; then titolo "Cultura nelle conversioni"; printf '%s\n' "$cul" | sed 's/^/   /'; fi
+    if [ "$cc" != 0 ]; then falliti="$falliti lint-cultura.py"; fi
 fi
 if [ -n "$falliti" ]; then printf '\nControlli falliti:%s. Mi fermo prima del commit.\n' "$falliti"; exit 1; fi
 [ $solo = 1 ] && { printf '\nControlli verdi.\n'; exit 0; }

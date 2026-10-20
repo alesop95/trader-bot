@@ -536,7 +536,7 @@ Write-Host ("modo: {0}   {1}   messaggio: {2}" -f $modo, $cosa, $msg)
 # comunque nostro. L'eta' della corsa e' quindi parte della misura, e si dichiara.
 $misure = @($voci | ForEach-Object { $_.misurato } | Where-Object { $_ } | Sort-Object)
 if ($misure) {
-  $ultima = [datetime]::Parse($misure[-1])
+  $ultima = [datetime]::Parse($misure[-1], [Globalization.CultureInfo]::InvariantCulture)
   $ore = [Math]::Round(((Get-Date) - $ultima).TotalHours, 1)
   Write-Host ("corsa misurata il {0}, {1} ore fa" -f $ultima.ToString('yyyy-MM-dd HH:mm'), $ore)
   if ($ore -gt 6) {

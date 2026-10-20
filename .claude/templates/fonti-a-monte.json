@@ -1,0 +1,608 @@
+{
+  "sorvegliati": [
+    {
+      "repo": "0xfurai/claude-code-subagents",
+      "cartella": "agents",
+      "pacchetto": "agent-catalog",
+      "scheda": ".claude/templates/agent-catalog/README.md",
+      "verificato": "034f528cff6f6c392e317abd6a1c32af15596b3f",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "anthropics/claude-plugins-official",
+      "cartella": "plugins/code-simplifier",
+      "pacchetto": "catalogo",
+      "scheda": ".claude/templates/PACKAGES.md",
+      "verificato": "aecd4c852f10b466245f18383fa6aad8c0b10d57",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "Companion-Inc/feynman",
+      "cartella": "",
+      "pacchetto": "academic-researcher",
+      "scheda": ".claude/templates/academic-researcher/INTEGRAZIONI-TOOL.md",
+      "tipo": "release",
+      "verificato": "v0.5.51",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "contains-studio/agents",
+      "cartella": "",
+      "pacchetto": "agent-catalog",
+      "scheda": ".claude/templates/agent-catalog/README.md",
+      "verificato": "a5a480c324cac64b9c569bca0b2f297d517240cb",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "Cranot/claude-code-guide",
+      "cartella": "",
+      "pacchetto": "claude-code-handoff",
+      "scheda": ".claude/templates/claude-code-handoff/README.md",
+      "verificato": "7e355fac26c94fb4efdde161de43da646773f1f9",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "DietrichGebert/ponytail",
+      "cartella": ".claude-plugin/marketplace.json",
+      "pacchetto": "catalogo",
+      "scheda": ".claude/templates/PACKAGES.md",
+      "verificato": "7a3475c0f45c9325cd00f714db03c9972f6cd45f",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "dlorenc/multiclaude",
+      "cartella": "cmd/multiclaude",
+      "pacchetto": "catalogo",
+      "scheda": ".claude/templates/PACKAGES.md",
+      "verificato": "bd6831e14cac8dc3a64a7083a193075c698f77ac",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "Future-House/paper-qa",
+      "cartella": "pyproject.toml",
+      "pacchetto": "academic-researcher",
+      "scheda": ".claude/templates/academic-researcher/INTEGRAZIONI-TOOL.md",
+      "verificato": "ac4ff91ad703e6816cb620ea579a98ca0c42c36f",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "K-Dense-AI/scientific-agent-skills",
+      "cartella": "skills",
+      "pacchetto": "scientific-skills",
+      "scheda": ".claude/templates/scientific-skills/README.md",
+      "verificato": "f7a50ed2956fb45e32bd44cc5c713d4f0ac99f93",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "karanb192/awesome-claude-code-mods",
+      "cartella": "SCANNING.md",
+      "pacchetto": "catalogo",
+      "scheda": ".claude/templates/PACKAGES.md",
+      "verificato": "ed189b81e9e87429ef76cbe919a66d58e9bee976",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "mattpocock/skills",
+      "cartella": "skills",
+      "pacchetto": "matt-pocock-skills",
+      "scheda": ".claude/templates/matt-pocock-skills/README.md",
+      "verificato": "5beb35b040e3de97e54fa9e386d7e42d15c295c2",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "morluto/rea",
+      "cartella": "",
+      "pacchetto": "rea",
+      "scheda": ".claude/templates/rea/README.md",
+      "tipo": "release",
+      "verificato": "rea-agents-6.7.0",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "natsu1211/deepwiki-skill",
+      "cartella": "README.md",
+      "pacchetto": "catalogo",
+      "scheda": ".claude/templates/PACKAGES.md",
+      "verificato": "09f35d6ce418aa3976782c45d9248fa6a5c8aeef",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "oraios/serena",
+      "cartella": "",
+      "pacchetto": "catalogo",
+      "scheda": ".claude/templates/PACKAGES.md",
+      "tipo": "release",
+      "verificato": "v2.1.0",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "ourresearch/openalex-mcp-server",
+      "cartella": "README.md",
+      "pacchetto": "academic-researcher",
+      "scheda": ".claude/templates/academic-researcher/INTEGRAZIONI-TOOL.md",
+      "verificato": "9cc2f193e78daf1e788456cfe2cf5875646304f3",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "PleasePrompto/notebooklm-mcp",
+      "cartella": "package.json",
+      "pacchetto": "notebooklm-bridge",
+      "scheda": ".claude/templates/notebooklm-bridge/README.md",
+      "verificato": "50b3e7f67f8535d9899c5e2b1b68f37d17b72aef",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "storytold/craft-launcher",
+      "cartella": "README.md",
+      "pacchetto": "craft-apps",
+      "scheda": ".claude/templates/craft-apps/README.md",
+      "verificato": "7c7271e5f62975326d0add2dcf31f03096be4189",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "Tyrrrz/DiscordChatExporter",
+      "cartella": "",
+      "pacchetto": "community-sources",
+      "scheda": ".claude/templates/community-sources/README.md",
+      "tipo": "release",
+      "verificato": "2.48",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "VoltAgent/awesome-claude-code-subagents",
+      "cartella": "categories",
+      "pacchetto": "agent-catalog",
+      "scheda": ".claude/templates/agent-catalog/README.md",
+      "verificato": "408d3c9eee2d0c75c12a3abb5de29e53c2ca6b9e",
+      "data": "2026-10-20"
+    },
+    {
+      "repo": "wshobson/agents",
+      "cartella": "plugins",
+      "pacchetto": "agent-catalog",
+      "scheda": ".claude/templates/agent-catalog/README.md",
+      "verificato": "0874a27b17a22e2b7c2e2bcd725768e0803cad06",
+      "data": "2026-10-20"
+    }
+  ],
+  "citati": [
+    {
+      "repo": "0xovo/LiteDoc",
+      "motivo": "alternativa manuale soltanto nominata"
+    },
+    {
+      "repo": "54yyyu/zotero-mcp",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "AB498/code-context-provider-mcp",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "adamamer20/paper-search-mcp-openai",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "AiAgentKarl/crossref-academic-mcp-server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "akapet00/semantic-scholar-mcp",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "ankimcp/anki-mcp-server",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "anthropics/claude-code-action",
+      "motivo": "la scheda rimanda alla documentazione ufficiale e data la propria verifica"
+    },
+    {
+      "repo": "anthropics/skills",
+      "motivo": "fonte di un'idea, nel registro delle fonti del pacchetto"
+    },
+    {
+      "repo": "ArthurHeitmann/arctic_shift",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "aspi6246/Claude-Code-Skills-for-Academics",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "AstraBert/arxiv-cli",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "AstraBert/notion-cli",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "BehiSecc/awesome-claude-skills",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "blader/humanizer",
+      "motivo": "fonte di un'idea, nel registro delle fonti del pacchetto"
+    },
+    {
+      "repo": "blazickjp/arxiv-mcp-server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "certifi/python-certifi",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "chopratejas/headroom",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "CodeGraphContext/CodeGraphContext",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "coder/claudecode.nvim",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "colbymchenry/codegraph",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "cookjohn/zotero-mcp",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "craftzdog/tmux-claude-session-manager",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "danielostrow/zotero-mcp-server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "debpalash/VoiceStudio",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "DeusData/codebase-memory-mcp",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "docling-project/docling",
+      "motivo": "dipendenza installata da PyPI: la scheda ne dice nome e licenza"
+    },
+    {
+      "repo": "dougwyu/claude-zotero-skills",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "executablebooks/markdown-it-py",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "flonat/claude-research",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "forrestchang/andrej-karpathy-skills",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "Galaxy-Dawn/claude-scholar",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "GetBindu/awesome-claude-code-and-skills",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "greenbone/openvas-scanner",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "grobidOrg/grobid",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "gyger/mcp-pyzotero",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "heroku/12factor",
+      "motivo": "fonte di un'idea, nel registro delle fonti del pacchetto"
+    },
+    {
+      "repo": "hesreallyhim/awesome-claude-code",
+      "motivo": "indice curato che agent-catalog sorveglia già da sé come fonte meta in sources.json"
+    },
+    {
+      "repo": "Imbad0202/academic-research-skills",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "InternScience/Awesome-Scientific-Skills",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "jacob-bd/notebooklm-mcp-cli",
+      "motivo": "alternativa soltanto nominata"
+    },
+    {
+      "repo": "jeremylongshore/claude-code-plugins-plus-skills",
+      "motivo": "candidato da rivalutare, con i conteggi dichiarati dal repository stesso"
+    },
+    {
+      "repo": "JonasBaath/mcp-refchecker",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "jqueryscript/awesome-claude-code",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "julianoczkowski/notebooklm-mcp-2026",
+      "motivo": "alternativa soltanto nominata"
+    },
+    {
+      "repo": "juliusbrussee/caveman",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "JustVugg/colibri",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "kaliaboi/mcp-zotero",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "kerim/zotero-code-execution",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "Leonxlnx/taste-skill",
+      "motivo": "fonte di un'idea, nel registro delle fonti del pacchetto"
+    },
+    {
+      "repo": "lint-staged/lint-staged",
+      "motivo": "fonte della norma di pipeline-app, che ne nomina l'uso e non ne descrive il contenuto"
+    },
+    {
+      "repo": "loganzechella/mcp-deepwiki-server",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "madmaze/pytesseract",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "matplotlib/matplotlib",
+      "motivo": "compare nella mappa generata come licenza di una skill; la mappa si rigenera dalla raccolta"
+    },
+    {
+      "repo": "mermaid-js/mermaid-cli",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "microsoft/markitdown",
+      "motivo": "dipendenza installata da PyPI: la scheda ne dice nome e licenza"
+    },
+    {
+      "repo": "microsoft/playwright-mcp",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "mksglu/context-mode",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "musistudio/claude-code-router",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "nanyang12138/Academic-MCP-Server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "nimbalyst/nimbalyst",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "nkapila6/mcp-local-rag",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "olafgeibig/knowledge-mcp",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "ooples/token-optimizer-mcp",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "openags/paper-search-mcp",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "pdavis68/RepoMapper",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "peter-evans/create-pull-request",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "pola-rs/polars",
+      "motivo": "compare nella mappa generata come licenza di una skill; la mappa si rigenera dalla raccolta"
+    },
+    {
+      "repo": "prettier/prettier",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "projectdiscovery/nuclei",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "psmux/psmux",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "pymupdf/pymupdf4llm",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "python-openxml/python-docx",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "r-uben/arxiv-mcp-server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "regenrek/deepwiki-mcp",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "rohitg00/awesome-claude-code-toolkit",
+      "motivo": "candidato da rivalutare, con i conteggi dichiarati dal repository stesso"
+    },
+    {
+      "repo": "rtk-ai/rtk",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "ryoppippi/ccusage",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "safishamsi/graphify",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "stanford-oval/storm",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "swairshah/zotero-mcp-server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "sympy/sympy",
+      "motivo": "compare nella mappa generata come licenza di una skill; la mappa si rigenera dalla raccolta"
+    },
+    {
+      "repo": "thedotmack/claude-mem",
+      "motivo": "credito nella sezione dei riferimenti open source del README: nome, link e licenza"
+    },
+    {
+      "repo": "travisvn/awesome-claude-skills",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "upstash/context7",
+      "motivo": "elencato in un documento di handoff tenuto come riferimento, come alternativa o fonte"
+    },
+    {
+      "repo": "virgiliojr94/book-to-skill",
+      "motivo": "il pacchetto ne adatta il pattern e non ne copia file"
+    },
+    {
+      "repo": "WenyuChiou/ai-research-skills",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "xbghc/semanticscholar-mcp",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "Xevos117/mcp-zotero",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "xingyulu23/Academix",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "xiuyechen/semantic-scholar-mcp",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "zabbonat/References-Validation",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    },
+    {
+      "repo": "zongmin-yu/semantic-scholar-fastmcp-mcp-server",
+      "motivo": "elencato nel documento di ricerca del 2026-07-01, tenuto come riferimento datato: la scheda non ne descrive lo stato attuale"
+    }
+  ],
+  "spediti": {
+    "skills": [
+      "alberi-di-lavoro",
+      "bib-sync",
+      "book-bib-extract",
+      "book-digest",
+      "build-roadmap",
+      "cerca-pacchetto",
+      "citation-tracker",
+      "code-review",
+      "corpus-analysis",
+      "craft-apps",
+      "deep-paper-reading",
+      "fonti-non-recuperabili",
+      "gap-analysis",
+      "gate-pacchetti",
+      "git-sync",
+      "identita-git",
+      "init-project-system",
+      "latex-build",
+      "learn-repo",
+      "learn-topic",
+      "literature-search",
+      "mcp-tool-scaffold",
+      "notebooklm-bridge",
+      "onboard",
+      "pipeline-app",
+      "prove-che-misurano",
+      "rea-indagine",
+      "repo-status",
+      "research-scoping",
+      "retrospettiva",
+      "review-session",
+      "riprendi",
+      "roadmap",
+      "security-review",
+      "senior-researcher",
+      "separazione-ambienti",
+      "skill-autogen",
+      "studio-didattico",
+      "sync-context",
+      "sync-readme",
+      "test-generator",
+      "wiki-digest"
+    ],
+    "agents": [
+      "code-reviewer",
+      "code-tutor",
+      "debugger",
+      "examiner",
+      "explorer",
+      "kb-retriever",
+      "security-auditor",
+      "tutor"
+    ],
+    "commands": [
+      "check-agent-sources",
+      "fetch-community-agent",
+      "learn",
+      "learn-repo",
+      "list-community-agents",
+      "profile",
+      "refresh-handoff",
+      "review"
+    ]
+  }
+}

@@ -4,7 +4,7 @@
 
 Perché esiste, e perché non è un installatore
 ----------------------------------------------
-La raccolta `K-Dense-AI/scientific-agent-skills` contiene centosessantasei skill e si installa
+La raccolta `K-Dense-AI/scientific-agent-skills` contiene più di centosettanta skill e si installa
 già benissimo da sola: `gh skill install <repo> <nome>` ne prende una per volta, la mette nella
 cartella giusta per l'host che si usa e registra la provenienza, e `--pin` la blocca a un tag o
 a un commit. Riscrivere quel meccanismo qui sarebbe duplicare una funzione che esiste, che è

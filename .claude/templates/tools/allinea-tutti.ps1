@@ -255,16 +255,19 @@ function Sporchi([string]$prj) {
 # rapporto <slug>.dopo.json, che nasce solo dopo una scrittura: non il registro, che ogni corsa
 # riscrive anche quando misura soltanto, e che farebbe passare per "nostro" cio' che si sta per
 # scrivere adesso, rendendo cieca la guardia.
-function Scritti-Prima([string]$slug, [string]$cartellaCorse, [string]$esclusa = '') {
+# Tutte le corse che hanno scritto dopo l'ultimo commit dell'allineamento, non solo l'ultima: due
+# corse incomplete di fila lasciano sporchi i file di entrambe, e la seconda non elenca quelli che
+# trova gia' scritti dalla prima. Leggere solo l'ultima ha lasciato 36 progetti fermi il 2026-10-20.
+function Scritti-Prima([string]$slug, [string]$cartellaCorse, [string]$esclusa = '', [string]$dopoIl = '') {
   $out = @()
   $corse = @(Get-ChildItem -LiteralPath $cartellaCorse -Directory -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -ne $esclusa -and (Test-Path -LiteralPath (Join-Path $_.FullName "$slug.dopo.json")) } |
-    Sort-Object Name -Descending)
-  if (-not $corse) { return , @($out) }
-  $rapporto = Join-Path $corse[0].FullName "$slug.json"
-  if (-not (Test-Path -LiteralPath $rapporto)) { return , @($out) }
-  foreach ($e in (Leggi-Json $rapporto)) {
-    if ($AZIONABILI -contains $e.esito -and $e.esito -ne 'CONFLITTO') { $out += $e.file; if ($e.esito -eq 'SPOSTATO' -and $e.template) { $out += $e.template } }
+    Where-Object { $_.Name -ne $esclusa -and $_.Name -gt $dopoIl -and (Test-Path -LiteralPath (Join-Path $_.FullName "$slug.dopo.json")) })
+  foreach ($c in $corse) {
+    $rapporto = Join-Path $c.FullName "$slug.json"
+    if (-not (Test-Path -LiteralPath $rapporto)) { continue }
+    foreach ($e in (Leggi-Json $rapporto)) {
+      if ($AZIONABILI -contains $e.esito -and $e.esito -ne 'CONFLITTO') { $out += $e.file; if ($e.esito -eq 'SPOSTATO' -and $e.template) { $out += $e.template } }
+    }
   }
   $out += '.claude/allineamento-template.json', '.claude/allineamento-risolti.json'
   return , @($out | Sort-Object -Unique)
@@ -397,7 +400,12 @@ if ($Autotest) {
   [System.IO.File]::WriteAllText((Join-Path $scritta 'prj.json'), (ConvertTo-Json @(@{ file = '.claude/rules/uno.md'; esito = 'VECCHIO' }, @{ file = '.claude/rules/due.md'; esito = 'CONFLITTO' })), $utf8)
   [System.IO.File]::WriteAllText((Join-Path $scritta 'prj.dopo.json'), '[]', $utf8)
   [System.IO.File]::WriteAllText((Join-Path $misurata 'prj.json'), (ConvertTo-Json @(@{ file = '.claude/rules/tre.md'; esito = 'VECCHIO' })), $utf8)
+  $seconda = Join-Path $corseFinte '20260103-000000'; New-Item -ItemType Directory -Force -Path $seconda | Out-Null
+  [System.IO.File]::WriteAllText((Join-Path $seconda 'prj.json'), (ConvertTo-Json @(@{ file = '.claude/rules/quattro.md'; esito = 'VECCHIO' })), $utf8)
+  [System.IO.File]::WriteAllText((Join-Path $seconda 'prj.dopo.json'), '[]', $utf8)
   $scrittiFinti = Scritti-Prima 'prj' $corseFinte
+  Caso 'due corse scritte di fila contano entrambe, non solo l ultima' @($true, $true) @((@($scrittiFinti) -contains '.claude/rules/uno.md'), (@($scrittiFinti) -contains '.claude/rules/quattro.md'))
+  Caso 'una corsa anteriore all ultimo allineamento non conta' @($false) (@(Scritti-Prima 'prj' $corseFinte '' '20260102-000000') -contains '.claude/rules/uno.md')
   Caso 'cio che la passata precedente ha scritto si riconosce come suo' @($true) (@($scrittiFinti) -contains '.claude/rules/uno.md')
   Caso 'un file in conflitto non e scritto dalla passata, quindi resta altrui' @($false) (@($scrittiFinti) -contains '.claude/rules/due.md')
   Caso 'una corsa che ha solo misurato non rende suo niente' @($false) (@($scrittiFinti) -contains '.claude/rules/tre.md')
@@ -408,7 +416,7 @@ if ($Autotest) {
   Caso 'una cartella dentro un progetto trovato e del progetto' @($true) (Parziale-Rumore '/opt/app/_notes/MCP-docx' '/home/dev' $progFinti)
   Caso 'una cartella vera con .claude senza PROJECT-SYSTEM resta elencata' @($false) (Parziale-Rumore '/home/dev/Scrivania/nuovo' '/home/dev' $progFinti)
   Write-Host ''
-  Write-Host "$(22 - $rossi) casi superati su 22"
+  Write-Host "$(24 - $rossi) casi superati su 24"
   Remove-Item -LiteralPath $blocco -Force -ErrorAction SilentlyContinue
   exit $(if ($rossi) { 1 } else { 0 })
 }
@@ -556,7 +564,8 @@ try {
         if ($o.sporco -and $o.stato -ne 'allineato') {
           $collisi = Collisione $esitiPrima $o.sporchi
           if ($collisi) {
-            $nostri = Scritti-Prima $o.slug (Join-Path $base 'corse') $corsa
+            $dataMarcatore = @(Invoca-Git $prj log -1 --format=%cd --date=format:%Y%m%d-%H%M%S -- .claude/allineamento-template.json) | Select-Object -First 1
+            $nostri = Scritti-Prima $o.slug (Join-Path $base 'corse') $corsa ([string]$dataMarcatore)
             $altrui = @($collisi | Where-Object { $nostri -notcontains $_ -and $_ -notlike '.agents/skills/*' })
             if (-not $altrui) { $o.avvisi += "albero sporco solo per la passata precedente non committata ($($collisi.Count) file): si completa"; $collisi = @() }
             else { $collisi = $altrui }

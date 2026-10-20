@@ -56,6 +56,27 @@
     "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
   },
   {
+    "progetto": "intrawelt-qa-verifier",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "fix-typography/tools/fix-accents.py: rifiuta un sorgente passato per nome salvo --anche-sorgenti, e nella modalita' codice non tocca le citazioni fra apici singoli; prove in test-tipografia e nell'autotest"
+  },
+  {
+    "progetto": "intrawelt-qa-verifier",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lint-doc-references.py: categoria propagato, i documenti scritti dall'allineamento non fermano la chiusura di un progetto"
+  },
+  {
+    "progetto": "local-audio-transcriptor",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lint-cultura.py, lanciato da chiudi-sessione: blocca nel template, avvisa nei progetti"
+  },
+  {
     "progetto": "log-collector",
     "id": "L-001",
     "commit": "",
@@ -89,5 +110,12 @@
     "commit": "",
     "data": "2026-10-20",
     "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   }
 ]

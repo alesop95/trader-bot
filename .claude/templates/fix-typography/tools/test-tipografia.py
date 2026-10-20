@@ -292,6 +292,54 @@ def prova_composte_apostrofo():
     return falliti
 
 
+def prova_sorgente_per_nome():
+    """Un sorgente passato per nome a fix-accents si rifiuta, salvo --anche-sorgenti.
+
+    Lezione di un progetto istanziato del 2026-10-20: una stringa Python che finiva con a e
+    apostrofo ha perso la virgoletta di chiusura, perche' il file passato per nome non
+    attraversava il filtro delle estensioni. La seconda corsa, forzata, deve cambiare il
+    file: se non lo cambiasse, la prima passerebbe senza aver misurato la guardia.
+    """
+    AP = chr(39)
+    CONTENUTO = "x = 1  # perche" + AP + " cosi" + AP + NL
+    base = os.path.join(ROOT, "_notes", "tmp", "sorgente-per-nome")
+    file = os.path.join(base, "prova.py")
+    strumento = os.path.join(ROOT, "tools", "fix-accents.py")
+    falliti = 0
+
+    def prepara():
+        if os.path.isdir(base):
+            shutil.rmtree(base)
+        os.makedirs(base)
+        with open(file, "wb") as f:
+            f.write(CONTENUTO.encode("utf-8"))
+
+    def leggi():
+        with open(file, "rb") as f:
+            return f.read().decode("utf-8")
+
+    try:
+        prepara()
+        r = subprocess.run([sys.executable, strumento, "--includi-modelli", file],
+                           capture_output=True, cwd=ROOT)
+        if r.returncode != 2 or leggi() != CONTENUTO:
+            print("  FALLITA  sorgente per nome      fix-accents ha accettato un .py passato per nome")
+            falliti += 1
+        prepara()
+        subprocess.run([sys.executable, strumento, "--includi-modelli", "--anche-sorgenti", file],
+                       capture_output=True, cwd=ROOT)
+        if leggi() == CONTENUTO:
+            print("  FALLITA  sorgente per nome      con --anche-sorgenti il file non cambia, "
+                  "quindi la prova non misura nulla")
+            falliti += 1
+    finally:
+        if os.path.isdir(base):
+            shutil.rmtree(base)
+    if falliti == 0:
+        print("  ok       sorgente per nome        rifiutato, cede con --anche-sorgenti")
+    return falliti
+
+
 def prova_guardia_modelli():
     """La guardia che impedisce di riscrivere le copie dei modelli, e la sua scappatoia.
 
@@ -486,6 +534,7 @@ def main():
     falliti += prova_guardia_modelli()
     falliti += prova_stringhe_python()
     falliti += prova_forma_decomposta()
+    falliti += prova_sorgente_per_nome()
 
     print("test-tipografia: %d controlli falliti" % falliti)
     return 1 if falliti else 0

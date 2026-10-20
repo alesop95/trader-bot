@@ -117,6 +117,7 @@ Divide in categorie invece di produrre un elenco unico, e la ragione vale come c
 
 Le radici che identificano un percorso non si configurano: si leggono da git. Un elenco scritto a mano sarebbe un secondo posto dove vive lo stesso fatto, e divergerebbe in silenzio, perché il sintomo di una cartella non controllata e l'assenza di segnalazioni.
 
+Dal 2026-10-20 c'è una quinta categoria, che vale solo in un progetto ospite: propagato. Un documento che scrive l'allineamento, cioè regole, norme, `PROJECT-SYSTEM.md`, prompt e le skill che il template porta, lette dall'elenco delle skill di sistema e dall'elenco `spediti` del registro delle fonti a monte, non lo corregge il progetto, quindi un suo riferimento rotto si mostra e non ferma la chiusura; lo corregge il template, che quei documenti li controlla in modalità bundle. Nasce dalle lezioni L-002 e L-005 di un progetto istanziato: il marcatore sulla riga era un rimedio puntuale, e la skill `riprendi` del 2026-10-20 ha riaperto il difetto in quattro dei sei progetti che lanciano il controllo.
 ```
 python tools/lint-doc-references.py
 python tools/lint-doc-references.py --solo-vivi
@@ -345,6 +346,40 @@ python .claude/templates/tools/lezioni-template.py nuova "titolo" --testo "che c
 python .claude/templates/tools/lezioni-template.py controlla
 python .claude/templates/tools/lezioni-template.py raccogli
 python .claude/templates/tools/lezioni-template.py recepisci <progetto> L-001 --dove "file"
+```
+
+## fonti-a-monte.py
+
+Dice quando è cambiato un repository GitHub altrui da cui il sistema prende o descrive qualcosa, così che una scheda o una copia installata non resti falsa senza che nessuno se ne accorga. Lo stesso strumento gira nel template e nei progetti, e riconosce dove si trova dal prompt d'inizializzazione insieme ai marcatori del catalogo nel README, perché il prompt da solo sta anche in quattro progetti locali.
+
+Il registro ha due elenchi. `sorvegliati` porta per ogni repository la cartella interna che conta, oppure `tipo: release` quando la scheda descrive le release, e l'ultimo commit o tag confrontato. `citati` porta i repository soltanto nominati, ciascuno con il motivo per cui non si sorvegliano. Il censimento rende il registro completo da sé: raccoglie ogni repository che compare in un URL, in un comando d'installazione o, nel solo template, fra apici inversi quando il nome non è un percorso locale; quello che non sta in nessun elenco entra fra i sorvegliati come mai verificato, e un sorvegliato che non compare più si toglie. Nel template il censimento percorre pacchetti, catalogo, skill, regole, norme, `PROJECT-SYSTEM.md` e README, e scrive nel registro l'elenco `spediti` delle skill, degli agenti e dei comandi che il template porta nei progetti. In un progetto il registro è `.claude/fonti-a-monte.json`, e il censimento percorre solo i posti dove si installa materiale altrui, `.claude/skills`, `.claude/agents`, `.claude/commands`, `.claude/agent-catalog` e `.agents`, saltando ciò che l'elenco `spediti` dice arrivare dal template: le schede dei pacchetti le corregge il template e arrivano con l'allineamento.
+
+`controlla` censisce e poi chiede all'API di GitHub l'ultima versione di ogni sorvegliato, senza scaricare niente; tace sugli invariati, e per gli altri dice quanti commit, quale release o se il repository è sparito, con il link alla differenza. Esce con 0 anche quando trova cambiamenti o non raggiunge la rete, salvo `--rigoroso`, e al limite orario dell'API si ferma dicendo quanti repository non ha controllato. Il token si prende da `GH_TOKEN`, `GITHUB_TOKEN` o `gh auth token`. `segna` registra la verifica dopo aver corretto la scheda, `cita` sposta un repository fra i citati con il suo motivo, `sorveglia` imposta cartella o release. Gira all'apertura di ogni sessione, dal `CLAUDE.md` del template e da `riprendi` nei progetti. `chiudi` lancia `censisci --check`: nel template un repository citato e non censito ferma il commit, così registro e schede entrano insieme; nel progetto avvisa soltanto.
+
+La prima valutazione completa, il 2026-10-20, ha censito 113 repository: 20 sorvegliati e 93 citati. Quattro schede erano invecchiate e sono state corrette con i conteggi rifatti a monte: K-Dense da 166 a 177 skill, senza più gli strumenti documentali di Anthropic; wshobson/agents da 194 a 202 agent e da 158 a 185 skill; VoltAgent da 154+ a 162 agent; la guida di Cranot ferma dal 2026-07-27 e non più automatica. La simulazione sui 41 progetti locali, con il registro come arriverà dall'allineamento, trova un solo repository installato dai progetti, `blader/humanizer` in tre. L'`--autotest` ha 33 casi, senza rete, e le mutazioni sul riconoscimento del template, sull'esclusione delle skill del template e sui nomi fra apici fanno cadere ciascuna almeno un caso.
+
+```powershell
+python .claude/templates/tools/fonti-a-monte.py controlla
+python .claude/templates/tools/fonti-a-monte.py censisci --check
+python .claude/templates/tools/fonti-a-monte.py segna mattpocock/skills
+python .claude/templates/tools/fonti-a-monte.py cita owner/repo --motivo "soltanto citato in un elenco"
+python .claude/templates/tools/fonti-a-monte.py sorveglia owner/repo --cartella skills
+```
+
+## lint-cultura.py
+
+Segnala le conversioni PowerShell da testo a numero o a data che dipendono dalla cultura di sistema: `[double]::Parse`, `TryParse` e `[Convert]::ToDouble`, e gli stessi per `decimal`, `single`, `float` e `datetime`, chiamati senza un fornitore di formato. Nasce da una lezione di un progetto istanziato del 2026-10-20: la durata di un video letta da ffprobe come `300.012000` diventava trecento milioni in cultura italiana, senza nessun errore. Lo strumento conta gli argomenti di primo livello della chiamata e accetta la riga se oltre al testo c'è un argomento che non è un `[ref]` né uno stile, cioè la cultura, anche passata per variabile; i tipi interi, il cast `[double]"1.5"` e `-as` restano fuori perché non sbagliano in silenzio, e `# cultura-ok` marca un'eccezione voluta. Percorre i `.ps1` e `.psm1` tracciati. `chiudi` lo lancia in ogni progetto: nel template un riscontro ferma il commit, in un progetto avvisa, salvo `--rigoroso`. Alla prima corsa ha trovato nel template `[datetime]::Parse` in `chiudi-allineamento.ps1`, corretto anche se il formato letto è ISO e quindi oggi non sbagliava, e nei progetti locali tre conversioni in due progetti. L'`--autotest` ha 17 casi, e le mutazioni sul conteggio degli argomenti e sul riconoscimento degli stili ne fanno cadere almeno uno.
+
+```powershell
+python .claude/templates/tools/lint-cultura.py .
+```
+
+## retro-segnali.py
+
+La parte deterministica della skill `retrospettiva`: legge la trascrizione JSONL della sessione più recente del progetto, sotto `CLAUDE_CONFIG_DIR` oppure `~/.claude`, e conta senza modello i comandi falliti, le chiamate negate, i file letti almeno tre volte, le ricerche ripetute, i risultati oltre ventimila caratteri e i messaggi dell'utente che correggono o interrompono, ciascuno con il turno e un estratto. Le chiamate dei subagent restano fuori. Con `--json` scrive i segni in un file, di norma sotto `_notes/retrospettiva/`. Su questa macchina il wipe cancella la trascrizione di una sessione chiusa, quindi lo strumento si lancia nella sessione stessa, prima di chiudere; le trascrizioni di Codex non sono ancora lette. L'`--autotest` ha 12 casi su una trascrizione costruita.
+
+```powershell
+python .claude/templates/tools/retro-segnali.py --json _notes/retrospettiva/segnali.json
 ```
 
 ## lint-strumenti.py

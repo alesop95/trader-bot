@@ -36,7 +36,7 @@ Perché `gh skill install` lo fa già, e meglio. Prende una skill per volta, la 
 
 ```
 gh skill install K-Dense-AI/scientific-agent-skills scanpy
-gh skill install K-Dense-AI/scientific-agent-skills --pin v2.68.0
+gh skill install K-Dense-AI/scientific-agent-skills --pin v2.72.0
 gh skill update --all
 ```
 
@@ -48,7 +48,7 @@ L'avviso di sicurezza della raccolta dice tre cose, e le dice con una franchezza
 
 Tutti e tre quei criteri sono verificabili guardando i file, e il programma di questo pacchetto li guarda. Sull'istanza letta al momento della scrittura di questo README, i numeri che ne escono sono questi, e sono il genere di cosa che nessuno scopre leggendo un elenco in prosa.
 
-Centotrentasei skill sono della casa e trenta di altri autori, fra cui i quattro strumenti documentali di Anthropic, vendorati dalla raccolta con credito esplicito. Centosei portano una cartella di programmi eseguibili, cioè la maggioranza, ed è la classe per cui la raccolta suggerisce di passare uno scanner prima di installare. Cinque hanno licenza proprietaria e una è a uso non commerciale, dentro una raccolta il cui repository si presenta come MIT: la differenza non si nota finché non serve, e allora è tardi. Quattro non dichiarano alcuna licenza.
+Centocinquantuno skill sono della casa e ventisei di altri autori; i quattro strumenti documentali di Anthropic, che la raccolta vendorava con credito esplicito, al commit ricontato non ci sono più. Centoventuno portano una cartella di programmi eseguibili, cioè la maggioranza, ed è la classe per cui la raccolta suggerisce di passare uno scanner prima di installare. Una ha licenza proprietaria e una è a uso non commerciale, dentro una raccolta il cui repository si presenta come MIT: la differenza non si nota finché non serve, e allora è tardi. Quattro non dichiarano alcuna licenza. I numeri sono del commit `593377b` del 2026-10-19, ricontati il 2026-10-20 rigenerando la mappa con lo strumento del pacchetto.
 
 Lo scanner che la raccolta stessa indica si esegue sulla cartella della skill prima di installarla.
 
@@ -71,7 +71,7 @@ Si propone a un progetto il cui dominio sia scientifico, e la domanda giusta non
 
 Un caso intermedio merita una menzione perché è frequente e si perde: un progetto che non sia scientifico ma che produca documenti tecnici trova nella sezione della comunicazione scientifica alcune skill utili in sé, per esempio quelle sui poster e sulle presentazioni senza macro. Si offrono per quelle, dicendo che vengono da una raccolta scientifica, invece di offrire la raccolta intera.
 
-Quando il pacchetto si attiva, il recap d'uso da mostrare è il clone parziale, la generazione della mappa, e la regola delle quattro mosse della sezione precedente. Senza quest'ultima il pacchetto si riduce a un elenco, e un elenco di centosessantasei voci invita esattamente al comportamento che l'avviso di sicurezza chiede di evitare.
+Quando il pacchetto si attiva, il recap d'uso da mostrare è il clone parziale, la generazione della mappa, e la regola delle quattro mosse della sezione precedente. Senza quest'ultima il pacchetto si riduce a un elenco, e un elenco di centosettantasette voci invita esattamente al comportamento che l'avviso di sicurezza chiede di evitare.
 
 ## Rigenerare la mappa, e vedere che cosa è cambiato a monte
 

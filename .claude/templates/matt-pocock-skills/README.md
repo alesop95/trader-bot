@@ -4,7 +4,7 @@
 
 ## Che cosa è la raccolta a monte
 
-Trentasette skill, licenza MIT, scritte dall'autore per il proprio lavoro quotidiano e pubblicate come tali. La tesi dichiarata è che gli approcci che possiedono il processo, dove il processo è un impianto completo che decide per te, tolgano controllo e rendano difficile correggere un difetto del processo stesso; le skill sono quindi piccole, adattabili e componibili, e l'autore invita esplicitamente a modificarle.
+Trentuno skill pubblicate più sette in lavorazione, contate il 2026-10-20 sui `SKILL.md` del commit `5beb35b` a monte, licenza MIT, scritte dall'autore per il proprio lavoro quotidiano e pubblicate come tali. La tesi dichiarata è che gli approcci che possiedono il processo, dove il processo è un impianto completo che decide per te, tolgano controllo e rendano difficile correggere un difetto del processo stesso; le skill sono quindi piccole, adattabili e componibili, e l'autore invita esplicitamente a modificarle.
 
 Si dividono su un asse che conviene conoscere prima di sceglierne una, perché cambia quando entrano in funzione. Quelle a invocazione utente si raggiungono solo digitandole, e il loro mestiere è orchestrare; quelle a invocazione del modello possono essere raggiunte dall'agente da sé quando il compito le riguarda, e tengono la disciplina riusabile. Una skill a invocazione utente può chiamarne una a invocazione del modello, mai un'altra a invocazione utente.
 
@@ -45,7 +45,7 @@ Il primo gruppo copre un buco reale del sistema di progetto. Non esiste qui nien
 | `wizard` | Genera una procedura guidata interattiva per i passi che solo un umano può fare: credenziali, infrastruttura, cruscotti di terze parti | Il sistema ha la regola sugli screenshot per vedere ciò che non può vedere; non ha niente per condurre l'utente attraverso una procedura manuale |
 | `triage` | Porta le segnalazioni attraverso una macchina a stati di ruoli di triage | Nessun equivalente, e presuppone un tracciatore di problemi |
 | `prototype` | Costruisce un prototipo usa e getta per rispondere a una domanda di disegno, come file singolo o come varianti di interfaccia commutabili | Nessun equivalente. Il sistema ha `diagrams` per disegnare e niente per provare |
-| `resolving-merge-conflicts` | Attraversa un conflitto di merge o di rebase in corso, pezzo per pezzo, risolvendo per intento risalito alla fonte di ciascun lato | Nessun equivalente, e tocca un'area dove il sistema è deliberatamente prudente perché git resta manuale dell'utente |
+| `retro` | Rilegge la trascrizione di una sessione e propone modifiche all'ambiente, non al codice: puntatori di navigazione, controlli automatici, standard per il revisore, istruzioni da sfoltire, strumenti costosi, accesso alle informazioni | Il sistema ha il registro delle lezioni verso il template e la direttiva che le lezioni diventino codice e prove, ma una lezione nasce solo quando qualcuno la nota durante il lavoro: manca il passaggio sistematico che a fine sessione cerca gli attriti nella trascrizione. Va adattata, vedi la sezione sulla retrospettiva |
 
 Il secondo gruppo copre cose che il sistema già fa, in una forma diversa. Si prendono solo scegliendo consapevolmente quale delle due tenere, e la scelta va registrata come decisione invece di lasciata al caso.
 
@@ -72,6 +72,22 @@ Il secondo caso sono le decisioni. `grill-with-docs` e `domain-modeling` le regi
 Il terzo caso è il passaggio di consegne. La raccolta lo scrive come documento a sé; qui va in `_notes/RESUME-PROMPT.md`, che è ignorato da git per scelta e va aggiornato a fine sessione.
 
 Ne segue la conseguenza pratica annunciata sopra: chi prende una di queste tre prende la via di installazione che copia i file nel progetto, perché la via del plugin è in sola lettura e non si adatta. E la configurazione iniziale della raccolta, che chiede dove salvare i documenti prodotti, si risponde con i percorsi di questo sistema e non con i suoi predefiniti.
+
+`resolving-merge-conflicts` stava nel primo gruppo fino al 2026-10-19, quando l'autore l'ha tolta dalla raccolta senza sostituirla, e qui non si offre più.
+
+## La retrospettiva, e dove atterra in questo sistema
+
+`retro` si invoca solo a mano, legge la sessione corrente o quella che le si indica nei registri di sessione della macchina, classifica gli attriti in sette categorie e propone, in ordine di gravità, senza modificare nulla finché l'utente non sceglie. Due tesi la reggono e valgono anche qui. La prima: una violazione meccanica, cioè uno schema sintattico fisso o un percorso vietato, si chiude con un controllo deterministico e non con una frase, perché un controllo può fallire e una frase no; solo il giudizio resta prosa. La seconda: un repository senza alcun presidio, né hook di pre-commit né CI che lanci i controlli, è di per sé un riscontro, e un controllo che esiste ma non è collegato si collega invece di riscriverlo.
+
+Lette queste tesi accanto al sistema, il grosso della seconda è già fatto: `chiudi-sessione` lancia accenti, trattini, comandi spezzati, riferimenti, fine riga, anonimizzazione e budget delle istruzioni, e `.githooks/pre-commit.d/` porta `anti-slop` e `instruction-budget` anche ai commit manuali. L'esempio d'uso più citato della skill, una regola di pulizia prima della pubblicazione trasformata in hook, qui esiste già come `Test-Anonymization.py` dentro `chiudi`. Ciò che la retrospettiva aggiungerebbe è a monte, nel modo in cui si scopre che un controllo manca.
+
+L'adattamento ha quattro punti, e il primo decide se la skill funziona affatto su questa macchina. La trascrizione che la skill legge vive nella cartella `projects` dell'account, e l'hook di wipe a chiusura la cancella insieme a ogni sessione chiusa: una retrospettiva sulla giornata precedente, che la skill dichiara possibile, qui trova il vuoto. Si esegue quindi nella sessione stessa, prima di `chiudi`, oppure lo strumento di chiusura la propone prima del wipe.
+
+Il secondo punto è la destinazione dei riscontri, che a monte vanno in `CODING_STANDARDS.md` e in `AGENTS.md` e che qui hanno sedi già definite. Un controllo meccanico entra fra quelli di `chiudi-sessione` o in `.githooks/pre-commit.d/`, con il proprio `--autotest` che cade se il difetto torna. Un puntatore di navigazione va nell'indice delle norme caricate su richiesta del `CLAUDE.md` o nella descrizione della skill che doveva scattare. Una prescrizione di giudizio va nella regola pertinente, e il caso che la giustifica in `.claude/norme/`. Un'istruzione che non cambia il comportamento si toglie, e `misura-istruzioni.py` dice quanto pesava.
+
+Il terzo punto è il canale. In un progetto istanziato un riscontro che passa le due domande della sezione 16 di `PROJECT-SYSTEM.md` diventa una lezione con `lezioni-template.py nuova`, e da lì arriva al template con la raccolta di apertura sessione; la retrospettiva diventa così la fonte sistematica di un registro che oggi si alimenta solo per caso.
+
+Il quarto punto è il più grosso e non è un adattamento ma una decisione aperta. La skill presuppone due stadi, un agente che implementa sotto pressione di contesto e un revisore che riceve il solo diff, e sposta gli standard sul secondo. Questo sistema non ha lo stadio di revisione come luogo degli standard: tutte le regole stanno in `.claude/rules/` e si caricano nella sessione che implementa. Adottare la tesi per intero vorrebbe dire separare le regole di giudizio che servono solo a chi rilegge un diff e caricarle in revisione, con un risparmio di contesto da misurare prima di dichiararlo.
 
 ## Che cosa il sistema di progetto ha e la raccolta non ha
 

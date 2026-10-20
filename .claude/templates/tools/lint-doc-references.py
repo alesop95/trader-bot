@@ -40,6 +40,13 @@ memoria o gli strumenti dei pacchetti visti dalla loro destinazione. Su quel rep
 categorie producono decine di segnalazioni tutte legittime, e la conclusione corretta non è
 correggerle ma dichiarare che quel repository è il bundle, con l'opzione `--bundle`.
 
+Una quinta categoria vale solo in un progetto ospite, dal 2026-10-20: propagato. Un documento che
+l'allineamento scrive, cioè le regole, le norme, `PROJECT-SYSTEM.md` e le skill che il template porta,
+non lo corregge il progetto, perché la passata successiva lo riscriverebbe; un suo riferimento a un
+file che il progetto ha solo per una scelta propria, come il registro delle fonti a monte, si mostra
+e non ferma la chiusura. Due lezioni di un progetto istanziato l'hanno chiesto, perché il rimedio
+puntuale con il marcatore si riapriva a ogni skill nuova.
+
 La distinzione non si indovina e non va indovinata, perché in un progetto ospite quelle stesse
 segnalazioni sono vere e vanno lette: un documento che nomina `tools/md-unwrap.py` in un progetto
 che non ha istanziato quel pacchetto sta descrivendo uno strumento che là non c'è. L'opzione è
@@ -77,6 +84,7 @@ mettere in una verifica automatica prima di un commit.
 import argparse
 import glob
 import io
+import json
 import os
 import re
 import subprocess
@@ -205,6 +213,49 @@ def prescritti_dal_bundle(radice=None):
     return fuori
 
 
+def skill_del_template(radice=None):
+    """Le skill che il template porta nei progetti: quelle di sistema e l'elenco `spediti`.
+
+    Il primo elenco sta in `allinea-dal-template.py`, il secondo nel registro delle fonti a
+    monte, che il template rigenera a ogni censimento; entrambi arrivano con l'allineamento.
+    """
+    base = os.path.join(radice or ".", ".claude", "templates")
+    nomi = set()
+    definizione = os.path.join(base, "tools", "allinea-dal-template.py")
+    if os.path.isfile(definizione):
+        m = re.search(r"SKILL_SISTEMA\s*=\s*\[(.*?)\]", io.open(definizione, encoding="utf-8").read(), re.S)
+        if m:
+            nomi.update(re.findall(r'"([^"]+)"', m.group(1)))
+    registro = os.path.join(base, "fonti-a-monte.json")
+    if os.path.isfile(registro):
+        try:
+            dati = json.load(io.open(registro, encoding="utf-8"))
+            if isinstance(dati, dict):
+                nomi.update(dati.get("spediti", {}).get("skills", []))
+        except ValueError:
+            pass
+    return nomi
+
+
+def propagato(documento, skill):
+    """Vero se il documento lo scrive l'allineamento e non il progetto.
+
+    Lezioni L-002 e L-005 di un progetto istanziato, 2026-10-19 e 2026-10-20: una skill
+    propagata nominava un file che il progetto ha solo se ha fatto una certa scelta, e la
+    chiusura di quel progetto si fermava su un documento che nessuno li' aveva scritto e che la
+    passata successiva avrebbe riscritto comunque. Il rimedio puntuale, un marcatore sulla riga,
+    ha tenuto finche' la skill successiva non ha riaperto il difetto in quattro progetti. Il
+    rimedio generale e' riconoscere chi possiede il documento: in un progetto un riferimento
+    rotto in un documento propagato si dichiara, e lo corregge il template, che quei documenti li
+    controlla in modalita' bundle.
+    """
+    d = documento.replace("\\", "/")
+    if d.startswith((".claude/rules/", ".claude/norme/", ".claude/PROMPT-")) or d == ".claude/PROJECT-SYSTEM.md":
+        return True
+    parti = d.split("/")
+    return len(parti) > 3 and parti[0] in (".claude", ".agents") and parti[1] == "skills" and parti[2] in skill
+
+
 def portato_dal_bundle(token, radice=None, prescritti=None):
     """Vero se il bundle porta o prescrive quel file, per nome o come percorso nominato."""
     base = os.path.join(radice or ".", ".claude", "templates")
@@ -219,12 +270,14 @@ def portato_dal_bundle(token, radice=None, prescritti=None):
     return False
 
 
-def categoria(documento, token=None, bundle=False, radice=None, prescritti=None):
+def categoria(documento, token=None, bundle=False, radice=None, prescritti=None, skill=None):
     d = documento.replace("\\", "/")
     if any(m in d for m in MODELLO):
         return "modello"
     if any(s in d for s in STORICI):
         return "storico"
+    if not bundle and skill is not None and propagato(d, skill):
+        return "propagato"
     if bundle and token is not None:
         if token.replace("\\", "/").startswith(ANATOMIA_OSPITE):
             return "bundle"
@@ -257,8 +310,9 @@ def analizza(radice=None, bundle=False):
     """Ritorna il dizionario delle tre categorie e la fonte delle radici."""
     cartelle, file_radice, fonte = radici(radice)
     base = radice or "."
-    trovati = {"vivo": [], "storico": [], "modello": [], "bundle": []}
+    trovati = {"vivo": [], "storico": [], "modello": [], "bundle": [], "propagato": []}
     prescritti = prescritti_dal_bundle(radice) if bundle else set()
+    skill = skill_del_template(radice)
     for documento in documenti_da_leggere(radice):
         percorso = os.path.join(base, documento)
         if not os.path.isfile(percorso):
@@ -282,7 +336,7 @@ def analizza(radice=None, bundle=False):
                     continue
                 if os.path.exists(os.path.join(base, token)):
                     continue
-                trovati[categoria(documento, token, bundle, radice, prescritti)].append(
+                trovati[categoria(documento, token, bundle, radice, prescritti, skill)].append(
                     (documento, numero, token))
     return trovati, fonte, cartelle
 
@@ -357,8 +411,11 @@ def self_test():
         # da controllare e la prova passerebbe per la ragione sbagliata.
         scrivi("tools/altro.py", "# la cartella degli strumenti del progetto esiste")
         senza, _f, _c = analizza(tmp, bundle=False)
-        prova("negativo: senza dichiararlo, in un progetto ospite quelle citazioni restano difetti",
-              len([t for _d, _n, t in senza["vivo"]]) >= 2, str(senza["vivo"]))
+        # Fino al 2026-10-20 qui si pretendeva che fossero difetti del progetto. Una regola pero'
+        # la scrive l'allineamento: dal 2026-10-20 (lezione L-005) si dichiarano come propagate,
+        # visibili e non bloccanti, e la quarta categoria resta comunque spenta.
+        prova("negativo: senza dichiararlo, in un progetto ospite quelle citazioni non sono del bundle",
+              not senza["bundle"] and len([t for _d, _n, t in senza["propagato"]]) >= 2, str(senza))
         con, _f, _c = analizza(tmp, bundle=True)
         bundle = [t for _d, _n, t in con["bundle"]]
         prova("in modalita' bundle l'anatomia ospite non e' un riferimento rotto",
@@ -400,6 +457,26 @@ def self_test():
               "src/esiste.ts" not in vivi and not any(" " in t for t in vivi), str(vivi))
         prova("il percorso dentro un comando si controlla comunque",
               "src/assente.ts" in vivi, str(vivi))
+
+        # L-005: una skill propagata che nomina un file condizionato non ferma il progetto,
+        # una skill del progetto si'.
+        scrivi(".claude/templates/tools/allinea-dal-template.py", 'SKILL_SISTEMA = [\n    "riprendi",\n]\n')
+        scrivi(".claude/templates/fonti-a-monte.json", '{"spediti": {"skills": ["pipeline-app"]}}\n')
+        scrivi(".claude/skills/riprendi/SKILL.md", "Si aggiorna `.claude/fonti-a-monte.json`.\n")
+        scrivi(".claude/skills/pipeline-app/SKILL.md", "Si legge `.claude/pipeline.json`.\n")
+        scrivi(".claude/rules/stile.md", "Si lancia `tools/lint-prosa.py`.\n")
+        scrivi(".claude/skills/mia/SKILL.md", "Si legge `.claude/mio-assente.json`.\n")
+        scrivi("CLAUDE.md", "Niente.\n")
+        trovati, _f, _c = analizza(tmp)
+        vivi = [t for _d, _n, t in trovati["vivo"]]
+        propagati = [t for _d, _n, t in trovati["propagato"]]
+        prova("una skill di sistema propagata non ferma il progetto",
+              ".claude/fonti-a-monte.json" in propagati and ".claude/fonti-a-monte.json" not in vivi, str(trovati))
+        prova("una skill spedita dal template e una regola nemmeno",
+              ".claude/pipeline.json" in propagati and "tools/lint-prosa.py" in propagati, str(propagati))
+        prova("una skill del progetto si controlla", ".claude/mio-assente.json" in vivi, str(vivi))
+        trovati_b, _f, _c = analizza(tmp, bundle=True)
+        prova("nel bundle i propagati non si distinguono", not trovati_b["propagato"], str(trovati_b["propagato"]))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -435,8 +512,9 @@ def main():
         "storico": "STORICO (voce datata: era vera quel giorno, non si riscrive)",
         "modello": "MODELLO (convenzione per progetti nuovi, non un file di questo)",
         "bundle": "BUNDLE (anatomia o strumento che il bundle prescrive a un progetto ospite)",
+        "propagato": "PROPAGATO (documento che scrive l'allineamento: lo corregge il template)",
     }
-    for chiave in ("vivo", "storico", "modello", "bundle"):
+    for chiave in ("vivo", "storico", "modello", "bundle", "propagato"):
         if a.solo_vivi and chiave != "vivo":
             continue
         voci = trovati[chiave]
