@@ -95,7 +95,7 @@ lint-didattica.py||.claude/context/studio-didattico-master.md|0
 fix-accents.py|--check $m .||0
 fix-dashes.py|--check $m .||0
 fix-missing-accents.py|--check $m .||0
-sync-codex-skills.py|--project-root . --check|.claude/skills|0
+sync-codex-skills.py|--project-root . --check|.agents/skills|0
 verifica-link-progetto.py|--check --senza-rete|tools/verifica-link-progetto.json|0
 check-copie-modelli.py|||1
 check-catalogo.py|||1
@@ -118,6 +118,15 @@ else
     done <<EOF
 $controlli
 EOF
+fi
+# Le lezioni verso il template, dal 2026-10-19: avvisano e non fermano il commit. Nel progetto
+# si vede che cosa il progetto deve al template; nel template, il debito di tutti i progetti.
+if [ -n "$python" ] && [ -f .claude/templates/tools/lezioni-template.py ]; then
+    if [ $bundle = 1 ]; then modo="raccogli --solo-locali"; else modo=controlla; fi
+    # $modo resta senza virgolette di proposito: nel template porta due parole.
+    lez=$("$python" .claude/templates/tools/lezioni-template.py $modo 2>&1 | grep -v '^[[:space:]]*$')
+    [ $bundle = 1 ] && lez=$(printf '%s\n' "$lez" | tail -n 3)
+    if [ -n "$lez" ]; then titolo "Lezioni per il template"; printf '%s\n' "$lez" | sed 's/^/   /'; fi
 fi
 if [ -n "$falliti" ]; then printf '\nControlli falliti:%s. Mi fermo prima del commit.\n' "$falliti"; exit 1; fi
 [ $solo = 1 ] && { printf '\nControlli verdi.\n'; exit 0; }

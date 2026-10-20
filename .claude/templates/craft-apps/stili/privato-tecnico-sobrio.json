@@ -1,0 +1,11 @@
+{
+  "nome": "privato-tecnico-sobrio",
+  "descrizione": "Design system privato del proprietario, scelto il 2026-10-19: documentazione da senior engineer, il registro di un design doc o di una RFC interna. Titoli in Inter, testo serif in Georgia, un solo accento blu ardesia.",
+  "font_titoli": "Inter",
+  "font_testo": "Georgia",
+  "colore_titoli": "1F3A5F",
+  "colore_testo": "1A1A1A",
+  "font_codice": "Consolas",
+  "dimensioni": {"Title": 26, "Heading 1": 20, "Heading 2": 16, "Heading 3": 13, "Normal": 11, "Code": 10},
+  "colori_slide": {"dk1": "#1A1A1A", "lt1": "#FFFFFF", "dk2": "#1F3A5F", "lt2": "#F2F4F7", "accent1": "#1F3A5F", "accent2": "#5B7189", "hlink": "#1F3A5F"}
+}

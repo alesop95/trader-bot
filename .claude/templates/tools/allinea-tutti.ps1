@@ -247,6 +247,29 @@ function Sporchi([string]$prj) {
   return , @($out)
 }
 
+# I file che la passata precedente ha scritto in questo progetto, letti dal suo rapporto. Una
+# passata finita incompleta lascia l'albero sporco proprio su quei file, e la guardia li prendeva
+# per lavoro di un'altra sessione: il 2026-10-20, dopo una corsa incompleta, 38 progetti su 38
+# risultavano albero-sporco per lo sporco lasciato dall'allineamento stesso.
+# Si legge la corsa piu' recente che in questo progetto ha davvero scritto, riconoscibile dal
+# rapporto <slug>.dopo.json, che nasce solo dopo una scrittura: non il registro, che ogni corsa
+# riscrive anche quando misura soltanto, e che farebbe passare per "nostro" cio' che si sta per
+# scrivere adesso, rendendo cieca la guardia.
+function Scritti-Prima([string]$slug, [string]$cartellaCorse, [string]$esclusa = '') {
+  $out = @()
+  $corse = @(Get-ChildItem -LiteralPath $cartellaCorse -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -ne $esclusa -and (Test-Path -LiteralPath (Join-Path $_.FullName "$slug.dopo.json")) } |
+    Sort-Object Name -Descending)
+  if (-not $corse) { return , @($out) }
+  $rapporto = Join-Path $corse[0].FullName "$slug.json"
+  if (-not (Test-Path -LiteralPath $rapporto)) { return , @($out) }
+  foreach ($e in (Leggi-Json $rapporto)) {
+    if ($AZIONABILI -contains $e.esito -and $e.esito -ne 'CONFLITTO') { $out += $e.file; if ($e.esito -eq 'SPOSTATO' -and $e.template) { $out += $e.template } }
+  }
+  $out += '.claude/allineamento-template.json', '.claude/allineamento-risolti.json'
+  return , @($out | Sort-Object -Unique)
+}
+
 function Collisione($esitiPrima, $sporchi) {
   # Un CONFLITTO non viene scritto, quindi non puo' mescolarsi a niente; gli altri esiti
   # azionabili si', RIMOSSO compreso, perche' la passata gira con --rimuovi.
@@ -368,13 +391,24 @@ if ($Autotest) {
   Caso 'un percorso locale si trova senza distinguere le maiuscole' @('locale') (In-Elenco $elencoFinto 'D:\Locale\')
   $b64 = (Comando-Ssh "echo 'x'") -replace '^echo (\S+) \|.*$', '$1'
   Caso 'il comando remoto torna identico dal base64' @("echo 'x'") ([System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($b64)))
+  $corseFinte = Join-Path ([System.IO.Path]::GetTempPath()) ('corse-finte-' + [guid]::NewGuid().ToString('N').Substring(0, 6))
+  $scritta = Join-Path $corseFinte '20260101-000000'; $misurata = Join-Path $corseFinte '20260102-000000'
+  New-Item -ItemType Directory -Force -Path $scritta, $misurata | Out-Null
+  [System.IO.File]::WriteAllText((Join-Path $scritta 'prj.json'), (ConvertTo-Json @(@{ file = '.claude/rules/uno.md'; esito = 'VECCHIO' }, @{ file = '.claude/rules/due.md'; esito = 'CONFLITTO' })), $utf8)
+  [System.IO.File]::WriteAllText((Join-Path $scritta 'prj.dopo.json'), '[]', $utf8)
+  [System.IO.File]::WriteAllText((Join-Path $misurata 'prj.json'), (ConvertTo-Json @(@{ file = '.claude/rules/tre.md'; esito = 'VECCHIO' })), $utf8)
+  $scrittiFinti = Scritti-Prima 'prj' $corseFinte
+  Caso 'cio che la passata precedente ha scritto si riconosce come suo' @($true) (@($scrittiFinti) -contains '.claude/rules/uno.md')
+  Caso 'un file in conflitto non e scritto dalla passata, quindi resta altrui' @($false) (@($scrittiFinti) -contains '.claude/rules/due.md')
+  Caso 'una corsa che ha solo misurato non rende suo niente' @($false) (@($scrittiFinti) -contains '.claude/rules/tre.md')
+  Remove-Item -LiteralPath $corseFinte -Recurse -Force
   $progFinti = @('/opt/app')
   Caso 'la home di un utente non e un progetto parziale' @($true, $true) @((Parziale-Rumore '/home/dev' '/home/dev' $progFinti), (Parziale-Rumore '/home/altro' '/home/dev' $progFinti))
   Caso 'un percorso con una cartella nascosta e rumore' @($true) (Parziale-Rumore '/home/dev/.vscode/extensions/x' '/home/dev' $progFinti)
   Caso 'una cartella dentro un progetto trovato e del progetto' @($true) (Parziale-Rumore '/opt/app/_notes/MCP-docx' '/home/dev' $progFinti)
   Caso 'una cartella vera con .claude senza PROJECT-SYSTEM resta elencata' @($false) (Parziale-Rumore '/home/dev/Scrivania/nuovo' '/home/dev' $progFinti)
   Write-Host ''
-  Write-Host "$(19 - $rossi) casi superati su 19"
+  Write-Host "$(22 - $rossi) casi superati su 22"
   Remove-Item -LiteralPath $blocco -Force -ErrorAction SilentlyContinue
   exit $(if ($rossi) { 1 } else { 0 })
 }
@@ -522,6 +556,12 @@ try {
         if ($o.sporco -and $o.stato -ne 'allineato') {
           $collisi = Collisione $esitiPrima $o.sporchi
           if ($collisi) {
+            $nostri = Scritti-Prima $o.slug (Join-Path $base 'corse') $corsa
+            $altrui = @($collisi | Where-Object { $nostri -notcontains $_ -and $_ -notlike '.agents/skills/*' })
+            if (-not $altrui) { $o.avvisi += "albero sporco solo per la passata precedente non committata ($($collisi.Count) file): si completa"; $collisi = @() }
+            else { $collisi = $altrui }
+          }
+          if ($collisi) {
             $o.stato = 'albero-sporco'
             $o.avvisi += 'lavoro in corso sui file da allineare: ' + ($collisi -join ', ')
           }
@@ -530,13 +570,26 @@ try {
 
         if ($Applica -and $o.stato -eq 'da-allineare') {
           $codice = Misura $prj $json -Scrivi
+          # Gli adattatori Codex delle skill si rigenerano subito dopo la scrittura. Senza, un
+          # progetto che riceve una skill nuova si trovava la chiusura ferma su sync-codex-skills:
+          # misurato il 2026-10-19 su un progetto istanziato con cerca-pacchetto, segnalato da quel
+          # progetto. Lo strumento e' quello del template, che arriva in ogni progetto.
+          # Solo dove gli adattatori esistono gia': la prima corsa del 2026-10-20 li lanciava ovunque e
+          # ha creato da zero .agents/ in ventotto progetti che non avevano mai scelto Codex.
+          if ($codice -lt 2 -and (Esiste $prj '.agents/skills' 'cartella')) {
+            if (Test-Remoto $prj) {
+              $r = Dividi-Remoto $prj
+              $null = Esegui-Ssh $r.alias ('python3 ' + (Q "$($tplRemoti[$r.alias])/.claude/templates/tools/sync-codex-skills.py") + ' --project-root ' + (Q $r.percorso) + ' >/dev/null 2>&1')
+            }
+            else { $null = & python (Join-Path $tpl '.claude\templates\tools\sync-codex-skills.py') --project-root $prj 2>&1 }
+          }
           $json2 = Join-Path $dirCorsa "$($o.slug).dopo.json"
           $codice2 = Misura $prj $json2
           # Cio' che era gia' sporco prima della scrittura non e' opera di questa passata:
           # senza questa sottrazione un progetto con lavoro in corso fuori dal perimetro
           # verrebbe marcato fuori-perimetro per modifiche che non ha fatto l'allineamento.
           $fuori = @((Sporchi $prj) | Where-Object { $o.sporchi -notcontains $_ } |
-            Where-Object { $_ -notmatch '^(\.claude|tools|docs)/' -and $_ -ne 'CLAUDE.md' })
+            Where-Object { $_ -notmatch '^(\.claude|\.agents|tools|docs)/' -and $_ -ne 'CLAUDE.md' })
           if ($codice -ge 2 -or $codice2 -ge 2 -or -not (Test-Path -LiteralPath $json2)) { $o.stato = 'errore-strumento' }
           else {
             $c2 = Conta (Leggi-Json $json2)

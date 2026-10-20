@@ -29,6 +29,9 @@ APPS = {
     "pdfcraft":    ("pdfcraft",       "pdfcraft",          "PdfCraft"),
     "effectcraft": ("effectcraft",    "effectcraft",       "EffectCraft"),
     "designcraft": ("designcraft",    "designcraft",       "DesignCraft"),
+    # FigCraft, interfacce e prototipi, mancava fino al 2026-10-19: il launcher di
+    # quella data ne installava tredici e questa tabella ne conosceva dodici.
+    "figcraft":    ("figcraft",       "figcraft",          "FigCraft"),
     "wordcraft":   ("wordcraft",      "wordcraft",         "WordCraft"),
     "soundcraft":  ("soundcraft",     "soundcraft",        "SoundCraft"),
     "deckcraft":   ("deckcraft",      "deckcraft",         "DeckCraft"),
@@ -142,7 +145,7 @@ def radici_installazione(sist: str) -> list:
                 Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")),
                 cartella_portatile()]
     return [cartella_portatile(), Path.home() / "Applications",
-            Path("/usr/bin"), Path("/usr/local/bin")]
+            Path("/usr/bin"), Path("/usr/local/bin"), Path("/opt")]
 
 
 def trova_cli(app: str, sist: str):

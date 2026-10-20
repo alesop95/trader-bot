@@ -24,6 +24,8 @@ Lo strumento esclude infine il proprio sorgente, perché i suoi casi di prova co
 
 I file che conservano intenzionalmente forme con apostrofo si dichiarano in `accents-exclude.txt`, uno per riga con il motivo dopo un cancelletto. Una voce senza motivo viene rifiutata. Il file si istanzia in `tools/` e si estende con le eccezioni del progetto; la copia nel template contiene i casi verificati in questa repository.
 
+Un'esclusione è per percorso, e protegge un contenuto solo finché quel contenuto sta in quel file. Quando lo si sposta, l'esclusione va spostata con lui nello stesso giro. Caso osservato in un progetto istanziato: una nota di progetto che contiene una virgoletta di chiusura dopo una parola, cioè proprio la forma che lo strumento converte, era protetta dall'esclusione del file di regola che la conteneva; l'allineamento al template ha diviso le regole fra la prescrizione, in `.claude/rules/`, e i casi, in `.claude/norme/`, e la nota è finita nel secondo file. L'esclusione puntava ancora al primo, e la passata successiva avrebbe riscritto la frase di una persona. Se n'è accorto un controllo che stampa quali file esclude e perché; la regola è chiedersi, a ogni spostamento di testo, se un elenco di esclusioni lo nomini.
+
 ## Che cosa fa `fix-missing-accents.py`
 
 È il terzo strumento e affronta il caso più insidioso: le parole a cui l'accento manca del tutto, senza apostrofo né alcun altro segno che le denunci. Nel materiale ereditato si leggono frasi come «è già progettato», «densità sopra completezza», «più di un estratto», dove nulla distingue a prima vista un errore da una parola corretta. Il primo strumento non le vede, perché cerca l'apostrofo.

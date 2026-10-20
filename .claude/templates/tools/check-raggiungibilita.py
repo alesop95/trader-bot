@@ -77,7 +77,8 @@ SEMPRE_ATTIVE = {
     "regola:manual-screenshots": "riscontro visivo dei passi manuali, vale in ogni progetto",
     "regola:security-permissions": "modalità di permesso e sandbox, vale in ogni sessione",
     "regola:token-economy": "economia del contesto, vale in ogni sessione",
-    "skill:cerca-pacchetto": "skill di sistema in ogni progetto: e' essa stessa l'ingresso al catalogo fra un gate e l'altro",
+    "skill:craft-apps": "skill di sistema in ogni progetto: verifica in locale le app Craft prima di produrre un artefatto",
+    "skill:cerca-pacchetto":"skill di sistema in ogni progetto: e' essa stessa l'ingresso al catalogo fra un gate e l'altro",
 }
 
 
@@ -122,6 +123,28 @@ def verifica(radice):
     return irraggiungibili, orfane
 
 
+def non_invocabili(radice):
+    """Le skill sempre attive che l'agente non può invocare da sé.
+
+    Una skill che è essa stessa il punto d'ingresso a una capacità, come quella che cerca nel
+    catalogo dei pacchetti, serve solo se l'agente la carica quando la situazione si presenta. Se
+    è dichiarata `disable-model-invocation: true` la può lanciare soltanto l'utente, e fra un
+    allineamento e l'altro la capacità resta irraggiungibile per costruzione: è il caso del gate
+    dei pacchetti, misurato il 2026-10-19 in un progetto istanziato che aveva ricostruito a mano
+    una mappa già contenuta in un pacchetto."""
+    fuori = []
+    for c in SEMPRE_ATTIVE:
+        if not c.startswith("skill:"):
+            continue
+        f = os.path.join(radice, ".claude", "skills", c.split(":", 1)[1], "SKILL.md")
+        if os.path.isfile(f):
+            testo = io.open(f, encoding="utf-8").read()
+            testa = testo.split("---")[1] if testo.startswith("---") else ""
+            if re.search(r"^disable-model-invocation:\s*true\s*$", testa, re.M):
+                fuori.append(c)
+    return fuori
+
+
 def self_test():
     esiti = []
 
@@ -160,6 +183,15 @@ def self_test():
               "regola:interaction-style" in orf, str(orf))
         prova("una skill non è raggiungibile solo perché è essa stessa un punto d'ingresso",
               "skill:init-project-system" in irr, str(irr))
+        nome = next(c.split(":", 1)[1] for c in SEMPRE_ATTIVE if c.startswith("skill:"))
+        os.makedirs(os.path.join(tmp, ".claude", "skills", nome))
+        sk = os.path.join(tmp, ".claude", "skills", nome, "SKILL.md")
+        io.open(sk, "w", encoding="utf-8").write("---\nname: x\ndisable-model-invocation: true\n---\ncorpo\n")
+        prova("una skill d'ingresso che l'agente non può invocare si segnala",
+              ("skill:" + nome) in non_invocabili(tmp), str(non_invocabili(tmp)))
+        io.open(sk, "w", encoding="utf-8").write("---\nname: x\n---\ncorpo con disable-model-invocation: true nel testo\n")
+        prova("negativo: la stessa frase nel corpo, fuori dall'intestazione, non conta",
+              ("skill:" + nome) not in non_invocabili(tmp), str(non_invocabili(tmp)))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -195,10 +227,15 @@ def main():
     for c in orf:
         print("  %s è dichiarata in SEMPRE_ATTIVE ma non esiste più sul disco: l'esenzione va "
               "tolta." % c)
+    chiuse = non_invocabili(a.radice)
+    for c in chiuse:
+        print("  %s è una skill d'ingresso ma è dichiarata disable-model-invocation: l'agente non la "
+              "può caricare quando la situazione si presenta, e la capacità resta irraggiungibile "
+              "fra un allineamento e l'altro." % c)
     n = len(capacita(a.radice))
     print("%d capacità esaminate, %d sempre attive dichiarate" % (n, len(SEMPRE_ATTIVE)))
-    print("check-raggiungibilita: %d problemi" % (len(irr) + len(orf)))
-    return 1 if (irr or orf) else 0
+    print("check-raggiungibilita: %d problemi" % (len(irr) + len(orf) + len(chiuse)))
+    return 1 if (irr or orf or chiuse) else 0
 
 
 if __name__ == "__main__":

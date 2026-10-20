@@ -67,6 +67,7 @@ RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IGNORATE = (".git", "__pycache__", "node_modules", ".venv", "_notes")
 
 SEPARATORE = re.compile(r"^\|?[\s:|-]+\|[\s:|-]*$")
+BORDO = re.compile(r"^\+[-=+]{3,}\+(\s+\+[-=+]{3,}\+)*$")
 
 
 def conta_colonne(riga):
@@ -111,7 +112,26 @@ def analizza(testo):
         while j < len(righe) and righe[j].lstrip().startswith("|"):
             blocco.append((j, righe[j]))
             j += 1
-        if len(blocco) < 2:
+        # Un blocco è una tabella solo se la sua seconda riga è il separatore. Righe con le barre
+        # che non lo hanno, e in particolare quelle rimaste dopo una riga vuota dentro un corpo,
+        # non sono una tabella per il formato: diventano testo, e prima non le vedeva nessuno,
+        # perché un blocco di una riga si saltava e uno più lungo si prendeva per tabella.
+        # Misurato il 2026-10-20 in un progetto istanziato: otto righe staccate in un registro,
+        # zero difetti segnalati. Si segnalano le sole righe che somigliano a una riga di dati,
+        # cioè chiuse dalla barra e con almeno due celle, per non toccare una barra legittima.
+        if len(blocco) < 2 or not SEPARATORE.match(blocco[1][1].strip()):
+            # Un riquadro disegnato a caratteri, fra bordi come +-----+, usa le barre come disegno.
+            prima = righe[i - 1].strip() if i > 0 else ""
+            dopo = righe[j].strip() if j < len(righe) else ""
+            if BORDO.match(prima) or BORDO.match(dopo):
+                i = j
+                continue
+            for numero, riga_tab in blocco:
+                corpo = riga_tab.rstrip()
+                if corpo.endswith("|") and conta_colonne(corpo) >= 2 and not SEPARATORE.match(corpo.strip()):
+                    difetti.append((numero + 1, "riga staccata",
+                                    "riga con le barre fuori da una tabella: senza intestazione e "
+                                    "separatore subito sopra, il formato la mostra come testo"))
             i = j
             continue
 
@@ -161,8 +181,19 @@ def self_test():
     casi = [
         ("tabella sana",
          "| a | b |\n|---|---|\n| 1 | 2 |\n", 0),
+        # Due difetti: la riga interrotta, e la riga che ne riprende il corpo fuori dalla tabella.
         ("cella con una riga vuota dentro",
-         "| a | b |\n|---|---|\n| 1 | 2\n\nsegue la cella\n\n| 3 | 4 |\n", 1),
+         "| a | b |\n|---|---|\n| 1 | 2\n\nsegue la cella\n\n| 3 | 4 |\n", 2),
+        ("corpo continuo sotto la stessa intestazione",
+         "| Fonte | Stato |\n|---|---|\n| A | letta |\n| B | letta |\n", 0),
+        ("riga staccata dalla tabella da una riga vuota",
+         "| Fonte | Stato |\n|---|---|\n| A | letta |\n\n| B | letta |\n", 1),
+        ("due righe staccate senza separatore",
+         "| Fonte | Stato |\n|---|---|\n| A | letta |\n\n| B | letta |\n| C | letta |\n", 2),
+        ("un riquadro disegnato a caratteri fuori da un recinto",
+         "+------+   +------+\n| uno  |   | due  |\n+------+   +------+\n", 0),
+        ("una barra legittima in una riga che non somiglia a dati",
+         "Il comando `a | b` filtra.\n\n| solo una cella\n", 0),
         ("riga con una colonna in meno",
          "| a | b | c |\n|---|---|---|\n| 1 | 2 |\n", 1),
         ("riga con una colonna in piu",
@@ -180,7 +211,7 @@ def self_test():
         ("cella spezzata in coda al documento, senza nulla che segua",
          "| a | b |\n|---|---|\n| 1 | 2\n", 1),
         ("cella spezzata con prosa e ripresa della tabella",
-         "| a | b |\n|---|---|\n| 1 | 2\n\ncoda della cella\n\n| 3 | 4 |\n", 1),
+         "| a | b |\n|---|---|\n| 1 | 2\n\ncoda della cella\n\n| 3 | 4 |\n", 2),
     ]
     fallite = 0
     for nome, testo, attesi in casi:

@@ -1,0 +1,93 @@
+[
+  {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lint-md-tables.py: riga staccata fuori dalla tabella, riquadri a caratteri esclusi, 16 prove"
+  },
+  {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lezioni-template.py: il corpo della lezione si conserva com'e', --testo-file, prova sulla struttura"
+  },
+  {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "marcatore ref-assente sulla riga di skills/craft-apps che nomina il file di stile opzionale, entrato in 953e506"
+  },
+  {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una fixture che fallisce prima di misurare il codice"
+  },
+  {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "intrawelt-qa-verifier",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-19",
+    "dove": "allinea-tutti.ps1 e chiudi-allineamento.ps1: sync-codex-skills dopo la scrittura, adattatori nel commit"
+  },
+  {
+    "progetto": "intrawelt-qa-verifier",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "marcatore ref-assente sulle righe che nominano file creati al bisogno: skills/craft-apps, rules/chat-non-e-memoria, PROJECT-SYSTEM sez.16"
+  },
+  {
+    "progetto": "intrawelt-qa-verifier",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "log-collector",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione Una prova dal vivo si fa dove sta il codice"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": ".claude/templates/fix-typography/README.md, esclusioni per percorso"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "chiudi-sessione.ps1 e .sh: sync-codex-skills --check solo dove esiste .agents/skills, come la passata; stessa condizione in skills/riprendi"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  }
+]

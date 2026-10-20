@@ -99,7 +99,7 @@ SKILL_SISTEMA = [
     "init-project-system", "sync-context", "git-sync", "repo-status",
     "gate-pacchetti", "riprendi", "onboard",
     "prove-che-misurano", "fonti-non-recuperabili", "alberi-di-lavoro",
-    "separazione-ambienti", "identita-git", "cerca-pacchetto",
+    "separazione-ambienti", "identita-git", "cerca-pacchetto", "craft-apps",
 ]
 IGNORA = {"__pycache__", ".pytest_cache"}
 CODICE = {".py", ".ps1", ".sh", ".js", ".mjs"}
@@ -143,6 +143,16 @@ def storia(template: Path):
     zero = "0" * 40
     for s in blob.values():
         s.discard(zero)
+    # Una skill promossa da pacchetto a sistema eredita la storia della sua origine.
+    # Il 2026-10-19 craft-apps è passata da templates/craft-apps/skills/ a .claude/skills/
+    # con una riscrittura sotto la soglia di somiglianza di -M, quindi git non vedeva una
+    # rinomina, e le copie intatte nei progetti che l'avevano istanziata sarebbero sembrate
+    # modifiche locali, cioè conflitti senza niente da decidere.
+    for p in list(blob):
+        parti = p.split("/")
+        if len(parti) > 5 and parti[:2] == [".claude", "templates"] and parti[3] == "skills" and parti[4] in SKILL_SISTEMA:
+            dest = "/".join([".claude", "skills", *parti[4:]])
+            blob.setdefault(dest, set()).update(blob[p])
     return blob, rinomine
 
 
@@ -705,6 +715,11 @@ def main():
         # l'innesco esiste. Le skill senza una riga nel modello restano fuori da sé
         if skill_prj.is_dir():
             nomi |= {d.name for d in skill_prj.iterdir() if d.is_dir()}
+        # Anche le skill che questa stessa passata porta come nuove: senza, la loro riga
+        # arrivava solo alla passata successiva e ogni progetto risultava incompleto. Misurato
+        # il 2026-10-20 con craft-apps diventata di sistema: 37 progetti su 37.
+        nomi |= {e["file"].split("/")[2] for e in esiti
+                 if e["esito"] == "NUOVO" and e["file"].startswith(".claude/skills/") and e["file"].count("/") >= 3}
         skill = sorted(nomi)
         dati, mancanti, dove = innesco(tpl, prj, skill)
         if dati is not None:

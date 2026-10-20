@@ -6,12 +6,13 @@ contro il SHA256SUMS.txt del rilascio stesso. Non usa il launcher ufficiale, che
 per sapere quali versioni esistano interroga api.storyteller.ai, cioe' il backend
 del fornitore: qui l'unico host contattato e' GitHub.
 
+    python craft-apps.py rileva            # solo locale, nessuna rete: il primo passo
     python craft-apps.py stato
     python craft-apps.py installa effectcraft pdfcraft
     python craft-apps.py aggiorna --tutte --solo-scarica
 
 Il canale predefinito non chiede privilegi di amministratore: su Windows lo zip
-portabile, su Linux l'AppImage. Gli installatori di sistema (MSI, deb, rpm) si
+portabile, su Linux il tarball. Gli installatori di sistema (MSI, deb, rpm) si
 chiedono con --canale, e il comando elevato viene stampato invece che eseguito.
 """
 
@@ -138,6 +139,34 @@ def peso_asset(rel: dict, prefisso: str, versione: str, sist: str, arch: str,
         if a["name"] == atteso:
             return "%.0f MB" % (a["size"] / 1048576.0)
     return "-"
+
+
+def cmd_rileva(args) -> int:
+    """Che cosa e' installato su questa macchina, senza rete.
+
+    E' il primo passo di ogni lavoro su un artefatto e per questo il comando
+    predefinito: la domanda che decide se il lavoro resta locale e' "c'e' gia'
+    l'applicazione", non "qual e' l'ultima versione pubblicata", e la seconda
+    chiede GitHub mentre la prima no. Nato il 2026-10-19 su richiesta del
+    proprietario, che voleva i progetti istruiti a verificare in locale prima di
+    produrre un documento o un artefatto grafico.
+    """
+    sist = sistema()
+    trovate = []
+    righe = []
+    for app in elenco_app(args):
+        loc, dove = versione_installata(app, sist)
+        righe.append({"app": app, "nome": APPS[app][2], "versione": loc, "cli": str(dove) if dove else None})
+        if loc:
+            trovate.append(app)
+    if args.json:
+        print(json.dumps({"sistema": sist, "app": righe, "installate": len(trovate)}, ensure_ascii=False, indent=2))
+    else:
+        print("sistema " + sist + ", solo verifica locale, nessuna rete")
+        for r in righe:
+            print("%-12s %-10s %s" % (r["app"], r["versione"] or "-", r["cli"] or "non installata"))
+        print("\n%d applicazioni installate su %d" % (len(trovate), len(righe)))
+    return 0 if trovate else 1
 
 
 def cmd_stato(args) -> int:
@@ -326,6 +355,11 @@ def main(argv=None) -> int:
         description="Inventario e aggiornamento verificato delle applicazioni Craft.")
     sub = p.add_subparsers(dest="comando")
 
+    pr = sub.add_parser("rileva", help="che cosa e' installato qui, senza rete")
+    pr.add_argument("app", nargs="*", choices=sorted(APPS), default=None, metavar="APP")
+    pr.add_argument("--json", action="store_true")
+    pr.set_defaults(func=cmd_rileva)
+
     ps = sub.add_parser("stato", help="versione installata contro ultimo rilascio")
     ps.add_argument("app", nargs="*", choices=sorted(APPS), default=None, metavar="APP")
     ps.add_argument("--percorsi", action="store_true", help="mostra dove sta il binario trovato")
@@ -345,7 +379,7 @@ def main(argv=None) -> int:
 
     args = p.parse_args(argv)
     if not getattr(args, "func", None):
-        args = p.parse_args(["stato"])
+        args = p.parse_args(["rileva"])
     return args.func(args)
 
 

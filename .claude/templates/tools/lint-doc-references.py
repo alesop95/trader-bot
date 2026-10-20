@@ -241,6 +241,12 @@ def documenti_da_leggere(radice=None):
     visti, unici = set(), []
     for f in fuori:
         rel = os.path.relpath(f, base).replace("\\", "/")
+        # Le note di passaggio fra repository, DA-<progetto> in arrivo e DAL-<progetto> in
+        # partenza, nominano i percorsi dell'altro repository: qui sarebbero tutti "assenti".
+        # Il 2026-10-19 una nota arrivata da un progetto istanziato ha fermato la chiusura del
+        # template per un file che esiste soltanto in quel progetto.
+        if re.match(r"_notes/DAL?-", rel):
+            continue
         if rel not in visti:
             visti.add(rel)
             unici.append(rel)
@@ -317,6 +323,15 @@ def self_test():
         prova("un percorso dentro i modelli finisce fra i modelli",
               any(t == "src/qualsiasi.ts" for _d, _n, t in trovati["modello"]), str(trovati))
         prova("le radici si ricavano senza configurazione", "src/" in cartelle, str(cartelle))
+        scrivi("_notes/DA-altro-progetto.md", "Laggiu' c'e' `src/solo-laggiu.ts`.\n")
+        scrivi("_notes/appunti.md", "Qui manca `src/manca-qui.ts`.\n")
+        trovati2, _f2, _c2 = analizza(tmp)
+        vivi2 = [t for _d, _n, t in trovati2["vivo"]]
+        prova("negativo: una nota di passaggio da un altro repository non si controlla",
+              "src/solo-laggiu.ts" not in vivi2, str(vivi2))
+        prova("una nota propria in _notes si controlla ancora", "src/manca-qui.ts" in vivi2, str(vivi2))
+        os.remove(os.path.join(tmp, "_notes/DA-altro-progetto.md"))
+        os.remove(os.path.join(tmp, "_notes/appunti.md"))
         prova("senza git la fonte delle radici si dichiara", fonte == "cartella", fonte)
 
         # I marcatori di soppressione, che coprono il falso positivo piu' frequente.

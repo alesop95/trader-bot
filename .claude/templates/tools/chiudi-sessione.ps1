@@ -52,10 +52,40 @@ param(
     [switch]$NoWipe,
     [switch]$NoPush,
     [string]$Account = "",
-    [string]$Radice = ""
+    [string]$Radice = "",
+    [switch]$Autotest
 )
 
 $ErrorActionPreference = "Continue"
+
+# Gli argomenti del controllo delle lezioni, sempre come array. Un if che restituisce un array di
+# un solo elemento lo consegna come stringa, e lo splat di una stringa non passa l'argomento: nei
+# progetti il controllo non girava, trovato il 2026-10-20 da tre progetti istanziati.
+function Argomenti-Lezioni([bool]$bundle) {
+    if ($bundle) { return , @("raccogli", "--solo-locali") }
+    return , @("controlla")
+}
+
+if ($Autotest) {
+    $rossi = 0
+    function Caso([string]$nome, [bool]$ok) { if ($ok) { Write-Host "ok   $nome" } else { $script:rossi++; Write-Host "ROSSO $nome" } }
+    $p = Argomenti-Lezioni $false; $t = Argomenti-Lezioni $true
+    Caso "nel progetto gli argomenti delle lezioni restano un array di un elemento" ($p -is [array] -and $p.Count -eq 1 -and $p[0] -eq "controlla")
+    Caso "nel template restano due argomenti" ($t -is [array] -and $t.Count -eq 2)
+    $lez = Join-Path $PSScriptRoot "lezioni-template.py"
+    if (Test-Path $lez) {
+        $out = (& python $lez --radice ([System.IO.Path]::GetTempPath()) @p 2>&1 | Out-String)
+        Caso "lo splat consegna a lezioni-template un comando che riconosce" ($out -match "lezioni-template:")
+    }
+    # Controllo statico, sul sorgente: il controllo Codex deve avere la stessa condizione con cui la
+    # passata genera gli adattatori, altrimenti ogni progetto senza Codex si ferma qui.
+    $src = Get-Content $PSCommandPath -Raw
+    Caso "il controllo Codex gira solo dove esiste .agents\skills" ($src -match 'sync-codex-skills\.py";[^\r\n]*serve = "\.agents\\skills"')
+    $tutti = Join-Path $PSScriptRoot "allinea-tutti.ps1"
+    if (Test-Path $tutti) { Caso "la passata usa la stessa condizione" ((Get-Content $tutti -Raw) -match "Esiste \`$prj '\.agents/skills'") }
+    Write-Host ""; Write-Host "$(if ($rossi) { 'ROSSO' } else { 'verde' }): $rossi casi falliti"
+    exit $(if ($rossi) { 1 } else { 0 })
+}
 
 function Titolo([string]$t) { Write-Host ""; Write-Host "== $t" -ForegroundColor Cyan }
 function Ok([string]$t) { Write-Host "   ok  $t" -ForegroundColor Green }
@@ -151,7 +181,10 @@ $controlli = @(
     @{ n = "fix-accents.py";          a = @("--check") + $m + @(".") },
     @{ n = "fix-dashes.py";           a = @("--check") + $m + @(".") },
     @{ n = "fix-missing-accents.py";  a = @("--check") + $m + @(".") },
-    @{ n = "sync-codex-skills.py";    a = @("--project-root", ".", "--check"); serve = ".claude\skills" },
+    # Solo dove il progetto ha scelto Codex, cioe' dove .agents\skills esiste: la stessa condizione
+    # con cui la passata genera gli adattatori. Con condizioni diverse ogni progetto senza Codex
+    # si fermava qui (lezione di un progetto istanziato, 2026-10-20).
+    @{ n = "sync-codex-skills.py";    a = @("--project-root", ".", "--check"); serve = ".agents\skills" },
     # Pacchetto verifica-link: istanziato se c'e' la sua configurazione; senza rete, perche' un
     # controllo prima del commit non deve dipendere dalla rete. Nel bundle girano le sole prove.
     @{ n = "verifica-link-progetto.py"; a = @("--check", "--senza-rete"); serve = "tools\verifica-link-progetto.json" },
@@ -185,6 +218,36 @@ if (-not $python) {
             $falliti += $c.n
         }
     }
+}
+
+# Le prove interne degli script PowerShell della passata, nel solo template: fino al 2026-10-20
+# esistevano ma nessun controllo le lanciava, e tre difetti di quei giorni erano passati con loro
+# verdi e mai eseguite.
+if ($bundle -and $falliti.Count -eq 0) {
+    foreach ($s in "allinea-tutti.ps1", "chiudi-allineamento.ps1", "chiudi-sessione.ps1") {
+        $p = Join-Path ".claude\templates\tools" $s
+        if (-not (Test-Path $p)) { continue }
+        $uscita = & powershell -NoProfile -ExecutionPolicy Bypass -File $p -Autotest 2>&1
+        if ($LASTEXITCODE -eq 0) { Ok "$s -Autotest" } else {
+            Ko "$s -Autotest (uscita $LASTEXITCODE)"
+            $uscita | Select-Object -Last 8 | ForEach-Object { Write-Host "       $_" }
+            $falliti += $s
+        }
+    }
+}
+
+# Le lezioni verso il template, dal 2026-10-19: avvisano e non fermano il commit, perche' una
+# lezione non ancora risalita non lo rende sbagliato. Nel progetto si vede che cosa il progetto
+# deve al template; nel template, il debito di tutti i progetti, prima della prossima funzionalita'.
+$lezioni = ".claude\templates\tools\lezioni-template.py"
+if ($python -and (Test-Path $lezioni)) {
+    # Nel template solo i progetti locali: la raccolta completa, VM comprese, si fa all'apertura
+    # della sessione. Il 2026-10-20 la lettura via SSH ha tenuto ferma una chiusura.
+    $argLez = Argomenti-Lezioni ([bool]$bundle)
+    $uscitaLez = & $python $lezioni @argLez 2>&1
+    $righe = @($uscitaLez | Where-Object { "$_".Trim() })
+    if ($bundle) { $righe = @($righe | Select-Object -Last 3) }
+    if ($righe.Count -gt 0) { Titolo "Lezioni per il template"; $righe | ForEach-Object { Write-Host "   $_" } }
 }
 
 if ($falliti.Count -gt 0) {
