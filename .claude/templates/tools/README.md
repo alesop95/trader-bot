@@ -125,6 +125,15 @@ python tools/lint-doc-references.py --bundle
 python tools/lint-doc-references.py --self-test
 ```
 
+## test-identita-personali.py
+
+Ferma il template quando un file che propaga ai progetti contiene un identificativo personale del proprietario. Il template è privato ma da esso nascono anche progetti aziendali, e il 2026-10-21 una vecchia regola sulle identità git, con dentro il profilo personale, si è trovata committata e spinta in undici repository aziendali. Lo strumento legge l'elenco da un file locale mai versionato, `_notes/allineamento/identita-personali.txt` oppure `~/.config/identita-personali.txt`, e lo cerca senza distinguere maiuscole nei file tracciati sotto `.claude/`, cioè in ciò che l'allineamento propaga; non stampa mai l'identificativo per intero, perché l'uscita finisce in log e trascrizioni. Esce con 1 se trova un'occorrenza e anche se l'elenco manca, perché un controllo senza elenco direbbe sempre pulito. `chiudi` lo lancia nel template e `allinea-tutti.ps1` lo usa come guardia prima di ogni passata; l'`--autotest` ha 6 casi, e la prova sul repository vero, un identificativo aggiunto per un momento a un file tracciato, lo ha fermato.
+
+```
+python .claude/templates/tools/test-identita-personali.py
+python .claude/templates/tools/test-identita-personali.py --autotest
+```
+
 ## verifica-ripresa.py
 
 Dice, alla riapertura di una sessione, se fra l'ultima e questa si e perso qualcosa. Confronta l'impronta registrata a fine sessione, cioè il commit e la forma dell'albero di lavoro in quel momento, con lo stato reale, e riporta i commit comparsi dopo l'ultima registrazione, i file rimasti a meta, i documenti di memoria che dichiarano un commit più vecchio di HEAD e le schede ancorate a un commit che non esiste.

@@ -158,6 +158,16 @@ if ($tplSporco.Count -gt 0) {
   $m = "il .claude del template ha $($tplSporco.Count) modifiche non committate, che non si propagherebbero: committarle prima"
   if ($Applica -and -not $ConsentiTemplateSporco) { Esci-Guardia $m } else { Write-Host "AVVISO: $m"; Write-Host '' }
 }
+# Dal 2026-10-21: il template e privato e propaga anche in progetti aziendali. Un identificativo
+# personale nei file che propaga, o l'elenco che li nomina mancante, ferma ogni passata.
+$identita = Join-Path $tpl '.claude\templates\tools\test-identita-personali.py'
+if (Test-Path -LiteralPath $identita) {
+  $uscitaI = @(& python $identita --radice $tpl 2>&1)
+  if ($LASTEXITCODE -ne 0) {
+    $uscitaI | Select-Object -Last 8 | ForEach-Object { Write-Host "  $_" }
+    Esci-Guardia 'identificativi personali nei file che il template propaga, oppure elenco mancante: nessuna passata'
+  }
+}
 $strumento = Join-Path $tpl '.claude\templates\tools\allinea-dal-template.py'
 $misura = Join-Path $tpl '.claude\templates\tools\misura-istruzioni.py'
 if (-not (Test-Path -LiteralPath $strumento)) { Esci-Guardia "manca $strumento" }

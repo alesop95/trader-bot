@@ -85,7 +85,7 @@ def c(nome: str, parametri: dict) -> list[str]:
 STILE_PRIVATO = Path(__file__).resolve().parent.parent / "stili" / "privato-tecnico-sobrio.json"
 STILE_PROGETTO = Path(".claude") / "craft-stile.json"
 # Fuori da ogni repository: quale design system aziendale vale per quale dominio di posta
-# dell'identita' git. Esempio: {"intrawelt.com": "C:/Users/me/.design-systems/x/craft-stile.json"}.
+# dell'identita' git. Esempio: {"azienda.example": "C:/Users/me/.design-systems/x/craft-stile.json"}.
 # Sta sulla macchina perche' un design aziendale non va copiato in un template pubblico.
 MAPPA_IDENTITA = Path.home() / ".craft-apps" / "stili-per-identita.json"
 

@@ -36,9 +36,9 @@ Livello 3, sezione completa: lettura puntuale di una sola sezione di un solo doc
 
 Operativamente si parte sempre dal Livello 1 sull'intera cartella, si sale al Livello 2 solo sui documenti pertinenti al task, e al Livello 3 solo su richiesta esplicita. Vale per qualsiasi corpus, non solo per i `.docx`.
 
-Il pacchetto opzionale `doc-ingest` (vedi `templates/doc-ingest/`) e l'implementazione di riferimento di questo principio su un corpus di più documenti: converte `.pdf`, `.docx`, `.pptx`, `.xlsx` e `.html` in una cache Markdown locale con manifest a content-hash (non riconverte l'invariato) e rigenera a ogni corsa lo scheletro di Livello 1 in un `_INDEX.md`. Resta uno strumento, non un sostituto del principio: i Livelli 2 e 3 restano disciplina di lettura sull'output che produce.
+Il pacchetto opzionale `doc-ingest` ne è l'implementazione di riferimento: converte `.pdf`, `.docx`, `.pptx`, `.xlsx` e `.html` in una cache Markdown con manifest a content-hash e rigenera a ogni corsa lo scheletro di Livello 1 in `_INDEX.md`; i Livelli 2 e 3 restano disciplina di lettura.
 
-Una variante dello stesso principio sposta il corpus non su una cache locale ma su un motore di recupero esterno ancorato alle fonti. Il pacchetto opzionale `notebooklm-bridge` (vedi `templates/notebooklm-bridge/`) tiene il corpus dentro NotebookLM, nel piano gratuito accessibile solo da browser, e in conversazione fa entrare solo una sintesi densa e citata invece del testo grezzo: è un Livello 1 prodotto da un motore che risponde anche a domande mirate senza mai versare le fonti in contesto. Il risparmio è lo stesso della disclosure progressiva, con in più l'ancoraggio alle fonti che riduce le allucinazioni; il costo è che l'accesso resta manuale nel browser, mai un'API a pagamento. Ne discende un dovere che vale in ogni progetto, con o senza il pacchetto: quando un'analisi deve ragionare su un corpus di fonti dell'utente oltre la ventina di documenti o oltre la soglia del degrado, e servono risposte citate, l'agente chiede all'utente se convenga passare temporaneamente a NotebookLM, e dove il pacchetto manca lo propone con `cerca-pacchetto`. Claude non lo pilota: l'utente lo usa in una finestra privata, senza login né sessioni salvati, e ciò che ne torna si usa solo nel progetto.
+Una variante dello stesso principio sposta il corpus non su una cache locale ma su un motore di recupero esterno ancorato alle fonti. Il pacchetto opzionale `notebooklm-bridge` (vedi `templates/notebooklm-bridge/`) tiene il corpus dentro NotebookLM, nel piano gratuito accessibile solo da browser, e in conversazione fa entrare solo una sintesi densa e citata invece del testo grezzo: è un Livello 1 prodotto da un motore che risponde anche a domande mirate senza mai versare le fonti in contesto. Il risparmio è lo stesso della disclosure progressiva, con in più l'ancoraggio alle fonti che riduce le allucinazioni; il costo è che l'accesso resta manuale nel browser, mai un'API a pagamento. Ne discende un dovere in ogni progetto: quando un'analisi deve ragionare su più di una ventina di documenti dell'utente, o oltre la soglia del degrado, con risposte citate, l'agente chiede all'utente se convenga passare per un momento a NotebookLM, e dove il pacchetto manca lo propone con `cerca-pacchetto`. Claude non lo pilota: l'utente lo usa in una finestra privata, senza login né sessioni salvati, e ciò che ne torna resta nel progetto.
 
 ## Deterministico prima del linguistico
 
@@ -52,21 +52,17 @@ Operativamente, quando un passo si può fare con codice lo si fa con codice e se
 
 Alcune abitudini operative tagliano il consumo senza installare nulla.
 
-Il comando `/compact` va lanciato proattivamente quando il contesto raggiunge il 40-60%, non aspettando il limite automatico. Può essere guidato con istruzioni esplicite: `/compact focus on the database schema decisions and API endpoints we agreed on`. La soglia di compattazione automatica si anticipa con la variabile `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` (valori da 1 a 100), utile per evitare che la compattazione scatti a freddo sul contesto già degradato.
+`/compact` si lancia presto, fra il 40 e il 60% del contesto, con istruzioni su che cosa tenere; la soglia automatica si anticipa con `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`, così che non scatti su un contesto già degradato.
 
-Prima di ogni `/clear` o di chiudere una sessione su un task non ancora concluso, si fa scrivere a Claude un file `HANDOFF.md` con le decisioni prese, i pattern stabiliti e i file toccati. La sessione successiva parte da quel file invece che da zero, recuperando il contesto senza rileggere l'intera conversazione.
+Prima di un `/clear` o della chiusura su un task aperto si scrive un `HANDOFF.md` con decisioni, pattern e file toccati, da cui la sessione successiva riparte.
 
-La finestra da un milione di token, disponibile su Sonnet 4.6 e Opus 4.7, e utile come assicurazione per i task lunghi ma non come obiettivo: oltre i 120-150K token utili la qualità delle risposte tende comunque a degradare per accumulo di rumore nel contesto. Chunk piccoli con handoff espliciti producono risultati migliori che riempire la finestra grande.
+La finestra da un milione di token è un'assicurazione per i task lunghi, non un obiettivo: oltre i 120-150 mila token utili la qualità tende a degradare, e chunk piccoli con handoff espliciti rendono di più.
 
 Il principio "un task, una chat" mantiene il contesto sempre fresco: invece di una sessione fiume che accumula task diversi, si chiude e riapre per ogni unita di lavoro logica, riducendo le compattazioni multiple e il rischio di deriva del focus.
 
 ## Strumenti esterni, a scelta
 
-Quando il risparmio nativo non basta, per esempio in sessioni operative molto lunghe e ricche di output, si possono valutare strumenti esterni open source, sempre offerti come scelta al gate dei pacchetti e mai imposti.
-
-`caveman` riduce i token di output facendo rispondere l'agente in modo telegrafico, senza toccare il ragionamento. È utile nelle sessioni operative pesanti, ma va tenuto spento quando il progetto produce documentazione o prosa leggibile, perché ne degraderebbe lo stile. Vive come tool di sessione, non come stato del progetto. Vedi la voce `caveman` in `templates/PACKAGES.md`.
-
-Per esigenze più spinte esistono alternative come un server MCP di compressione e caching del contesto (per esempio `token-optimizer-mcp`). Si adottano solo se il guadagno giustifica la dipendenza, valutando caso per caso.
+Quando il risparmio nativo non basta, gli strumenti esterni, come `caveman` per l'output o un server MCP di compressione del contesto, si offrono solo al gate dei pacchetti e non si impongono; `caveman` resta spento dove il progetto produce prosa da leggere. Il ragionamento esteso sta nella norma di questa regola.
 
 ## Cosa non si fa
 

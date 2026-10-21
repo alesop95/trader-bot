@@ -69,3 +69,13 @@ Vale infine il vincolo che il catalogo dei pacchetti già enuncia e che questa m
 ## Cautela sui workflow multi-agente costosi
 
 Alcuni workflow integrati (per esempio `deep-research`) fanno verificare ogni affermazione estratta da più agenti indipendenti in parallelo: con qualche decina di affermazioni il numero di chiamate di verifica sale rapidamente a svariate decine, con un consumo di token che può esaurire il limite di sessione in pochi secondi, prima ancora che il workflow completi la sintesi finale. È il costo intrinseco della verifica adversariale a più voti, già osservato sul campo, e il workflow in quel caso funziona come previsto. Quando succede, non insistere rilanciando lo stesso workflow identico: o si restringe la domanda a un angolo di ricerca più stretto per lancio, invece di chiedere tutto insieme, o si riprende con il meccanismo di resume del workflow (che rilegge dalla cache gli stadi già completati e paga solo cio che manca), oppure si scende a una verifica manuale mirata delle sole fonti primarie già trovate nella fase di ricerca, con una singola chiamata di recupero pagina per fonte invece del panel a più voti: quest'ultima via è quasi sempre la più economica quando restano poche affermazioni da controllare.
+
+## Strumenti esterni: il testo che stava nella regola
+
+Dal 2026-10-21 la regola ne tiene una frase sola, per stare sotto la soglia del carico di istruzioni di due progetti istanziati, che il paragrafo nuovo su NotebookLM aveva portato oltre i centomila caratteri. Il testo esteso è questo.
+
+Quando il risparmio nativo non basta, per esempio in sessioni operative molto lunghe e ricche di output, si possono valutare strumenti esterni open source, sempre offerti come scelta al gate dei pacchetti e mai imposti.
+
+`caveman` riduce i token di output facendo rispondere l'agente in modo telegrafico, senza toccare il ragionamento. È utile nelle sessioni operative pesanti, ma va tenuto spento quando il progetto produce documentazione o prosa leggibile, perché ne degraderebbe lo stile. Vive come tool di sessione, non come stato del progetto. Vedi la voce `caveman` in `templates/PACKAGES.md`.
+
+Per esigenze più spinte esistono alternative come un server MCP di compressione e caching del contesto (per esempio `token-optimizer-mcp`). Si adottano solo se il guadagno giustifica la dipendenza, valutando caso per caso.

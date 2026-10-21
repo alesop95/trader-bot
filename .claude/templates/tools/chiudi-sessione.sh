@@ -104,6 +104,7 @@ check-catalogo.py|||1
 check-raggiungibilita.py|||1
 test-tipografia.py|||1
 test-documenti-personali.py|||1
+test-identita-personali.py|||1
 fonti-a-monte.py|--autotest||1
 retro-segnali.py|--autotest||1
 lint-cultura.py|--autotest||1
