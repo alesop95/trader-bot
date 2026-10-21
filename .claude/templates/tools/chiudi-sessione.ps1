@@ -257,8 +257,8 @@ if ($python -and (Test-Path $lezioni)) {
     if ($righe.Count -gt 0) { Titolo "Lezioni per il template"; $righe | ForEach-Object { Write-Host "   $_" } }
 }
 
-# Le fonti a monte, dal 2026-10-20: nel template un repository citato e non censito ferma il
-# commit, cosi' registro e schede entrano insieme; nel progetto il censimento avvisa e basta.
+# Le fonti a monte, dal 2026-10-20: nel template una fonte non censita, senza filone, senza
+# motivo o mai verificata ferma il commit (dal 2026-10-21); nel progetto il censimento avvisa.
 $fonti = ".claude\templates\tools\fonti-a-monte.py"
 if ($python -and (Test-Path $fonti)) {
     $uscitaF = & $python $fonti censisci --check 2>&1

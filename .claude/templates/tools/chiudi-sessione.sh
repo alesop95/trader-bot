@@ -133,8 +133,8 @@ if [ -n "$python" ] && [ -f .claude/templates/tools/lezioni-template.py ]; then
     [ $bundle = 1 ] && lez=$(printf '%s\n' "$lez" | tail -n 3)
     if [ -n "$lez" ]; then titolo "Lezioni per il template"; printf '%s\n' "$lez" | sed 's/^/   /'; fi
 fi
-# Le fonti a monte, dal 2026-10-20: nel template un repository citato e non censito ferma il
-# commit; nel progetto il censimento avvisa e basta.
+# Le fonti a monte, dal 2026-10-20: nel template una fonte non censita, senza filone, senza motivo
+# o mai verificata ferma il commit (dal 2026-10-21); nel progetto il censimento avvisa e basta.
 if [ -n "$python" ] && [ -f .claude/templates/tools/fonti-a-monte.py ]; then
     cf=0
     fon=$("$python" .claude/templates/tools/fonti-a-monte.py censisci --check 2>&1) || cf=$?

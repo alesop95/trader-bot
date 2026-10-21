@@ -106,13 +106,13 @@ Usata in: guida, U1, U7, U8, U10.
 
 ### F08 - taste-skill
 
-Autore: Leonxlnx. Indirizzi: https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/skills/taste-skill/SKILL.md e il README del repository; un primo percorso tentato ha restituito HTTP 404 ed è stato sostituito dopo aver trovato la struttura reale. Data: non dichiarata. Licenza: MIT, 2026. Consultata il 2026-09-23, letta.
+Autore: Leonxlnx. Indirizzi: https://raw.githubusercontent.com/Leonxlnx/taste-skill/main/skills/taste-skill/SKILL.md e il README del repository; un primo percorso tentato ha restituito HTTP 404 ed è stato sostituito dopo aver trovato la struttura reale. Data: non dichiarata. Licenza: MIT, 2026. Consultata il 2026-09-23, letta; riletta il 2026-10-21 sulla versione 2.1.4, commit 6010f91.
 
 Autorevole su: un catalogo indipendente e più granulare dei tratti generici nel frontend.
 
 Affermazioni. Bandita "the generic 'three identical cards horizontally' feature row"; Fraunces e Instrument Serif indicati come "the two LLM-favorite display serifs"; le etichette sopra le sezioni ammesse al massimo una ogni tre; bandita la palette crema con ottone, argilla e testo espresso scuro, con valori come #f5f1ea e #b08947.
 
-Limiti. Letta la sola variante principale fra le diverse del repository.
+Limiti. Letta nel 2026-09 la sola variante principale fra le diverse del repository. Dalla versione 2.1.3 del 2026-10-19 il repository contiene una sola skill, `design-taste-frontend`, e le varianti precedenti stanno in https://github.com/Leonxlnx/taste-skill-classics con gli stessi nomi di installazione: le quattro affermazioni citate sopra si leggono oggi in `skills/taste-skill-v2-experimental/SKILL.md` di quel repository, verificato il 2026-10-21 al commit 5e08c93. La skill corrente è più severa su due punti: in `references/tells.md` vieta del tutto l'etichetta sopra il titolo invece di ammetterne una ogni tre sezioni, e vieta insieme il fondo crema e l'accento terracotta, ruggine o argilla, mentre segnala soltanto il crema da solo.
 
 Usata in: guida, U1, U2, U3, U4; `lint-ui.py`, U4 e U10.
 

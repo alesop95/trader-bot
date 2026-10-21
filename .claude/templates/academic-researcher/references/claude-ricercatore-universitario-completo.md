@@ -161,21 +161,21 @@ Questo è esattamente il meccanismo che permette di avere **decine di skill spec
 - **`skill-creator`** (ufficiale Anthropic, già presente localmente in questo ambiente come skill di esempio) — genera nuovi `SKILL.md` seguendo le best practice di Anthropic (frontmatter, trigger description, progressive disclosure).
 - **`Skiller`** (InternScience) — tool community che trasforma **log di conversazione o requisiti in linguaggio naturale** in pacchetti skill conformi allo standard, con un miglioramento misurato di 57 punti percentuali rispetto al baseline "senza skill".
 - **`Awesome-Scientific-Skills` (InternScience)** — roadmap dichiarata: *"Fase 4 — sviluppare uno skill-creator in grado di creare skill a partire da un paper e da una traccia agentica"* — cioè esattamente ciò che il progetto richiede; vale la pena seguirne gli sviluppi.
-- Pattern pratico osservato in `flonat/claude-research`: gli agenti/skill vengono creati incrementalmente e versionati dentro `.claude/skills/`, `.claude/agents/`, `.claude/rules/`, con un log di sessione che permette il "recovery" del contesto — utile da replicare.
+- Pattern pratico osservato in `flonat/flonat-research`: gli agenti/skill vengono creati incrementalmente e versionati dentro `.claude/skills/`, `.claude/agents/`, `.claude/rules/`, con un log di sessione che permette il "recovery" del contesto — utile da replicare.
 
 ### Repository community "chiavi in mano" per ricerca accademica (le più rilevanti trovate)
 
 | Repository | Cosa offre |
 |---|---|
 | **`Imbad0202/academic-research-skills`** | Suite completa di skill Claude Code per l'intera pipeline research→write→review→revise→finalize. Include modalità Socratica di pianificazione (`/ars-plan`), verifica incrociata multi-modello, supporto PRISMA per revisioni sistematiche, integrazione Pandoc/LaTeX per DOCX/PDF. Costo stimato ~$4–6 per un paper di 15k parole. Esiste anche una versione per Codex CLI. |
-| **`flonat/claude-research`** | Infrastruttura per dottorandi: skill + agenti + hook + regole. Include un **"Biblio MCP"** (ricerca multi-sorgente OpenAlex + Scopus/WoS opzionali) e un **"Flonat-Papers MCP"** dedicato a Zotero con export BibTeX e skill di validazione (`bib-validate`, `bib-parse`). Agenti specializzati per audit coerenza paper-codice, peer review, revisione proposte. |
+| **`flonat/flonat-research`** | Infrastruttura per dottorandi: skill + agenti + hook + regole. Include un **"Biblio MCP"** (ricerca multi-sorgente OpenAlex + Scopus/WoS opzionali) e un **"Flonat-Papers MCP"** dedicato a Zotero con export BibTeX e skill di validazione (`bib-validate`, `bib-parse`). Agenti specializzati per audit coerenza paper-codice, peer review, revisione proposte. |
 | **`Galaxy-Dawn/claude-scholar`** | Assistente semi-automatico per ricerca accademica + sviluppo software, multi-CLI (Claude Code, Codex, Kimi, OpenCode). Workflow di "smart import" da Zotero con deduplica automatica delle collezioni. |
 | **`WenyuChiou/ai-research-skills`** | Costruito da un dottorando in ingegneria civile; punta su 5 "pain point" concreti: perdita di stato tra sessioni, citazioni allucinate, gap-analysis vaga, "odore" di prosa AI, handoff tra AI diverse. Skill `gap-to-topic` per identificare direzioni di ricerca aperte da 15-30 paper raccolti. |
 | **`InternScience/Awesome-Scientific-Skills`** | Collezione curata multi-dominio (bioinformatica, cheminformatica, scrittura scientifica, ricerca letteratura), con framework di valutazione qualità skill. |
 | **`BehiSecc/awesome-claude-skills`** | Include `AlterLab-Academic-Skills` (186+ skill accademiche su 13 domini), `paper-search` (via OpenAlex, no API key), `Junshi` (stratega di ricerca personalizzato che legge i tuoi paper e propone idee ranked). |
 | **`aspi6246/Claude-Code-Skills-for-Academics`** | Fonte di pattern di design citata da altri repo: "read-only constraint pattern", anti-pattern come elemento di design di prima classe, filosofia "skill snelle". |
 
-**Osservazione strategica**: non conviene costruire tutto da zero. Il progetto può **clonare/adattare `flonat/claude-research` o `Imbad0202/academic-research-skills`** come scheletro, e integrarci sopra i MCP di bibliografia/verifica scelti nei paragrafi precedenti.
+**Osservazione strategica**: non conviene costruire tutto da zero. Il progetto può **clonare/adattare `flonat/flonat-research` o `Imbad0202/academic-research-skills`** come scheletro, e integrarci sopra i MCP di bibliografia/verifica scelti nei paragrafi precedenti.
 
 ---
 
@@ -494,7 +494,7 @@ Progetto Claude (Claude Code consigliato per accesso filesystem + MCP + skill lo
 | Anti-hallucination citazioni | `JonasBaath/mcp-refchecker` | `zabbonat/References-Validation` |
 | Prompt professionali di default per analisi multi-paper | Corpus Analysis Suite, 9 prompt (§10) | — |
 | Fonti a pagamento/istituzionali | API ufficiali Elsevier/Springer/IEEE via token istituzionale (§12) | Accesso via portale web + proxy biblioteca, senza API |
-| Scheletro skill di progetto | `flonat/claude-research` o `Imbad0202/academic-research-skills` | `Galaxy-Dawn/claude-scholar` |
+| Scheletro skill di progetto | `flonat/flonat-research` o `Imbad0202/academic-research-skills` | `Galaxy-Dawn/claude-scholar` |
 | Auto-generazione skill | `skill-creator` (Anthropic) + pattern `Skiller` | — |
 
 **Non usare, in nessuna configurazione**: MCP che integrano Sci-Hub (es. `nanyang12138/Academic-MCP-Server`) — vedi verdetto legale in §12.
@@ -508,7 +508,7 @@ Progetto Claude (Claude Code consigliato per accesso filesystem + MCP + skill lo
 3. **Installare `arxiv-cli`** (§11) e verificarne il funzionamento da bash; decidere se integrarlo dentro `literature-search` o creare la skill dedicata `arxiv-quick-fetch`.
 4. **Chiedere all'utente a quali abbonamenti istituzionali a pagamento ha accesso** (§12) e, se rilevanti, registrare le API Key/Institutional Token ufficiali (Elsevier, Springer, IEEE) — mai gestire credenziali istituzionali generiche, solo token API dedicati forniti dall'utente.
 5. **Avviare GROBID** via Docker per il parsing PDF (`docker run --rm -it --init -p 8070:8070 lfoppiano/grobid:0.8.0`), verificando che Docker sia disponibile nell'ambiente dell'utente.
-6. **Clonare/adattare lo scheletro skill** scelto (`flonat/claude-research` o `Imbad0202/academic-research-skills`) dentro `.claude/`, oppure costruire da zero le skill elencate in §14 usando `skill-creator` come guida di formato.
+6. **Clonare/adattare lo scheletro skill** scelto (`flonat/flonat-research` o `Imbad0202/academic-research-skills`) dentro `.claude/`, oppure costruire da zero le skill elencate in §14 usando `skill-creator` come guida di formato.
 7. **Creare la skill `corpus-analysis`** (§10) trascrivendo fedelmente i 9 prompt forniti dall'utente, esposti come modalità richiamabili per nome; verificarne il funzionamento su un corpus di prova prima di renderla operativa.
 8. **Creare la regola sempre attiva** `no-uncited-claims.md`: nessun claim va scritto nell'output finale senza un riferimento tracciabile nello stato "verificato" del `citation-tracker` — vale anche per le 9 modalità di `corpus-analysis`.
 9. **Inizializzare `bibliography.bib`** vuoto in `research-vault/` e verificare che si apra correttamente in JabRef sulla macchina dell'utente.
@@ -549,7 +549,7 @@ Progetto Claude (Claude Code consigliato per accesso filesystem + MCP + skill lo
 - github.com/r-uben/arxiv-mcp-server, github.com/blazickjp/arxiv-mcp-server
 - github.com/xingyulu23/Academix, github.com/AiAgentKarl/crossref-academic-mcp-server, github.com/JonasBaath/mcp-refchecker, github.com/zabbonat/References-Validation
 - github.com/Future-House/paper-qa (PaperQA2), github.com/stanford-oval/storm, github.com/grobidOrg/grobid
-- github.com/Imbad0202/academic-research-skills, github.com/flonat/claude-research, github.com/Galaxy-Dawn/claude-scholar, github.com/WenyuChiou/ai-research-skills, github.com/InternScience/Awesome-Scientific-Skills, github.com/BehiSecc/awesome-claude-skills, github.com/travisvn/awesome-claude-skills
+- github.com/Imbad0202/academic-research-skills, github.com/flonat/flonat-research, github.com/Galaxy-Dawn/claude-scholar, github.com/WenyuChiou/ai-research-skills, github.com/InternScience/Awesome-Scientific-Skills, github.com/BehiSecc/awesome-claude-skills, github.com/travisvn/awesome-claude-skills
 - github.com/AstraBert/arxiv-cli
 - arXiv 2605.27700 (CiteCheck), arXiv 2602.06718 (GhostCite), arXiv 2604.03173 (Reference Hallucinations in Commercial LLMs), arXiv 2605.08583, arXiv 2605.07723, arXiv 2602.05867, arXiv 2602.01686 (Unmediated AI-Assisted Scholarly Citations)
 - paperpile.com, tesify.app, pistack.xyz, appmus.com — confronti JabRef vs Zotero 2026
