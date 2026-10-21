@@ -49,11 +49,15 @@ Uso
 ---
     python tools/verifica-ripresa.py                confronta e riporta
     python tools/verifica-ripresa.py --registra     scrive l'impronta, a fine sessione
-    python tools/verifica-ripresa.py --breve        una riga di esito, per un hook
+    python tools/verifica-ripresa.py --breve        una riga di esito
+    python tools/verifica-ripresa.py --hook         come --breve, ma esce sempre con zero
     python tools/verifica-ripresa.py --self-test
 
-Esce con codice diverso da zero quando trova una divergenza, così che un hook di apertura
-sessione possa segnalarla senza che nessuno debba leggere l'output.
+Da riga di comando o in CI esce con codice diverso da zero quando trova una divergenza. Verso
+un hook il codice di uscita non dice niente: Claude Code tratta come errore qualunque uscita
+diversa da zero, scarta lo standard output e mostra una riga di fallimento senza contenuto,
+quindi l'avviso sparirebbe proprio quando c'è. Un hook chiama perciò lo strumento con --hook,
+oppure attraverso i wrapper di hooks-starter, che leggono il codice e tornano sempre zero.
 """
 
 import argparse
@@ -662,12 +666,17 @@ def main():
     p.add_argument("--registra", action="store_true",
                    help="scrive l'impronta nel file di ripresa; si fa a fine sessione")
     p.add_argument("--breve", action="store_true", help="una riga di esito, per un hook")
+    p.add_argument("--hook", action="store_true",
+                   help="come --breve, ma esce sempre con zero: vedi la nota in fondo")
     p.add_argument("--radice", help="radice del repository; per difetto la cartella corrente")
     p.add_argument("--self-test", action="store_true")
     a = p.parse_args()
 
     if a.self_test:
         return self_test()
+
+    if a.hook:
+        a.breve = True
 
     try:
         if a.registra:
@@ -707,4 +716,13 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # Il codice di uscita dice a una persona, o a CI, se il file di ripresa e' divergente,
+    # e resta quello. Verso un hook SessionStart non dice niente: Claude Code tratta
+    # qualunque valore diverso da zero come un errore, scarta lo standard output e mostra
+    # una riga di fallimento senza contenuto, cosi' che proprio l'avviso di divergenza,
+    # cioe' il solo caso in cui questo controllo ha qualcosa da dire, sia il caso in cui
+    # la sessione non lo legge. Con --hook l'esito resta nella riga di testo e l'uscita
+    # e' sempre zero.
+    _codice = main()
+    sys.exit(0 if "--hook" in sys.argv else _codice)
+

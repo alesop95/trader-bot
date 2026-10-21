@@ -917,8 +917,11 @@ def esamina(voce: dict, leggi=leggi_a_monte, oggi: str = "") -> dict:
     licenza = stato.get("licenza") or ""
     if licenza and voce.get("licenza") and licenza != voce["licenza"]:
         avvisi.append("licenza cambiata da %s a %s" % (voce["licenza"], licenza))
-    if stato.get("rinominata"):
-        avvisi.append("rinominata o trasferita in %s: si corregge il nome nelle schede" % stato["rinominata"])
+    # Una rinomina già vista e registrata da `segna` non si ripete: un documento datato o copiato da
+    # una fonte esterna tiene il nome che aveva, e correggerlo lì romperebbe l'allineamento dei
+    # progetti che ne hanno una copia normalizzata (tre conflitti il 2026-10-21).
+    if stato.get("rinominata") and stato["rinominata"].lower() != voce.get("rinominata", "").lower():
+        avvisi.append("rinominata o trasferita in %s: si corregge il nome nelle schede vive, oppure si registra con segna dove il nome vecchio resta" % stato["rinominata"])
     esito["avvisi"] = avvisi
     if not versioni:
         cosa = "nessuna release" if esito["controllo"] == "release" else "nessuna versione leggibile: spostata o rinominata?"
@@ -1060,6 +1063,10 @@ def cmd_segna(radice: Path, ident: str, leggi=leggi_a_monte, oggi: str = "") -> 
                 v["archiviato"] = True
             else:
                 v.pop("archiviato", None)
+            if stato.get("rinominata"):
+                v["rinominata"] = stato["rinominata"]
+            else:
+                v.pop("rinominata", None)
         v["data"] = oggi
         v.pop("nota-di-prima", None)
     scrivi_registro(radice, dati)
@@ -1269,6 +1276,8 @@ def autotest() -> int:
         caso("una licenza cambiata si segnala", "licenza cambiata da MIT a GPL-3.0" in out)
         meta["github:b/due"] = {"licenza": "", "archiviato": False, "rinominata": "nuovo/due"}
         caso("un repository rinominato si segnala con il nome nuovo", "rinominata o trasferita in nuovo/due" in esegui(r, oggi="2026-10-21")[1])
+        cmd_segna(r, "b/due", finta, "2026-10-21")
+        caso("una rinomina registrata con segna non si ripete", "rinominata o trasferita" not in esegui(r, oggi="2026-10-21")[1])
         meta.pop("github:b/due")
         for v in leggi_registro(r)["fonti"]:
             cmd_segna(r, v["id"], finta, "2026-10-21")

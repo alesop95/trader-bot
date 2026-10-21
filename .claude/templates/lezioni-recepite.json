@@ -126,10 +126,31 @@
     "dove": "skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: l'assenza si misura sull'artefatto, non sui soli file versionati"
   },
   {
+    "progetto": "my-wedding-day",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/templates/dev-skills/skills/security-review/SKILL.md, .claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
     "progetto": "network-design",
     "id": "L-001",
     "commit": "",
     "data": "2026-10-20",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/templates/tools/verifica-ripresa.py"
   }
 ]

@@ -13,7 +13,7 @@ Esegui un audit di sicurezza difensivo sul codice indicato. Questa è la variant
 2. Validazione degli input: sanitizzazione e whitelist su tutto ciò che arriva dall'esterno; protezione da injection SQL, command e path traversal, e da XSS[^1].
 3. Protezione dei dati: nessun secret in chiaro, cifratura a riposo e in transito dove pertinente, log senza dati sensibili, messaggi di errore senza dettagli interni.
 4. Dipendenze: vulnerabilità note con l'audit del gestore di pacchetti che il progetto usa davvero, riconosciuto dal lockfile presente (`yarn audit` con `yarn.lock`, `npm audit` con `package-lock.json`, `pnpm audit`, `pip-audit`), versioni obsolete o non pinnate. L'audit di un altro gestore non legge le dipendenze e risponde come se non ci fossero avvisi: in un progetto `yarn`, `npm audit` filtrato su una libreria ha dato «nessun avviso» su una versione che `yarn audit` dava affetta da una vulnerabilità alta. La forma grezza della risposta si guarda almeno una volta, e lo stesso controllo si fa prima di aggiungere una dipendenza, scegliendo la versione fra quelle senza avvisi.
-5. Configurazione: CORS[^2], header di sicurezza, default pericolosi, file esposti per errore.
+5. Configurazione: CORS[^2], header di sicurezza, default pericolosi, file esposti per errore. Una Content-Security-Policy non si scrive dall'inventario delle origini letto nel sorgente, che misura che cosa chiama il codice del progetto e non che cosa chiamano a runtime gli script di terzi che carica: prima di applicarla la si pubblica in sola segnalazione e si raccolgono le violazioni aprendo davvero le pagine, anche con una sonda headless sulle pagine raggiungibili senza credenziali.
 
 ## Output e vincoli
 

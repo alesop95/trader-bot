@@ -628,14 +628,15 @@
       "data": "2026-10-21"
     },
     {
-      "id": "github:flonat/flonat-research",
+      "id": "github:flonat/claude-research",
       "pacchetto": "academic-researcher",
       "scheda": ".claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md",
-      "motivo": "Infrastruttura di skill e agenti per dottorandi, elencata come scheletro candidato nel documento di ricerca del 2026-07-01; il catalogo non la adotta.",
       "ruolo": "candidati",
+      "motivo": "Infrastruttura di skill e agenti per dottorandi, elencata come scheletro candidato nel documento di ricerca del 2026-07-01 di academic-researcher, che è copiato da fonte esterna e tiene il nome di allora; a monte oggi si chiama flonat/flonat-research.",
       "controllo": "release",
       "verificato": "v0.3.1",
       "licenza": "MIT",
+      "rinominata": "flonat/flonat-research",
       "data": "2026-10-21"
     },
     {
