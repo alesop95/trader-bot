@@ -130,9 +130,9 @@ La pagina di Wikipedia osserva che i testi generati usano il trattino lungo più
 
 **Che cosa è.** Un'etichetta in maiuscolo spaziato, "IL NOSTRO APPROCCIO", sopra ogni titolo, anche dove non aggiunge niente [S1].
 
-**Perché si produce.** La skill di Anthropic la nomina come "tracked-out ALL-CAPS eyebrow label above every heading" [F06]; la variante sperimentale di `taste-skill` ne ammetteva al massimo una ogni tre sezioni, e la versione 2.1 le vieta tutte [F08].
+**Perché si produce.** La skill di Anthropic la nomina come "tracked-out ALL-CAPS eyebrow label above every heading" [F06]; la variante sperimentale di `taste-skill` ne ammetteva al massimo una ogni tre sezioni, e la versione 2.1 le vieta tutte [F08]. Dal 2026-10-21, su decisione del proprietario, il template segue la versione 2.1.
 
-**Come si riconosce.** U4: più di un'etichetta maiuscola spaziata ogni tre titoli nello stesso file, riconosciuta sia dalle classi di utilità sia da una regola CSS del file con maiuscolo e spaziatura delle lettere; nel secondo caso contano solo gli elementi seguiti subito da un titolo, perché un badge o una didascalia maiuscola non sono etichette sopra un titolo.
+**Come si riconosce.** U4: anche una sola etichetta maiuscola spaziata seguita subito da un titolo, riconosciuta sia dalle classi di utilità sia da una regola CSS del file con maiuscolo e spaziatura delle lettere; contano solo gli elementi seguiti subito da un titolo, perché un badge o una didascalia maiuscola non sono etichette sopra un titolo. Fino al 2026-10-21 la soglia era più di un'etichetta ogni tre titoli.
 
 **Che cosa si fa invece.** Si toglie l'etichetta e si lascia che il titolo dica da solo di che cosa parla la sezione. Si tiene dove orienta davvero, per esempio la categoria di un articolo in un elenco misto.
 

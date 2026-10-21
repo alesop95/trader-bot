@@ -17,7 +17,7 @@ U1  palette crema e accento caldo: uno sfondo chiaro e caldo insieme a un accent
     arancio o terracotta, nei valori esadecimali o nelle classi di utilità.
 U2  la sezione in tre passi: "come funziona" o "how it works" con i marcatori 01, 02, 03.
 U3  una parola del titolo in corsivo: un h1 o h2 che contiene em, i o una classe italic.
-U4  etichette sopra i titoli: elementi maiuscoli spaziati, più di uno ogni tre titoli.
+U4  etichette sopra i titoli: un elemento maiuscolo spaziato subito sopra un titolo, anche uno solo.
 U5  card annidate: tre o più contenitori a card uno dentro l'altro.
 U6  icone scontate: quattro o più icone del gruppo fulmine, scudo, grafico, puzzle, cuffia,
     spunta, scintille, razzo importate nello stesso file.
@@ -67,6 +67,9 @@ TITOLO = re.compile(r"<(h[12])\b[^>]*>(.*?)</\1>", re.I | re.S)
 CORSIVO = re.compile(r"<(em|i)\b|class(Name)?=[\"'][^\"']*\bitalic\b", re.I)
 ETICHETTA = re.compile(r"class(Name)?=[\"'][^\"']*\buppercase\b[^\"']*\btracking-[\w\[\].-]+"
                        r"|class(Name)?=[\"'][^\"']*\btracking-[\w\[\].-]+[^\"']*\buppercase\b", re.I)
+# Un elemento con le classi di utilità maiuscolo e spaziato, chiuso e seguito subito da un titolo.
+ETICHETTA_SOPRA = re.compile(r"<[\w-]+\b[^>]*\bclass(?:Name)?=[\"'](?=[^\"']*\buppercase\b)(?=[^\"']*\btracking-)"
+                             r"[^\"']*[\"'][^>]*>[^<]{0,120}</[\w-]+>\s*<h[1-3]\b", re.I)
 TITOLI = re.compile(r"<h[1-3]\b", re.I)
 TAG = re.compile(r"<(/?)(div|section|article|aside|li)\b([^>]*)>", re.I)
 CARD = re.compile(r"\bcard\b|(?=[^\"']*\brounded[\w-]*)(?=[^\"']*\b(shadow|border)\b)", re.I)
@@ -164,9 +167,12 @@ def esamina_file(testo):
     uso_css = sum(len(re.findall(r"class=[\"'](?:[^\"']*\s)?%s(?:\s[^\"']*)?[\"'][^>]*>[^<]{0,120}"
                                  r"</[\w-]+>\s*<h[1-3]\b" % re.escape(c), testo, re.I))
                   for c in classi_etichetta)
-    etichette, titoli = len(ETICHETTA.findall(testo)) + uso_css, len(TITOLI.findall(testo))
-    if etichette >= 2 and etichette * 3 > max(titoli, 1):
-        esiti.append(("U4", "%d etichette maiuscole spaziate per %d titoli" % (etichette, titoli)))
+    # Dal 2026-10-21 la soglia è severa, su decisione del proprietario e come taste-skill 2.1, che
+    # le vieta tutte: prima se ne tollerava una ogni tre titoli. Contano anche qui solo gli elementi
+    # seguiti subito da un titolo, perché un badge lontano da un titolo è un altro segno.
+    etichette, titoli = len(ETICHETTA_SOPRA.findall(testo)) + uso_css, len(TITOLI.findall(testo))
+    if etichette >= 1:
+        esiti.append(("U4", "%d etichette maiuscole spaziate sopra un titolo, su %d titoli" % (etichette, titoli)))
 
     pila, massimo = [], 0
     for m in TAG.finditer(testo):
@@ -273,6 +279,11 @@ def self_test():
     prova("U4: etichette definite da una classe CSS maiuscola e spaziata si segnalano",
           "U4" in codici("<style>.eye{text-transform:uppercase;letter-spacing:.2em}</style>"
                          '<div class="eye">A</div><h2>x</h2><div class="eye">B</div><h2>y</h2>'))
+    prova("U4: una sola etichetta sopra un titolo, fra molti titoli, si segnala",
+          "U4" in codici('<p class="uppercase tracking-widest">A</p><h2>x</h2>'
+                         + "<h2>y</h2><h2>z</h2><h2>w</h2><h2>v</h2>"))
+    prova("negativo U4: un badge di utilità maiuscolo lontano dai titoli non si segnala",
+          "U4" not in codici('<h2>x</h2><p>testo</p><span class="uppercase tracking-wide">nuovo</span>'))
     prova("negativo U4: badge maiuscoli spaziati lontani dai titoli non si segnalano",
           "U4" not in codici("<style>.tag{text-transform:uppercase;letter-spacing:.1em}</style>"
                              '<h2>x</h2><p>t</p><span class="tag">A</span><span class="tag">B</span>'

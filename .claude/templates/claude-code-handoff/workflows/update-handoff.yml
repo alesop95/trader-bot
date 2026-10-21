@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verifica se la fonte upstream e' cambiata
         id: check
@@ -61,7 +61,7 @@ jobs:
 
       - name: Apri pull request
         if: steps.check.outputs.available == 'true' && env.ANTHROPIC_API_KEY != ''
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           add-paths: |
             .claude/context/claude-code-handoff.md

@@ -140,6 +140,20 @@
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   },
   {
+    "progetto": "my-wedding-day",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/rules/chat-non-e-memoria.md"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md"
+  },
+  {
     "progetto": "network-design",
     "id": "L-001",
     "commit": "",

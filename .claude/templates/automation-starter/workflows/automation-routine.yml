@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verifica presenza del token di abbonamento
         run: |
@@ -52,7 +52,7 @@ jobs:
           claude -p "$(cat .github/automation-routine-prompt.txt)" --output-format json --permission-mode acceptEdits --max-turns 12 > automation-output.json
 
       - name: Apri pull request se ci sono modifiche
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Automazione: routine di progetto (automation-starter)"
           title: "Aggiornamento automatico da routine di progetto"
