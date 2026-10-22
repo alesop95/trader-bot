@@ -56,7 +56,8 @@ Esiti per progetto:
   allineato            niente da fare rispetto al commit corrente del template
   incompleto           scritto, ma la seconda misura trova ancora file da trattare
   fuori-perimetro      scritto, ma e cambiato un file fuori da .claude/, tools/,
-                       docs/ e CLAUDE.md: niente si annulla da solo, decide la persona
+                       docs/, .githooks/pre-commit.d/ e CLAUDE.md: niente si annulla da
+                       solo, decide la persona
 
 Solo a verifica passata si scrive nel progetto .claude/allineamento-template.json,
 che dichiara a quale commit e a quale albero .claude del template la struttura
@@ -608,7 +609,7 @@ try {
           # senza questa sottrazione un progetto con lavoro in corso fuori dal perimetro
           # verrebbe marcato fuori-perimetro per modifiche che non ha fatto l'allineamento.
           $fuori = @((Sporchi $prj) | Where-Object { $o.sporchi -notcontains $_ } |
-            Where-Object { $_ -notmatch '^(\.claude|\.agents|tools|docs)/' -and $_ -ne 'CLAUDE.md' })
+            Where-Object { $_ -notmatch '^(\.claude|\.agents|tools|docs|\.githooks/pre-commit\.d)/' -and $_ -ne 'CLAUDE.md' })
           if ($codice -ge 2 -or $codice2 -ge 2 -or -not (Test-Path -LiteralPath $json2)) { $o.stato = 'errore-strumento' }
           else {
             $c2 = Conta (Leggi-Json $json2)

@@ -166,5 +166,61 @@
     "commit": "",
     "data": "2026-10-21",
     "dove": ".claude/templates/tools/verifica-ripresa.py"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/templates/PACKAGES.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/alberi-di-lavoro/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-10-22",
+    "dove": ".claude/skills/identita-git/RIFERIMENTO.md"
   }
 ]

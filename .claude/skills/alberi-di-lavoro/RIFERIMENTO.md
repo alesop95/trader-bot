@@ -68,6 +68,10 @@ Il tranello non riguarda la memoria in quanto memoria, ma ogni documento version
 
 Ne discende una regola di redazione che vale anche con un albero solo: un documento di stato dichiara sempre a quale commit e a quale branch si riferisce, e lo dichiara in testa e non in fondo. Le schede di `context/` lo fanno con il frontmatter di riconciliazione, lo snapshot `memory/index.md` con il blocco di stato che apre il file. La dichiarazione permette a chi legge di accorgersi in due secondi che sta leggendo la verità di un'altra branch, senza dover sapere in anticipo che il tranello esiste.
 
+## Più alberi moltiplicano anche la configurazione
+
+Lo stesso meccanismo della memoria colpisce la configurazione infrastrutturale, con conseguenze più immediate. In un progetto istanziato, con tre alberi su una macchina, una correzione di sicurezza al descrittore dei contenitori è atterrata in un albero e gli altri due hanno continuato a portare il valore vecchio: un comando ordinario di ricreazione lanciato da uno di quelli l'avrebbe annullata senza errori (lezione L-006, 2026-10-21). La configurazione infrastrutturale atterra quindi sul riferimento di rilascio e scende nei rami di lavoro, e si committa e si propaga nel giro in cui si fa: una correzione presente in un albero su tre è una correzione in attesa di essere annullata.
+
 ## Gli alberi degli agenti paralleli, che sono un caso diverso
 
 Sezione salita il 2026-10-19 da un progetto istanziato, dopo una finestra di lavoro autonomo in cui una dozzina di agenti ha lavorato in alberi propri e il lavoro è stato portato sul ramo con `git cherry-pick`. Questi alberi non sono ambienti, come quelli del resto della norma: vivono minuti o ore, e la memoria si scrive solo dall'agente principale. Hanno però quattro trappole proprie, ciascuna costata un giro.
