@@ -66,6 +66,9 @@ template fuori da SKILL_SISTEMA, e le guide istanziate sotto docs/<pacchetto>/
 da templates/<pacchetto>/. Per questi tre ultimi vale la stessa regola: si
 aggiorna ciò che il progetto ha già, non si installa ciò che non ha, perché
 quella scelta è del gate dei pacchetti e non dell'allineamento.
+Dove il progetto ha .githooks/pre-commit.d/, vi tiene anche i passi di sistema
+di templates/readme-sync/githooks/pre-commit.d/, come identita-personali, e li
+aggiunge se mancano: una barriera ai dati personali non si lascia a un'installazione a mano.
 Non tocca mai memory/, context/, settings: quelli descrivono il progetto, e il
 loro allineamento resta un lavoro di lettura. CLAUDE.md lo tocca soltanto con
 --innesco, e soltanto per aggiungere righe.
@@ -683,6 +686,14 @@ def main():
         src = f".claude/templates/{rel}"
         if src in testa:
             valuta(f"docs/{rel}", src, blob.get(src, set()))
+
+    # 5b. passi di sistema dell'hook pre-commit, dove il progetto ha .githooks/pre-commit.d/: dal
+    # 2026-10-21 il passo identita-personali deve arrivare in ogni progetto che esegue quei passi,
+    # perché una barriera ai dati personali che si installa a mano non si installa
+    base_passi = ".claude/templates/readme-sync/githooks/pre-commit.d/"
+    if (prj / ".githooks" / "pre-commit.d").is_dir():
+        for src in sorted(x for x in testa if x.startswith(base_passi)):
+            valuta(".githooks/pre-commit.d/" + src[len(base_passi):], src, blob.get(src, set()))
 
     # 6. file risolti a mano, su richiesta esplicita
     if a.risolto:

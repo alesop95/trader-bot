@@ -1,0 +1,28 @@
+#!/bin/sh
+# Passo del pre-commit dei commit manuali: ferma il commit se un file in stage, o l'identita con
+# cui il commit verra firmato, contiene un identificativo personale dell'elenco locale della
+# macchina (~/.config/identita-personali.txt, mai versionato, anche solo come impronte sha256).
+# Nasce dal 2026-10-21, quando un profilo personale si e trovato nella storia di dieci repository
+# aziendali. Senza elenco sulla macchina avvisa e lascia passare; senza Python non fa niente.
+#
+# Si installa copiandolo in .githooks/pre-commit.d/ di un progetto che usa l'hook pre-commit di
+# readme-sync. `chiudi` fa lo stesso controllo anche dove questo hook non c'e.
+
+root=$(git rev-parse --show-toplevel)
+py="${PYTHON_CMD:-}"
+if [ -z "$py" ]; then
+    for candidate in python3 python; do
+        if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys' >/dev/null 2>&1; then
+            py="$candidate"
+            break
+        fi
+    done
+fi
+[ -n "$py" ] || exit 0
+
+for cartella in tools .claude/templates/tools; do
+    if [ -f "$root/$cartella/test-identita-personali.py" ]; then
+        exec "$py" "$root/$cartella/test-identita-personali.py" --radice "$root" --stage
+    fi
+done
+exit 0

@@ -315,6 +315,17 @@ if ($cambi.Count -gt 0) {
 
     & git add -A
     if ($LASTEXITCODE -ne 0) { Write-Host "Stage fallito: niente e' stato committato." -ForegroundColor Red; exit 1 }
+    # Dal 2026-10-21: nessun identificativo personale nei file in stage ne' nell'identita' del commit,
+    # in qualunque progetto. Se ne trova uno, toglie lo stage e si ferma prima del commit.
+    $identita = Trova "test-identita-personali.py"
+    if ($identita -and $python) {
+        & $python $identita --stage | ForEach-Object { Write-Host "   $_" }
+        if ($LASTEXITCODE -ne 0) {
+            & git reset -q
+            Write-Host "Commit fermato: dati personali nel commit. Niente e' stato committato." -ForegroundColor Red
+            exit 1
+        }
+    }
     & git commit -m $Messaggio
     if ($LASTEXITCODE -ne 0) { Write-Host "Commit rifiutato (hook o errore): correggere e rilanciare." -ForegroundColor Red; exit 1 }
     if (Test-Path $fileMsg) { Remove-Item $fileMsg -Force }
@@ -345,11 +356,17 @@ if ($NoPush) {
         Start-Sleep -Seconds $attese[$t - 1]
     }
     $locale = (& git rev-parse HEAD)
-    $refRemota = (& git ls-remote --exit-code origin "refs/heads/$ramo")
-    if ($LASTEXITCODE -ne 0 -or -not $refRemota) { Ko "verifica del ramo remoto fallita"; exit 1 }
-    $suRemoto = ($refRemota -split '\s+')[0]
-    if ($locale -ne $suRemoto) { Ko "HEAD $locale diverso dal remoto $suRemoto"; exit 1 }
-    Ok "HEAD e remoto coincidono su '$ramo' ($($locale.Substring(0,7)))"
+    # Un remoto puo' avere piu' URL di push (osservato il 2026-10-21: un progetto spinge su due
+    # repository con un solo 'git push'). ls-remote su 'origin' legge solo l'URL di fetch: si
+    # verifica ogni URL di push, altrimenti il secondo puo' restare indietro senza che si veda.
+    $urlPush = @(& git remote get-url --push --all origin)
+    foreach ($u in $urlPush) {
+        $refRemota = (& git ls-remote --exit-code $u "refs/heads/$ramo")
+        if ($LASTEXITCODE -ne 0 -or -not $refRemota) { Ko "verifica del ramo remoto fallita su $u"; exit 1 }
+        $suRemoto = ($refRemota -split '\s+')[0]
+        if ($locale -ne $suRemoto) { Ko "HEAD $locale diverso dal remoto $suRemoto su $u"; exit 1 }
+    }
+    Ok "HEAD e remoto coincidono su '$ramo' ($($locale.Substring(0,7))), $($urlPush.Count) URL di push verificati"
 }
 
 # ---------------------------------------------------------------------------------------------

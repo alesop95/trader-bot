@@ -177,6 +177,15 @@ if [ "$ncambi" != 0 ]; then
         case "$r" in s|si|y|yes) ;; *) echo "Annullato: niente e' stato committato."; exit 1 ;; esac
     fi
     git add -A || { echo "Stage fallito: niente e' stato committato."; exit 1; }
+    # Dal 2026-10-21: nessun identificativo personale nei file in stage ne' nell'identita' del commit.
+    if [ -n "$python" ] && identita="$(trova test-identita-personali.py)"; then
+        "$python" "$identita" --stage | sed 's/^/   /'
+        if [ "${PIPESTATUS[0]}" != 0 ]; then
+            git reset -q
+            echo "Commit fermato: dati personali nel commit. Niente e' stato committato."
+            exit 1
+        fi
+    fi
     git commit -m "$messaggio" || { echo "Commit rifiutato (hook o errore): correggere e rilanciare."; exit 1; }
     rm -f "$filemsg"
 fi
@@ -199,10 +208,19 @@ else
     done
     [ "$spinto" = "1" ] || { echo "Push fallito: l'impronta non si registra finche' il remoto non e' allineato."; exit 1; }
     locale="$(git rev-parse HEAD)"
-    remoto="$(git ls-remote --exit-code origin "refs/heads/$ramo")" || { ko "verifica del ramo remoto fallita"; exit 1; }
-    remoto="${remoto%%[[:space:]]*}"
-    [ "$locale" = "$remoto" ] || { ko "HEAD $locale diverso dal remoto $remoto"; exit 1; }
-    ok "HEAD e remoto coincidono su '$ramo' (${locale:0:7})"
+    # Un remoto puo' avere piu' URL di push (osservato il 2026-10-21): si verifica ognuno,
+    # perche' ls-remote su 'origin' legge solo l'URL di fetch.
+    n=0
+    while IFS= read -r u; do
+        [ -n "$u" ] || continue
+        remoto="$(git ls-remote --exit-code "$u" "refs/heads/$ramo")" || { ko "verifica del ramo remoto fallita su $u"; exit 1; }
+        remoto="${remoto%%[[:space:]]*}"
+        [ "$locale" = "$remoto" ] || { ko "HEAD $locale diverso dal remoto $remoto su $u"; exit 1; }
+        n=$((n + 1))
+    done <<EOF_URL
+$(git remote get-url --push --all origin)
+EOF_URL
+    ok "HEAD e remoto coincidono su '$ramo' (${locale:0:7}), $n URL di push verificati"
 fi
 
 # Sul template, una modifica a .claude/ si propaga ai progetti solo con la passata di
