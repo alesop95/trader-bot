@@ -236,6 +236,16 @@ def _git(*argomenti):
     return [f for f in out.split("\n") if f.strip()]
 
 
+# Gli strumenti del template, che l'allineamento copia sotto .claude/templates/, portano nei
+# casi di prova indirizzi e importi inventati, e il template li controlla gia' da se' con
+# test-identita-personali.py. Senza questa voce il primo allineamento del 2026-10-27 ha fermato
+# il commit di ogni progetto che usa questo controllo. Valgono solo le due categorie elencate.
+ESCLUSIONI_PREDEFINITE = [
+    {"prefisso": ".claude/templates/", "categorie": ["EMAIL PERSONALE", "IMPORTO"],
+     "motivo": "casi di prova degli strumenti del template, controllati dal template stesso"},
+]
+
+
 def escludi_per_decisione(pat, trovati):
     """Toglie i riscontri di una categoria sotto un percorso dichiarato, e lo dice.
 
@@ -247,7 +257,7 @@ def escludi_per_decisione(pat, trovati):
     sono elencate una per una: un prefisso escluso per gli importi resta controllato per
     gli indirizzi, i nomi e i segreti.
     """
-    voci = [v for v in pat.get("percorsi_esclusi_per_decisione", [])
+    voci = ESCLUSIONI_PREDEFINITE + [v for v in pat.get("percorsi_esclusi_per_decisione", [])
             if v.get("prefisso") and v.get("categorie") and v.get("motivo")]
     if not voci:
         return trovati

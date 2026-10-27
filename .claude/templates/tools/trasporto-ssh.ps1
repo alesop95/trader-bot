@@ -44,9 +44,16 @@ function Dividi-Remoto([string]$prj) {
 # si scrive protetto e si riapre.
 function Q([string]$s) { return "'" + $s.Replace("'", "'\''") + "'" }
 
+# ConnectTimeout copre solo l'apertura della connessione, e ServerAliveInterval solo
+# una rete caduta: un comando che sulla macchina remota non torna mai, come un test
+# su un disco bloccato, teneva ferma l'intera passata. Il 2026-10-27 un controllo su
+# vm207 e' rimasto appeso per mezz'ora. Il comando gira quindi sotto timeout remoto,
+# dove esiste, e oltre il tempo la macchina risulta non raggiunta invece di bloccare.
+$script:SSH_TEMPO_MASSIMO = 300
+
 function Comando-Ssh([string]$comando) {
   $b64 = [Convert]::ToBase64String((New-Object System.Text.UTF8Encoding $false).GetBytes($comando))
-  return "echo $b64 | base64 -d | bash"
+  return "echo $b64 | base64 -d | { if command -v timeout >/dev/null 2>&1; then timeout $($script:SSH_TEMPO_MASSIMO) bash; else bash; fi; }"
 }
 
 function Esegui-Ssh([string]$alias, [string]$comando) {

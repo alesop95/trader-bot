@@ -93,7 +93,7 @@ TESTO = {".md", ".json", ".yaml", ".yml", ".txt"}
 CODICE = {".ps1", ".sh", ".py", ".toml"}
 FUORI = {"_notes", "fixtures", "__pycache__", ".git", "node_modules"}
 POSTI_PROGETTO = [".claude/skills", ".claude/agents", ".claude/commands", ".claude/agent-catalog", ".agents"]
-TIPI = ("github", "npm", "pypi", "crates", "brew", "docker", "winget", "apt", "feed", "hf")
+TIPI = ("github", "npm", "pypi", "crates", "brew", "docker", "winget", "apt", "feed", "hf", "reddit", "gist", "web")
 CONTROLLI = ("commit", "release", "versione", "manuale")
 
 # L'insieme chiuso dei ruoli. Si chiamano ruoli e non filoni perché nel template un filone è una
@@ -171,6 +171,25 @@ FEED = re.compile(r"(https?://[\w.-]+(?:/[\w.-]+)*/(?:rss|feed|atom)(?:\.xml)?)(
 # Un modello o un dataset di Hugging Face: un URL, oppure un nome fra apici inversi subito dopo
 # la parola HuggingFace, come nel documento del filone dei modelli locali.
 HF = re.compile(r"(?:huggingface\.co/|Hugging ?Face\s+`)(" + NOME + ")")
+# Un thread di Reddit e un gist di GitHub, dal 2026-10-27: il proprietario ha indicato come fonte
+# un thread, e il censimento lo aveva ignorato in silenzio perché non conosceva il tipo. Il thread
+# si interroga dall'archivio pubblico Arctic Shift, come fa community-sources/tools/fetch-reddit.py,
+# perché Reddit rifiuta le richieste automatiche; il gist dall'API di GitHub.
+REDDIT = re.compile(r"https?://(?:www\.|old\.|new\.)?reddit\.com/r/([A-Za-z0-9_]+)/comments/([a-z0-9]+)")
+GIST = re.compile(r"https?://gist\.github\.com/([A-Za-z0-9-]+)/([0-9a-f]{20,})")
+# Ciò che ha la forma di una fonte ma non si può sorvegliare così com'è scritto. Il censimento lo
+# elenca e si ferma, invece di saltarlo: una fonte non sorvegliata deve essere visibile.
+NON_SORVEGLIABILI = [
+    (re.compile(r"https?://(?:www\.)?reddit\.com/r/[A-Za-z0-9_]+/s/[A-Za-z0-9]+"),
+     "link di condivisione di Reddit: va sostituito con l'indirizzo del post, /r/<sub>/comments/<id>/"),
+]
+ARCTIC = "https://arctic-shift.photon-reddit.com"
+# Qualunque altra pagina indicata come fonte: un sito di prodotto, una documentazione, un elenco. Non
+# si riconosce da sola, perché ogni link dei documenti diventerebbe una fonte; si dichiara scrivendola
+# con il prefisso, `web:https://...`, e si sorveglia per contenuto: il testo visibile della pagina,
+# senza script, stili e marcatori, ridotto a un'impronta. Una pagina che cambia a ogni visita si
+# riconosce perché risulta cambiata a ogni avvio, e allora si passa a --controllo manuale.
+WEB = re.compile(r"\bweb:(https?://[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}(?:[/:?#][^\s`)\]>|]*)?)")
 APT = re.compile(r"\bapt(?:-get)?\s+install\s+(?:-y\s+)?((?:[a-z0-9][a-z0-9.+-]+\s*)+)")
 # Moduli Python il cui pacchetto su PyPI ha un altro nome.
 MODULI_PYPI = {"PIL": "pillow", "docx": "python-docx", "yaml": "pyyaml", "markdown_it": "markdown-it-py",
@@ -233,6 +252,9 @@ def link(ident: str) -> str:
             "brew": "https://formulae.brew.sh/formula/%s" % n,
             "feed": n,
             "hf": "https://huggingface.co/%s" % n,
+            "reddit": "https://www.reddit.com/r/%s/comments/%s/" % tuple(n.split("/", 1)) if "/" in n else "",
+            "gist": "https://gist.github.com/%s" % n,
+            "web": n,
             "docker": "https://hub.docker.com/r/%s" % n if n.count("/") == 1 and "." not in n.split("/")[0] else "",
             }.get(t, "")
 
@@ -486,6 +508,37 @@ def pacchetti(testo: str) -> list:
     return nomi
 
 
+def discussioni(testo: str) -> list:
+    """Thread di Reddit e gist citati come fonti. Solo nei documenti: nel codice sono i casi di
+    prova di fetch-reddit.py e di verifica-link, con indirizzi inventati."""
+    return (["reddit:%s/%s" % (m.group(1), m.group(2)) for m in REDDIT.finditer(testo)]
+            + ["gist:%s/%s" % (m.group(1), m.group(2)) for m in GIST.finditer(testo)]
+            + ["web:" + m.group(1).rstrip(".,;:") for m in WEB.finditer(testo)])
+
+
+def impronta_pagina(html: str) -> str:
+    """L'impronta del testo visibile di una pagina, stabile rispetto a spazi e marcatori."""
+    import hashlib
+    testo = re.sub(r"(?is)<(script|style|noscript|svg)\b.*?</\1>", " ", html)
+    testo = re.sub(r"(?s)<!--.*?-->", " ", testo)
+    testo = re.sub(r"(?s)<[^>]+>", " ", testo)
+    testo = re.sub(r"\s+", " ", testo).strip()
+    return hashlib.sha256(testo.encode("utf-8")).hexdigest()[:12]
+
+
+def non_sorvegliabili(radice: Path) -> list:
+    """[(file, riga, testo, perché)] per ogni forma di fonte che il registro non sa interrogare."""
+    esito = []
+    for f in file_da_censire(radice):
+        if f.suffix.lower() not in TESTO:
+            continue
+        for n, riga in enumerate(f.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            for schema, perche in NON_SORVEGLIABILI:
+                for m in schema.finditer(riga):
+                    esito.append((f.relative_to(radice).as_posix(), n, m.group(0), perche))
+    return esito
+
+
 def censimento(radice: Path, dati: dict) -> dict:
     """Ogni fonte che compare nei file, con il primo file in cui compare."""
     tpl = nel_template(radice)
@@ -500,6 +553,7 @@ def censimento(radice: Path, dati: dict) -> dict:
         testo = f.read_text(encoding="utf-8", errors="replace")
         nomi = pacchetti(testo) + [pulisci(m.group(1)) for s in SCHEMI_GITHUB for m in s.finditer(testo)]
         if f.suffix.lower() in TESTO:
+            nomi += discussioni(testo)
             if locali is not None:
                 nomi += tra_apici(testo, locali)
             # Un repository già noto conta anche scritto senza URL, come `mattpocock/skills`.
@@ -621,6 +675,9 @@ def cmd_censisci(radice: Path, check: bool) -> int:
         print("   ?  %s: manca %s" % (ident, ", ".join(manca)))
     if len(aperte) > 40:
         print("   ?  e altre %d fonti incomplete" % (len(aperte) - 40))
+    ciechi = non_sorvegliabili(radice)
+    for f, n, testo, perche in ciechi:
+        print("   x  %s:%d %s: %s" % (f, n, testo, perche))
     discordanti = licenze_discordanti(radice, dati)
     for f, n, repo, dichiarate, vera in discordanti:
         print("   !  %s:%d dichiara %s per %s, a monte è %s" % (f, n, " e ".join(dichiarate), repo, vera))
@@ -635,10 +692,10 @@ def cmd_censisci(radice: Path, check: bool) -> int:
             print("   *  %s rigenerato" % DOCUMENTO_TEMPLATE.as_posix())
         elif doc_vecchio:
             print("   *  %s non corrisponde al registro: lancia elenca --scrivi" % DOCUMENTO_TEMPLATE.as_posix())
-    rotto = (check and (nuovi or orfani or elenco_vecchio)) or aperte or doc_vecchio or discordanti
+    rotto = (check and (nuovi or orfani or elenco_vecchio)) or aperte or doc_vecchio or discordanti or ciechi
     if rotto:
-        print("censimento incompleto: %d nuove, %d tolte, %d fonti incomplete su %d, %d licenze discordanti; classifica, segna e correggi"
-              % (len(nuovi), len(orfani), len(aperte), len(dati["fonti"]), len(discordanti)))
+        print("censimento incompleto: %d nuove, %d tolte, %d fonti incomplete su %d, %d licenze discordanti, %d fonti non sorvegliabili; classifica, segna e correggi"
+              % (len(nuovi), len(orfani), len(aperte), len(dati["fonti"]), len(discordanti), len(ciechi)))
         return 1 if tpl else 0
     stato = "%d fonti, tutte classificate e verificate" % len(dati["fonti"]) if dati["fonti"] else "nessuna fonte"
     print("censimento: %d nuovi, %d tolti; %s" % (len(nuovi), len(orfani), stato))
@@ -667,7 +724,7 @@ def documento(dati: dict) -> str:
         "",
         "Il template installa, configura, importa e consiglia materiale altrui, e prende affermazioni da fonti altrui. Ciascuna di queste fonti invecchia senza avvisare, e una scheda che la descrive ha lo stesso aspetto quando è vera e quando non lo è più. Per questo ogni fonte che compare nei file del template sta qui, con il ruolo a cui appartiene, ciò che il template ne prende, la scheda che la descrive e il modo in cui si sa che è cambiata, e `fonti-a-monte.py controlla` le interroga tutte all'apertura di ogni sessione. Non esiste un elenco di fonti escluse: dal 2026-10-21, su direttiva del proprietario, una fonte presente nel template si sorveglia sempre, qualunque sia il suo ruolo.",
         "",
-        "Il controllo si sceglie per fonte. Un repository GitHub che pubblica release si segue per release, uno che non le pubblica per commit, eventualmente sulla sola cartella che la scheda descrive; un pacchetto npm, PyPI, crates o Homebrew per la versione pubblicata, che è ciò che davvero si installa; ciò che non ha un'interfaccia interrogabile, come un pacchetto di una distribuzione Linux o un prodotto commerciale, si rivede a mano entro una scadenza in giorni, e il controllo segnala la scadenza passata. Oltre alla versione, per GitHub il controllo segnala un repository archiviato, rinominato o trasferito, o una licenza cambiata, e `censisci --check` confronta senza rete la licenza letta a monte con quella che le schede dichiarano.",
+        "Il controllo si sceglie per fonte. Un repository GitHub che pubblica release si segue per release, uno che non le pubblica per commit, eventualmente sulla sola cartella che la scheda descrive; un pacchetto npm, PyPI, crates o Homebrew per la versione pubblicata, che è ciò che davvero si installa; ciò che non ha un'interfaccia interrogabile, come un pacchetto di una distribuzione Linux o un prodotto commerciale, si rivede a mano entro una scadenza in giorni, e il controllo segnala la scadenza passata. Un thread di Reddit si segue per numero di commenti, letto dall'archivio pubblico Arctic Shift perché Reddit rifiuta le richieste automatiche, e un gist per la sua storia di versioni; qualunque altra pagina, dichiarata con il prefisso `web:`, si segue per impronta del suo testo visibile. Un link di condivisione di Reddit, che non dice quale post sia, ferma il censimento finché non diventa l'indirizzo del post. Oltre alla versione, per GitHub il controllo segnala un repository archiviato, rinominato o trasferito, o una licenza cambiata, e `censisci --check` confronta senza rete la licenza letta a monte con quella che le schede dichiarano.",
         "",
         "Le fonti stanno qui per ruolo, cioè per ciò che il template ne fa, e la colonna del pacchetto dice dove le usa. Il ruolo non va confuso con i filoni di `docs/FILONI.md`, che sono linee di sviluppo: un repository nominato nel documento di un filone porta il nome del filone come pacchetto, e uno segnalato dallo scouting di `docs/fonti-di-scouting.md` porta `scouting`, mentre il feed della fonte di scouting ha un ruolo proprio, così che il controllo all'apertura dica anche quante segnalazioni nuove aspettano un passaggio.",
         "",
@@ -879,6 +936,30 @@ def leggi_a_monte(voce: dict) -> dict:
                 "licenza": ((d.get("cardData") or {}).get("license") or ""), "archiviato": False}
     if tipo == "feed":
         return {"controllo": "versione", "versioni": voci_del_feed(scarica_testo(nome)), "licenza": "", "archiviato": False}
+    if tipo == "reddit":
+        # La «versione» di un thread è il numero di commenti con la data dell'ultimo: cambia quando
+        # qualcuno scrive, ed è ciò che il passaggio di scouting deve leggere.
+        post = nome.split("/", 1)[1]
+        dati = scarica("%s/api/comments/tree?link_id=t3_%s&limit=9999" % (ARCTIC, post))
+        nodi = dati.get("data") if isinstance(dati, dict) else None
+        if not isinstance(nodi, list):
+            raise ValueError("risposta dell'archivio senza commenti")
+        quanti, ultimo = conta_commenti(nodi)
+        if not quanti:
+            testa = scarica("%s/api/posts/ids?ids=%s&fields=id" % (ARCTIC, post))
+            if not (testa.get("data") if isinstance(testa, dict) else None):
+                raise FonteAssente("post %s non presente nell'archivio" % post)
+        data = dt.datetime.fromtimestamp(ultimo, dt.timezone.utc).date().isoformat() if ultimo else ""
+        return {"controllo": "versione", "versioni": [("%d commenti" % quanti, data)], "licenza": "", "archiviato": False}
+    if tipo == "web":
+        return {"controllo": "versione", "versioni": [(impronta_pagina(scarica_testo(nome)), dt.date.today().isoformat())],
+                "licenza": "", "archiviato": False}
+    if tipo == "gist":
+        # Solo la storia: gists/<id> porta anche il contenuto dei file, e su un gist grande l'API
+        # risponde 502 (misurato il 2026-10-27 sul gist di Karpathy).
+        storia = api("gists/%s/commits?per_page=%d" % (nome.split("/", 1)[1], PAGINA))
+        return {"controllo": "versione", "licenza": "", "archiviato": False,
+                "versioni": [(s["version"][:12], (s.get("committed_at") or "")[:10]) for s in storia]}
     if tipo == "docker":
         if "." in nome.split("/")[0]:
             raise ValueError("registro di immagini senza interfaccia pubblica: serve via o controllo manuale")
@@ -887,6 +968,23 @@ def leggi_a_monte(voce: dict) -> dict:
         tag = [t for t in d.get("results", []) if re.match(r"v?[0-9]", t.get("name", ""))]
         return {"controllo": "versione", "versioni": [(t["name"], (t.get("last_updated") or "")[:10]) for t in tag], "licenza": "", "archiviato": False}
     raise ValueError("tipo senza controllo automatico: %s" % tipo)
+
+
+def conta_commenti(nodi: list) -> tuple:
+    """(numero di commenti, istante dell'ultimo) in un albero dell'archivio, risposte comprese."""
+    quanti, ultimo = 0, 0
+    for nodo in nodi:
+        if not isinstance(nodo, dict) or nodo.get("kind") == "more":
+            continue
+        d = nodo.get("data") or {}
+        quanti += 1
+        ultimo = max(ultimo, int(d.get("created_utc") or 0))
+        risposte = d.get("replies")
+        figli = risposte.get("data", {}).get("children", []) if isinstance(risposte, dict) else risposte
+        if isinstance(figli, list):
+            q, u = conta_commenti(figli)
+            quanti, ultimo = quanti + q, max(ultimo, u)
+    return quanti, ultimo
 
 
 def esamina(voce: dict, leggi=leggi_a_monte, oggi: str = "") -> dict:
@@ -1268,6 +1366,23 @@ def autotest() -> int:
         caso("con --rigoroso un cambiamento blocca", esegui(r, True, "2026-10-21")[0] == 1)
         caso("una fonte a mano entro la scadenza tace", "winget:Ditta.Programma" not in out)
         caso("una fonte a mano oltre la scadenza si segnala", "(winget:Ditta.Programma): controllo a mano scaduto" in esegui(r, oggi="2027-02-01")[1])
+        trovate = discussioni("thread https://www.reddit.com/r/ClaudeAI/comments/1abcde/titolo/ e gist "
+                            "https://gist.github.com/autore/0123456789abcdef0123456789abcdef\n")
+        caso("il censimento riconosce un thread di Reddit", "reddit:ClaudeAI/1abcde" in trovate)
+        caso("il censimento riconosce un gist", "gist:autore/0123456789abcdef0123456789abcdef" in trovate)
+        albero = [{"kind": "t1", "data": {"created_utc": 100, "replies": {"data": {"children": [
+            {"kind": "t1", "data": {"created_utc": 300, "replies": ""}}, {"kind": "more", "data": {}}]}}}},
+            {"kind": "t1", "data": {"created_utc": 200, "replies": ""}}]
+        caso("i commenti di un thread si contano con le risposte, senza i segnaposto", conta_commenti(albero) == (3, 300))
+        caso("una pagina dichiarata con web: entra nel censimento, un link nudo no",
+             discussioni("vedi web:https://esempio.dev/prodotto/. e https://altro.dev/") == ["web:https://esempio.dev/prodotto/"])
+        caso("l'esempio web:https://... della documentazione non è una fonte", discussioni("si scrive come `web:https://...`") == [])
+        caso("l'impronta di una pagina ignora script e spazi",
+             impronta_pagina("<p>Testo  uno</p><script>var t=1</script>") == impronta_pagina("<div>Testo uno</div><script>var t=2</script>"))
+        caso("l'impronta di una pagina cambia con il testo", impronta_pagina("<p>uno</p>") != impronta_pagina("<p>due</p>"))
+        (pa / "LINK.md").write_text("Segnalato in https://www.reddit.com/r/ClaudeAI/s/AbCdE12345\n", encoding="utf-8")
+        caso("un link di condivisione di Reddit ferma il censimento invece di sparire", len(non_sorvegliabili(r)) == 1)
+        (pa / "LINK.md").unlink()
         storia["github:a/uno"] = [("c%d" % i, "2026-10-20") for i in range(40, 1, -1)]
         caso("oltre una pagina di commit si dice che sono di più", "più di 29 commit" in esegui(r, oggi="2026-10-21")[1])
         meta["github:a/uno"] = {"licenza": "GPL-3.0", "archiviato": True}
@@ -1378,6 +1493,47 @@ def autotest() -> int:
     return 1 if rossi else 0
 
 
+RAPPORTO = Path("_notes") / "fonti-a-monte" / "ultimo-controllo.txt"
+
+
+def cmd_avvio(radice: Path, attendi: bool = False) -> int:
+    """Hook di avvio: mostra l'esito dell'ultimo controllo e ne lancia uno nuovo in sottofondo.
+
+    Il controllo interroga quasi duecento fonti e dura più di un minuto e mezzo (102 secondi misurati
+    il 2026-10-27), quindi non può tenere ferma l'apertura della sessione. Fino a quel giorno stava
+    solo come istruzione nel CLAUDE.md, e un'istruzione che dipende dalla memoria dell'agente non
+    girava: sei giorni senza controlli e 57 fonti da guardare. Il rapporto nuovo sta in
+    _notes/fonti-a-monte/ultimo-controllo.txt e si legge appena è pronto.
+    """
+    radice = radice.resolve()
+    rapporto = radice / RAPPORTO
+    rapporto.parent.mkdir(parents=True, exist_ok=True)
+    if rapporto.exists():
+        righe = rapporto.read_text(encoding="utf-8").splitlines()
+        quando = dt.datetime.fromtimestamp(rapporto.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+        segnalate = [r for r in righe if r.startswith(("   !", "   ?", "   x", "   +", "   -"))]
+        riepilogo = next((r for r in reversed(righe) if r.startswith("fonti a monte")), "riepilogo assente")
+        print("fonti a monte, controllo del %s: %s" % (quando, riepilogo))
+        for r in segnalate[:15]:
+            print(r)
+        if len(segnalate) > 15:
+            print("   ... e altre %d righe in %s" % (len(segnalate) - 15, RAPPORTO.as_posix()))
+    else:
+        print("fonti a monte: nessun controllo precedente")
+    comando = [sys.executable, str(Path(__file__).resolve()), "--radice", str(radice.resolve()), "controlla",
+               "--rapporto", str(rapporto)]
+    if attendi:
+        return subprocess.run(comando).returncode
+    opzioni = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "cwd": str(radice)}
+    if os.name == "nt":
+        opzioni["creationflags"] = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    else:
+        opzioni["start_new_session"] = True
+    subprocess.Popen(comando, **opzioni)
+    print("controllo nuovo avviato in sottofondo: esito fra un paio di minuti in %s" % RAPPORTO.as_posix())
+    return 0
+
+
 def main(argv=None) -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8")
@@ -1389,6 +1545,9 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="comando")
     pc = sub.add_parser("controlla", help="censisce, poi interroga a monte ogni fonte")
     pc.add_argument("--rigoroso", action="store_true")
+    pc.add_argument("--rapporto", default="", help="scrive l'uscita anche in questo file, sostituendolo solo a controllo finito")
+    pa = sub.add_parser("avvio", help="hook di avvio: esito dell'ultimo controllo e controllo nuovo in sottofondo")
+    pa.add_argument("--attendi", action="store_true", help="esegue il controllo in primo piano, per provarlo")
     pn = sub.add_parser("censisci", help="aggiunge le fonti nuove, toglie quelle sparite, rigenera il documento")
     pn.add_argument("--check", action="store_true", help="non scrive; nel template esce con 1 se il registro è incompleto")
     ps = sub.add_parser("segna", help="registra come verificata la versione di adesso, dopo aver aggiornato la scheda")
@@ -1416,7 +1575,23 @@ def main(argv=None) -> int:
         return autotest()
     radice = Path(a.radice)
     if a.comando == "controlla":
-        return cmd_controlla(radice, a.rigoroso)
+        if not a.rapporto:
+            return cmd_controlla(radice, a.rigoroso)
+        import contextlib
+        import io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = cmd_controlla(radice, a.rigoroso)
+        testo = buf.getvalue()
+        print(testo, end="")
+        dest = Path(a.rapporto)
+        tmp = dest.with_suffix(".tmp")
+        tmp.write_text("controllo del %s, uscita %d\n%s" % (dt.datetime.now().strftime("%Y-%m-%d %H:%M"), rc, testo),
+                       encoding="utf-8", newline="\n")
+        os.replace(tmp, dest)
+        return rc
+    if a.comando == "avvio":
+        return cmd_avvio(radice, a.attendi)
     if a.comando == "censisci":
         return cmd_censisci(radice, a.check)
     if a.comando == "segna":

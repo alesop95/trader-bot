@@ -4,7 +4,7 @@
 
 Il template installa, configura, importa e consiglia materiale altrui, e prende affermazioni da fonti altrui. Ciascuna di queste fonti invecchia senza avvisare, e una scheda che la descrive ha lo stesso aspetto quando è vera e quando non lo è più. Per questo ogni fonte che compare nei file del template sta qui, con il ruolo a cui appartiene, ciò che il template ne prende, la scheda che la descrive e il modo in cui si sa che è cambiata, e `fonti-a-monte.py controlla` le interroga tutte all'apertura di ogni sessione. Non esiste un elenco di fonti escluse: dal 2026-10-21, su direttiva del proprietario, una fonte presente nel template si sorveglia sempre, qualunque sia il suo ruolo.
 
-Il controllo si sceglie per fonte. Un repository GitHub che pubblica release si segue per release, uno che non le pubblica per commit, eventualmente sulla sola cartella che la scheda descrive; un pacchetto npm, PyPI, crates o Homebrew per la versione pubblicata, che è ciò che davvero si installa; ciò che non ha un'interfaccia interrogabile, come un pacchetto di una distribuzione Linux o un prodotto commerciale, si rivede a mano entro una scadenza in giorni, e il controllo segnala la scadenza passata. Oltre alla versione, per GitHub il controllo segnala un repository archiviato, rinominato o trasferito, o una licenza cambiata, e `censisci --check` confronta senza rete la licenza letta a monte con quella che le schede dichiarano.
+Il controllo si sceglie per fonte. Un repository GitHub che pubblica release si segue per release, uno che non le pubblica per commit, eventualmente sulla sola cartella che la scheda descrive; un pacchetto npm, PyPI, crates o Homebrew per la versione pubblicata, che è ciò che davvero si installa; ciò che non ha un'interfaccia interrogabile, come un pacchetto di una distribuzione Linux o un prodotto commerciale, si rivede a mano entro una scadenza in giorni, e il controllo segnala la scadenza passata. Un thread di Reddit si segue per numero di commenti, letto dall'archivio pubblico Arctic Shift perché Reddit rifiuta le richieste automatiche, e un gist per la sua storia di versioni; qualunque altra pagina, dichiarata con il prefisso `web:`, si segue per impronta del suo testo visibile. Un link di condivisione di Reddit, che non dice quale post sia, ferma il censimento finché non diventa l'indirizzo del post. Oltre alla versione, per GitHub il controllo segnala un repository archiviato, rinominato o trasferito, o una licenza cambiata, e `censisci --check` confronta senza rete la licenza letta a monte con quella che le schede dichiarano.
 
 Le fonti stanno qui per ruolo, cioè per ciò che il template ne fa, e la colonna del pacchetto dice dove le usa. Il ruolo non va confuso con i filoni di `docs/FILONI.md`, che sono linee di sviluppo: un repository nominato nel documento di un filone porta il nome del filone come pacchetto, e uno segnalato dallo scouting di `docs/fonti-di-scouting.md` porta `scouting`, mentre il feed della fonte di scouting ha un ruolo proprio, così che il controllo all'apertura dica anche quante segnalazioni nuove aspettano un passaggio.
 
@@ -18,10 +18,10 @@ Le fonti stanno qui per ruolo, cioè per ciò che il template ne fa, e la colonn
 | Librerie | 18 | 13 | 5 | 0 |
 | Fonti di norme e guide | 8 | 3 | 5 | 0 |
 | Cataloghi e indici | 7 | 1 | 6 | 0 |
-| Ispirazioni e crediti | 6 | 6 | 0 | 0 |
-| Candidati e alternative | 58 | 32 | 26 | 0 |
-| Fonti di scouting | 1 | 1 | 0 | 0 |
-| Totale | 182 | | | |
+| Ispirazioni e crediti | 7 | 7 | 0 | 0 |
+| Candidati e alternative | 60 | 34 | 26 | 0 |
+| Fonti di scouting | 2 | 2 | 0 | 0 |
+| Totale | 186 | | | |
 
 ## Skill, agenti, comandi e plugin
 
@@ -188,6 +188,7 @@ Progetti da cui il template ha adattato un'idea o un pattern senza copiarne file
 
 | Fonte | Che cosa ne prende il template | Pacchetto o filone | Scheda | Controllo | Verificata |
 |---|---|---|---|---|---|
+| [gist:karpathy/442a6bf555914893e9891c11519de94f](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) | Gist di Karpathy sul pattern LLM Wiki, che il pacchetto book-to-skill segue per il percorso B. | book-to-skill | `.claude/templates/book-to-skill/README.md` | versione | ac46de1ad27f, 2026-10-27 |
 | [github:0xovo/LiteDoc](https://github.com/0xovo/LiteDoc) | Convertitore PDF in Markdown nel browser, nominato come alternativa manuale non adottata nel pacchetto doc-ingest. | doc-ingest | `.claude/templates/doc-ingest/README.md` | release | v3.3.0, 2026-10-21 |
 | [github:ArthurHeitmann/arctic_shift](https://github.com/ArthurHeitmann/arctic_shift) | Archivio di dati Reddit citato nei crediti del README come esempio di fonte di archivio con latenza rispetto alla fonte viva. | sistema | `README.md` | release | 2026_09, 2026-10-21 |
 | [github:prettier/prettier](https://github.com/prettier/prettier) | Formatter alternativo citato nei crediti: la sua opzione --prose-wrap never risolve lo stesso problema di md-unwrap; non adottato. | sistema | `README.md` | release | 3.9.10, 2026-10-21 |
@@ -201,6 +202,7 @@ Repository valutati e non adottati: candidati segnalati da una fonte di scouting
 
 | Fonte | Che cosa ne prende il template | Pacchetto o filone | Scheda | Controllo | Verificata |
 |---|---|---|---|---|---|
+| [gist:xificurC/8377d51a0c080ad81bb92a55911a0fd0](https://gist.github.com/xificurC/8377d51a0c080ad81bb92a55911a0fd0) | Skill falsifier, che cerca contraddizioni e presupposti sbagliati in una specifica, candidata dal thread del subreddit ClaudeAI del 2026-10-27. | scouting | `docs/fonti-di-scouting.md` | versione | 6ed881a7c7f1, 2026-10-27 |
 | [github:adamamer20/paper-search-mcp-openai](https://github.com/adamamer20/paper-search-mcp-openai) | Elencato come candidato o alternativa nel documento di ricerca datato di academic-researcher; il catalogo non lo adotta | academic-researcher | `.claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md` | commit | 671f5728b3d2, 2026-10-21 |
 | [github:AiAgentKarl/crossref-academic-mcp-server](https://github.com/AiAgentKarl/crossref-academic-mcp-server) | Server MCP Crossref/OpenAlex/Semantic Scholar elencato come candidato nel documento di ricerca accademica del 2026-07-01; il catalogo non lo adotta. | academic-researcher | `.claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md` | commit | cc0b76e9db86, 2026-10-21 |
 | [github:aipoch/open-science](https://github.com/aipoch/open-science) | Banco di lavoro locale per la ricerca scientifica, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Domini scientifici»: maturità da verificare su un caso reale; non adottato, esito in `docs/fonti-di-scouting.md`. | scouting | `docs/fonti-di-scouting.md` | release | v1.0.1, 2026-10-21 |
@@ -259,6 +261,7 @@ Repository valutati e non adottati: candidati segnalati da una fonte di scouting
 | [github:Zettlr/Zettlr](https://github.com/Zettlr/Zettlr) | Editor Markdown con Pandoc e citazioni Zotero, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Scrittura e tipografia»: applicazione desktop, non pacchetto; non adottato, esito in `docs/fonti-di-scouting.md`. | scouting | `docs/fonti-di-scouting.md` | release | v4.8.0, 2026-10-21 |
 | [github:zongmin-yu/semantic-scholar-fastmcp-mcp-server](https://github.com/zongmin-yu/semantic-scholar-fastmcp-mcp-server) | Elencato come candidato o alternativa nel documento di ricerca datato di academic-researcher; il catalogo non lo adotta | academic-researcher | `.claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md` | commit | 68e7b0656262, 2026-10-21 |
 | [github:zvec-ai/zvec-grep](https://github.com/zvec-ai/zvec-grep) | Ricerca locale ibrida testuale e vettoriale, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Fonti e corpus documentali»: da affiancare a doc-ingest; non adottato, esito in `docs/fonti-di-scouting.md`. | scouting | `docs/fonti-di-scouting.md` | release | v0.2.0, 2026-10-21 |
+| [web:https://snitchplugin.com/](https://snitchplugin.com/) | Sito di una raccolta di skill segnalata nel thread del subreddit ClaudeAI del 2026-10-27; sorvegliato per contenuto finché non viene letto e valutato. | scouting | `docs/fonti-di-scouting.md` | versione | ab5259031586, 2026-10-27 |
 
 ## Fonti di scouting
 
@@ -267,6 +270,7 @@ Siti ed elenchi che si ricontrollano per trovare strumenti da portare nel templa
 | Fonte | Che cosa ne prende il template | Pacchetto o filone | Scheda | Controllo | Verificata |
 |---|---|---|---|---|---|
 | [feed:https://www.opensourceprojects.dev/feed.xml](https://www.opensourceprojects.dev/feed.xml) | Feed Atom di opensourceprojects.dev, l'unica fonte di scouting registrata: dice quali repository la fonte ha segnalato dopo l'ultimo passaggio. | scouting | `docs/fonti-di-scouting.md` | versione | 2026-10-21T00:50:02Z, 2026-10-21 |
+| [reddit:ClaudeAI/1xevkyg](https://www.reddit.com/r/ClaudeAI/comments/1xevkyg/) | Thread del subreddit ClaudeAI in cui gli utenti segnalano le skill che usano, indicato dal proprietario il 2026-10-27: da qui è arrivata la raccolta GRC. Si sorveglia il numero di commenti dall'archivio Arctic Shift. | scouting | `docs/fonti-di-scouting.md` | versione | 65 commenti, 2026-10-27 |
 
 ## Falsi del censimento
 

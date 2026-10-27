@@ -111,6 +111,26 @@
       "data": "2026-10-21"
     },
     {
+      "id": "gist:karpathy/442a6bf555914893e9891c11519de94f",
+      "pacchetto": "book-to-skill",
+      "scheda": ".claude/templates/book-to-skill/README.md",
+      "ruolo": "ispirazioni",
+      "motivo": "Gist di Karpathy sul pattern LLM Wiki, che il pacchetto book-to-skill segue per il percorso B.",
+      "controllo": "versione",
+      "verificato": "ac46de1ad27f",
+      "data": "2026-10-27"
+    },
+    {
+      "id": "gist:xificurC/8377d51a0c080ad81bb92a55911a0fd0",
+      "pacchetto": "scouting",
+      "scheda": "docs/fonti-di-scouting.md",
+      "ruolo": "candidati",
+      "motivo": "Skill falsifier, che cerca contraddizioni e presupposti sbagliati in una specifica, candidata dal thread del subreddit ClaudeAI del 2026-10-27.",
+      "controllo": "versione",
+      "verificato": "6ed881a7c7f1",
+      "data": "2026-10-27"
+    },
+    {
       "id": "github:0xfurai/claude-code-subagents",
       "motivo": "Fonte flat dei 138 subagent che agent-catalog elenca e scarica a richiesta con i suoi tre comandi.",
       "pacchetto": "agent-catalog",
@@ -1976,6 +1996,26 @@
       "controllo": "versione",
       "verificato": "2.1.0",
       "data": "2026-10-21"
+    },
+    {
+      "id": "reddit:ClaudeAI/1xevkyg",
+      "pacchetto": "scouting",
+      "scheda": "docs/fonti-di-scouting.md",
+      "ruolo": "scouting",
+      "motivo": "Thread del subreddit ClaudeAI in cui gli utenti segnalano le skill che usano, indicato dal proprietario il 2026-10-27: da qui è arrivata la raccolta GRC. Si sorveglia il numero di commenti dall'archivio Arctic Shift.",
+      "controllo": "versione",
+      "verificato": "65 commenti",
+      "data": "2026-10-27"
+    },
+    {
+      "id": "web:https://snitchplugin.com/",
+      "pacchetto": "scouting",
+      "scheda": "docs/fonti-di-scouting.md",
+      "ruolo": "candidati",
+      "motivo": "Sito di una raccolta di skill segnalata nel thread del subreddit ClaudeAI del 2026-10-27; sorvegliato per contenuto finché non viene letto e valutato.",
+      "controllo": "versione",
+      "verificato": "ab5259031586",
+      "data": "2026-10-27"
     },
     {
       "id": "winget:Nimbalyst.Nimbalyst",
