@@ -236,6 +236,36 @@ def _git(*argomenti):
     return [f for f in out.split("\n") if f.strip()]
 
 
+def escludi_per_decisione(pat, trovati):
+    """Toglie i riscontri di una categoria sotto un percorso dichiarato, e lo dice.
+
+    Serve ai testi altrui copiati verbatim, come le skill di conformita' del pacchetto
+    grc-skills: una sanzione del GDPR o una soglia della NIS2 ha la forma di un importo ma
+    e' testo di legge, e una casella d'esempio ha la forma di un indirizzo personale. Ogni
+    voce porta il prefisso, le categorie e il motivo; senza motivo la voce e' ignorata,
+    perche' un'esclusione senza ragione e' una svista che sembra una decisione. Le categorie
+    sono elencate una per una: un prefisso escluso per gli importi resta controllato per
+    gli indirizzi, i nomi e i segreti.
+    """
+    voci = [v for v in pat.get("percorsi_esclusi_per_decisione", [])
+            if v.get("prefisso") and v.get("categorie") and v.get("motivo")]
+    if not voci:
+        return trovati
+    tenuti = collections.defaultdict(list)
+    tolti = collections.Counter()
+    for cat, elenco in trovati.items():
+        for r in elenco:
+            percorso = r[0].replace("\\", "/")
+            voce = next((v for v in voci if percorso.startswith(v["prefisso"]) and cat in v["categorie"]), None)
+            if voce:
+                tolti[(voce["prefisso"], voce["motivo"])] += 1
+            else:
+                tenuti[cat].append(r)
+    for (prefisso, motivo), n in sorted(tolti.items()):
+        print("esclusi per decisione: %d riscontri sotto %s (%s)" % (n, prefisso, motivo))
+    return tenuti
+
+
 def file_perimetro(includi_ignorati):
     """Restituisce [(percorso, origine)] con origine tracciato/non tracciato/ignorato.
 
@@ -442,6 +472,15 @@ def autotest():
             errori += 1
             print("analizza, versione Chrome: atteso il solo IP endpoint, ottenuti %d" % len(voci))
     totale = len(casi_iban) + len(casi_carta) + 3
+    # esclusione per decisione: toglie solo la categoria dichiarata, sotto il solo prefisso
+    finto = {"IMPORTO": [("vendor/x.md", 1, "€10", "", "tracciato"), ("docs/y.md", 1, "€10", "", "tracciato")],
+             "NOME PROPRIO": [("vendor/x.md", 2, "Mario Rossi", "", "tracciato")]}
+    pat_esc = {"percorsi_esclusi_per_decisione": [{"prefisso": "vendor/", "categorie": ["IMPORTO"], "motivo": "prova"}]}
+    resto = escludi_per_decisione(pat_esc, finto)
+    totale += 1
+    if [r[0] for r in resto["IMPORTO"]] != ["docs/y.md"] or len(resto["NOME PROPRIO"]) != 1:
+        errori += 1
+        print("autotest: l'esclusione per decisione non rispetta prefisso e categoria")
     print("autotest: %d casi, %d errori" % (totale, errori))
     return 1 if errori else 0
 
@@ -474,6 +513,7 @@ def main():
     pat = carica_pattern(args.patterns)
     files = file_perimetro(args.tutti)
     trovati, saltati = analizza(pat, files)
+    trovati = escludi_per_decisione(pat, trovati)
     conteggio = collections.Counter(origine for _, origine in files)
 
     ordine = ["IP REALE", "MAC REALE", "SEGRETO LETTERALE", "NOME PROPRIO", "EMAIL PERSONALE",

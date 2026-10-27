@@ -570,7 +570,11 @@ def raccogli(percorsi, estensioni):
 
     def escluso(percorso):
         rel = relativo(percorso)
-        return rel is not None and rel in esclusi
+        if rel is None:
+            return False
+        r = rel.replace(os.sep, "/")
+        # una riga che finisce con la barra esclude il sottoalbero, come in fix-dashes
+        return rel in esclusi or r in esclusi or any(p.endswith("/") and r.startswith(p) for p in esclusi)
 
     file = []
     for p in percorsi:
@@ -596,7 +600,7 @@ def raccogli(percorsi, estensioni):
                 # Il salto si dichiara invece di tacere: una protezione silenziosa sembra una
                 # svista a chi guarda l'uscita, ed e' cosi' che una guardia smette di esistere.
                 rel = relativo(ap)
-                print(f"escluso ({esclusi[rel]}): {rel}", file=sys.stderr)
+                print(f"escluso ({motivo_esclusione(esclusi, rel)}): {rel}", file=sys.stderr)
                 continue
             # Un sorgente passato per nome non passa dal filtro delle estensioni, quindi la
             # guardia di main sulle estensioni non lo vedeva: il 2026-10-20, in un progetto
@@ -631,11 +635,18 @@ def raccogli(percorsi, estensioni):
                         continue
                     if escluso(completo):
                         rel = relativo(completo)
-                        print(f"escluso ({esclusi[rel]}): {rel}", file=sys.stderr)
+                        print(f"escluso ({motivo_esclusione(esclusi, rel)}): {rel}", file=sys.stderr)
                         continue
                     if os.path.abspath(completo) != IO_STESSO and n not in FAMIGLIA:
                         file.append(completo)
     return file
+
+
+def motivo_esclusione(esclusi, rel):
+    """Il motivo dichiarato per un file, o per la cartella esclusa che lo contiene."""
+    r = rel.replace(os.sep, "/")
+    return esclusi.get(rel) or esclusi.get(r) or next(
+        (m for p, m in esclusi.items() if p.endswith("/") and r.startswith(p)), "")
 
 
 def leggi_esclusioni():
@@ -672,7 +683,9 @@ def leggi_esclusioni():
             if not p or not motivo:
                 malformate.append(riga)
                 continue
-            esclusi[os.path.normpath(p)] = motivo
+            # una cartella intera si dichiara con la barra finale, che normpath toglierebbe
+            chiave = os.path.normpath(p).replace(os.sep, "/") + "/" if p.endswith("/") else os.path.normpath(p)
+            esclusi[chiave] = motivo
     return esclusi, malformate
 
 

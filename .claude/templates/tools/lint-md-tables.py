@@ -163,9 +163,19 @@ def analizza(testo):
 
 
 def bersagli(percorsi):
-    fuori = []
+    # Un percorso relativo si risolve prima sulla cartella corrente, che e' quella che ha in
+    # mente chi lancia, e solo dopo sulla radice dello strumento. E un percorso che non esiste
+    # ferma la corsa invece di non produrre bersagli: nel template RADICE e' `.claude/templates`,
+    # quindi un percorso dato dalla radice del repository non vi si trovava e lo strumento
+    # rispondeva «0 file esaminati, 0 difetti» con uscita zero, cioe' un verde su un file mai
+    # aperto. Difetto osservato il 2026-10-26 mentre si verificava una tabella appena scritta.
+    fuori, mancanti = [], []
     for p in percorsi or ["."]:
-        assoluto = p if os.path.isabs(p) else os.path.join(RADICE, p)
+        candidati = [p] if os.path.isabs(p) else [os.path.abspath(p), os.path.join(RADICE, p)]
+        assoluto = next((c for c in candidati if os.path.exists(c)), None)
+        if assoluto is None:
+            mancanti.append(p)
+            continue
         if os.path.isfile(assoluto):
             fuori.append(assoluto)
             continue
@@ -174,6 +184,8 @@ def bersagli(percorsi):
             for nome in nomi:
                 if nome.endswith(".md"):
                     fuori.append(os.path.join(radice, nome))
+    if mancanti:
+        raise SystemExit("percorsi inesistenti, niente da esaminare: " + ", ".join(mancanti))
     return sorted(set(fuori))
 
 
@@ -214,6 +226,15 @@ def self_test():
          "| a | b |\n|---|---|\n| 1 | 2\n\ncoda della cella\n\n| 3 | 4 |\n", 2),
     ]
     fallite = 0
+    # La raccolta dei bersagli si prova qui perche' il suo difetto non si vede dall'uscita:
+    # un percorso sbagliato produceva un verde, che e' la forma peggiore di errore.
+    try:
+        bersagli(["cartella-che-non-esiste-mai/file.md"])
+    except SystemExit:
+        print("  ok      un percorso inesistente ferma la corsa")
+    else:
+        print("  FALLITO un percorso inesistente ferma la corsa")
+        fallite += 1
     for nome, testo, attesi in casi:
         trovati = len(analizza(testo))
         esito = trovati == attesi

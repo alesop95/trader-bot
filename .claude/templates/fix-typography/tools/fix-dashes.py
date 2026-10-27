@@ -155,6 +155,19 @@ def converti_python(testo, conteggio):
     return "\n".join(righe)
 
 
+def in_esclusi(rel, esclusi):
+    """Un percorso escluso per sé, o perché sta sotto una cartella esclusa.
+
+    Una riga che finisce con la barra esclude l'intero sottoalbero: serve alle copie
+    verbatim di testi altrui che si riscrivono a ogni release, dove un elenco di file
+    invecchierebbe alla prima copia nuova.
+    """
+    if rel is None:
+        return False
+    r = rel.replace(os.sep, "/")
+    return rel in esclusi or r in esclusi or any(p.endswith("/") and r.startswith(p) for p in esclusi)
+
+
 def leggi_esclusioni():
     esclusi, malformate = {}, []
     if not os.path.exists(ESCLUSIONI):
@@ -172,7 +185,9 @@ def leggi_esclusioni():
             if not percorso or not motivo:
                 malformate.append(riga)
                 continue
-            esclusi[os.path.normpath(percorso)] = motivo
+            # una cartella intera si dichiara con la barra finale, che normpath toglierebbe
+            chiave = os.path.normpath(percorso).replace(os.sep, "/") + "/" if percorso.endswith("/") else os.path.normpath(percorso)
+            esclusi[chiave] = motivo
     return esclusi, malformate
 
 
@@ -359,7 +374,7 @@ def main():
             # temporanea: le esclusioni sono relative alla radice, quindi non la riguardano
             rel = os.path.abspath(percorso)
         if (os.path.abspath(percorso) == io_stesso
-                or os.path.basename(percorso) in FAMIGLIA or rel in esclusi
+                or os.path.basename(percorso) in FAMIGLIA or in_esclusi(rel, esclusi)
                 or (sotto_templates(percorso) and not args.includi_modelli)):
             if sotto_templates(percorso) and not args.includi_modelli:
                 # Il rifiuto si dichiara invece di confondersi con le altre esclusioni:
@@ -388,7 +403,7 @@ def main():
     if saltati and args.check:
         print("\nesclusi per dichiarazione:")
         for r in saltati:
-            motivo = esclusi.get(r)
+            motivo = esclusi.get(r) or next((m for p, m in esclusi.items() if p.endswith("/") and r.replace(os.sep, "/").startswith(p)), None)
             if motivo is None:
                 motivo = ("e' questo strumento"
                           if os.path.basename(r) == os.path.basename(__file__)

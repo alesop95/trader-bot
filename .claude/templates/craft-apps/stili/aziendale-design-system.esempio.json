@@ -1,0 +1,12 @@
+{
+  "nome": "aziendale-design-system",
+  "descrizione": "Modello di stile per i documenti destinati a essere letti fuori dal repository: consegne a un collaboratore, relazioni, proposte. Lega il design system dell'organizzazione alla catena dei documenti Craft. Si copia, si rinomina con il nome dell'organizzazione e si riempie con i valori veri presi dal design system del progetto, non a memoria e non da ciò che somiglia al marchio. Resta tracciato, perché non contiene valori reali di infrastruttura: contiene solo scelte tipografiche. La documentazione interna del progetto continua a usare il proprio stile tecnico, perché un documento che esce e uno che resta hanno lettori diversi.",
+  "_come_si_riempie": "font_titoli e font_testo vanno indicati con il nome con cui il sistema operativo li espone, e vanno installati sulla macchina che costruisce il documento: se mancano, la catena non fallisce, sostituisce. Verificarlo prima, elencando i font installati. I colori si scrivono senza cancelletto, in esadecimale a sei cifre. Le dimensioni sono in punti. I colori delle slide seguono i nomi del tema Office: dk1 e lt1 sono il testo e lo sfondo principali, dk2 e lt2 quelli secondari, accent1 e accent2 i due accenti, hlink il colore dei collegamenti.",
+  "font_titoli": "NOME-FONT-DISPLAY",
+  "font_testo": "NOME-FONT-TESTO",
+  "colore_titoli": "000000",
+  "colore_testo": "0A0A0A",
+  "font_codice": "Consolas",
+  "dimensioni": {"Title": 28, "Heading 1": 20, "Heading 2": 16, "Heading 3": 13, "Normal": 11, "Code": 10},
+  "colori_slide": {"dk1": "#0A0A0A", "lt1": "#FFFFFF", "dk2": "#000000", "lt2": "#F4F5F9", "accent1": "#000000", "accent2": "#666666", "hlink": "#000000"}
+}

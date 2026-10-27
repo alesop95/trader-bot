@@ -1,0 +1,49 @@
+#!/bin/sh
+# Gancio pre-commit GLOBALE della macchina. Modello: si copia in ~/.githooks/pre-commit e si
+# attiva una volta sola con
+#   git config --global core.hooksPath ~/.githooks
+# Da quel momento vale per ogni repository della macchina, compresi quelli che non esistono
+# ancora, senza alcuna installazione per progetto.
+#
+# Un repository che imposta core.hooksPath in locale usa il suo e ignora questo: e' il
+# comportamento di git, non un difetto. In quel caso si aggiunge al suo pre-commit la riga
+#   "$HOME/.githooks/pre-commit" || exit 1
+# che delega qui e resta allineata da sola.
+#
+# Non ha stato, non scrive niente, non apre connessioni. Se manca l'interprete non blocca:
+# l'alternativa sarebbe rendere impossibile committare su una macchina che non lo ha.
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+
+py="${PYTHON_CMD:-}"
+if [ -z "$py" ]; then
+    for c in python3 python; do
+        if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys' >/dev/null 2>&1; then py="$c"; break; fi
+    done
+fi
+[ -n "$py" ] || exit 0
+
+# La copia del template e' la sola che conta: quelle vendorizzate nei progetti invecchiano, e un
+# controllo vecchio guarda meno cose di quante creda chi lo lancia. Il percorso del template sta
+# in un file della macchina, mai in un file versionato.
+strumento=""
+indirizzo="$HOME/.config/template-claude-path.txt"
+if [ -f "$indirizzo" ]; then
+    tpl=$(tr -d '\r\n' < "$indirizzo")
+    [ -f "$tpl/.claude/templates/tools/test-identita-personali.py" ] && strumento="$tpl/.claude/templates/tools/test-identita-personali.py"
+fi
+if [ -z "$strumento" ]; then
+    for c in "$root/.claude/templates/tools" "$root/tools"; do
+        [ -f "$c/test-identita-personali.py" ] && { strumento="$c/test-identita-personali.py"; break; }
+    done
+fi
+[ -n "$strumento" ] || exit 0
+
+"$py" "$strumento" --radice "$root" --stage
+esito=$?
+if [ "$esito" = "2" ]; then
+    echo "pre-commit: il controllo delle identita NON ha potuto guardare. Commit fermato."
+    echo "  Sistema cio che dice la riga qui sopra, oppure committa con --no-verify se sai perche."
+    exit 1
+fi
+exit $esito

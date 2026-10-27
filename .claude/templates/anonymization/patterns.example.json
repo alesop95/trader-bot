@@ -57,5 +57,10 @@
   "segreti_letterali": [
     "sostituire-con-il-valore-di-un-segreto-gia-noto-e-da-non-pubblicare"
   ],
-  "_segreti_letterali": "Valori letterali di segreti gia' noti, per intercettarne la ricomparsa in un file pubblicabile. Lo script NON stampa mai il valore trovato ma la sola etichetta, altrimenti il rapporto del controllo diventerebbe esso stesso una pubblicazione del segreto. Chiave FACOLTATIVA: questo controllo non sostituisce uno scanner di credenziali, che cerca per forma invece che per valore, e i due si usano insieme."
+  "_segreti_letterali": "Valori letterali di segreti gia' noti, per intercettarne la ricomparsa in un file pubblicabile. Lo script NON stampa mai il valore trovato ma la sola etichetta, altrimenti il rapporto del controllo diventerebbe esso stesso una pubblicazione del segreto. Chiave FACOLTATIVA: questo controllo non sostituisce uno scanner di credenziali, che cerca per forma invece che per valore, e i due si usano insieme.",
+
+  "percorsi_esclusi_per_decisione": [
+    {"prefisso": ".claude/templates/grc-skills/skills/", "categorie": ["IMPORTO", "EMAIL PERSONALE"], "motivo": "testo di legge e d'esempio delle skill di conformità copiate verbatim dal pacchetto grc-skills"}
+  ],
+  "_percorsi_esclusi_per_decisione": "Testi altrui copiati verbatim in cui una categoria ha la forma di un dato ma non lo è, come le sanzioni di legge nelle skill di grc-skills. Ogni voce dichiara prefisso, categorie e motivo, e vale solo per quelle categorie: lo stesso prefisso resta controllato per tutte le altre. Il controllo stampa quanti riscontri ha tolto e perché."
 }

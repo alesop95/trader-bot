@@ -51,6 +51,7 @@ codex-account2
 | `.claude/templates/agenti-terminale/tools/Consumo-Agenti.ps1` | consumo di token di **tutte** le radici dei due agenti, radici di default comprese |
 | `.claude/templates/agenti-terminale/codex-config.riferimento.toml` | configurazione di una radice Codex |
 | `.claude/templates/agenti-terminale/codex-agents.riferimento.md` | `AGENTS.md` distribuito nelle radici: puntatore, mai copia |
+| `.claude/templates/agenti-terminale/comunicazione-fra-sessioni.md` | studio, non attuazione: quale canale fra sessioni esiste davvero, e il vincolo di sandbox che decide il disegno di quelli che mancano |
 
 ## Che cosa NON contiene, e perché
 
@@ -59,6 +60,8 @@ codex-account2
 **Nessuna credenziale, mai.** Il ripristino ricostruisce radici e configurazioni, non gli accessi: si rifà un login per radice e per agente. Non è un limite ma la scelta corretta, e vale dirla per esteso perché la tentazione opposta è forte: una credenziale copiata da una macchina all'altra è una credenziale uscita dal proprio custode, e sopravvive in un backup molto più a lungo della ragione per cui era stata copiata.
 
 **Nessun orchestratore.** Far lavorare più agenti insieme su un compito è materia del pacchetto `lavoro-a-lotti`, che poggia su questo ma non lo richiede.
+
+**Nessun canale fra sessioni, ma lo studio di come farne uno.** Orchestrare e comunicare sono due cose diverse: la prima distribuisce un compito, la seconda lascia che sessioni già avviate si scambino quello che hanno scoperto. Il pacchetto non attua la seconda, e `comunicazione-fra-sessioni.md` spiega perché una delle due strade ovvie è una trappola e quale vincolo decide l'altra. Fra sessioni Claude Code il canale esiste già ed è nativo: non va installato niente.
 
 ## La chiusura di una sessione
 

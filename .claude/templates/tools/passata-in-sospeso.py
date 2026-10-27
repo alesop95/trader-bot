@@ -20,6 +20,7 @@ Esce con 0 se non c'è niente da propagare, con 1 se la passata va fatta, con 2 
 e il template o git non risponde.
 """
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -36,8 +37,15 @@ def main() -> int:
         return 2
     albero = r.stdout.strip()
     registro = radice / "_notes/allineamento/registro.json"
-    comando = ('powershell -NoProfile -ExecutionPolicy Bypass -File '
-               '".claude/templates/tools/allinea-tutti.ps1" -Applica')
+    # Il suggerimento segue la macchina su cui gira: su Linux un comando PowerShell
+    # manda chi legge verso un programma che non esiste, e un suggerimento sbagliato
+    # costa piu' di nessun suggerimento perche' sembra autorevole.
+    if os.name == "nt":
+        comando = ('powershell -NoProfile -ExecutionPolicy Bypass -File '
+                   '".claude/templates/tools/allinea-tutti.ps1" -Applica')
+    else:
+        comando = ('la propagazione non ha ancora una forma per questo sistema: '
+                   'allinea-tutti esiste solo in PowerShell')
     if not registro.is_file():
         print("nessuna passata registrata: per portare questo stato del template ai progetti lanciare")
         print("   " + comando)

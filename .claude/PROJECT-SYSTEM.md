@@ -348,7 +348,7 @@ Ne discendono tre conseguenze operative.
 
 **Il sintomo da riconoscere è la ripetizione.** Quando una regola deve essere richiamata una seconda volta, il difetto sta nell'assenza di un presidio, e non in chi l'ha violata né nella sua formulazione. La domanda giusta a quel punto non è come renderla più chiara ma quale controllo meccanico ne osserverebbe la violazione.
 
-**Il presidio va nominato dalla regola che presidia.** Un controllo che esiste e che nessun documento cita non viene eseguito, per la stessa ragione per cui una regola che nessun documento carica non viene applicata. La regola dichiara il proprio controllo e il momento in cui va eseguito.
+**Il presidio va nominato dalla regola che presidia.** Un controllo che esiste e che nessun documento cita non viene eseguito, per la stessa ragione per cui una regola che nessun documento carica non viene applicata. La regola dichiara il proprio controllo e il momento in cui va eseguito. E vale il converso: un controllo che una regola nomina come presidio deve anche essere eseguito da qualcosa, cioè stare fra i controlli di `chiudi` o della pipeline, oppure la regola dice che si lancia a mano e quando. Caso osservato in un progetto istanziato (L-024): lo strumento delle tabelle, nominato dalla regola sullo stile, non lo lanciava nessuno script, e il registro delle pendenze aveva accumulato 69 righe malformate senza nessun errore visibile. Una misura periodica utile è proprio l'elenco degli strumenti del progetto che nessuno script lancia.
 
 **Il presidio dichiara che cosa non copre.** Nessun controllo meccanico raggiunge la qualità di un contenuto: distingue il silenzio dalla presenza, non il buono dal mediocre. Dirlo è parte del presidio, perché credere che copra più di quanto copre produce fiducia in una copertura inesistente, che è peggio della sua assenza.
 
@@ -375,6 +375,8 @@ Un'istruzione può chiedere di modificare qualcosa che **non è visibile**, e og
 E un'istruzione estetica generica può chiedere di rimuovere una struttura che **esiste per una ragione funzionale**, decisa mesi prima da chi conosceva un problema che il piano non conosce. Qui la regola sovraordinata, che un piano ben scritto dichiara da sé, è che una modifica estetica non tocca una scelta funzionale: si segnala e si prosegue.
 
 La conseguenza operativa è una sola domanda, da porsi prima di eseguire ciascuna istruzione: **questa istruzione è ancora vera per questo codice, in questa variante?** A volte la risposta è che non c'è nulla da fare, a volte che il bersaglio è un altro, a volte che esiste un problema che il piano non aveva previsto. Nessuno dei tre casi è un'anomalia da correggere seguendo il documento più alla lettera: è il lavoro di chi un piano lo esegue invece di copiarlo.
+
+Un caso particolare è il piano di una finestra di lavoro autonomo con un'ora di fine e una coda di voci: la coda è il punto di partenza e l'ora è il confine. Finita la coda prima dell'ora, chiudere la finestra e consegnare il recap è un errore che sembra diligenza, perché legge come una fine ciò che il patto non dice (L-020 di un progetto istanziato, corretto dal proprietario). Il piano di una finestra scrive che cosa si fa a coda finita, cioè una coda nuova dal registro con le voci che non chiedono decisioni, dati o operazioni riservate; e chi giudica che le voci rimaste siano tutte bloccate lo verifica sull'intero registro, non su un riassunto.
 
 ## 19. Un controllo che dipende da ciò che deve controllare non è un controllo
 

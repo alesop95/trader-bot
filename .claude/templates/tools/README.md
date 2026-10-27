@@ -133,11 +133,22 @@ Senza opzioni, nel template, cerca le voci dell'elenco nei file tracciati sotto 
 
 L'elenco non è mai versionato. Nel template sta in `_notes/allineamento/identita-personali.txt`; il controllo dei commit usa quello della macchina, `~/.config/identita-personali.txt`. Una voce in chiaro si cerca come sottostringa; una voce `sha256:<impronta>`, prodotta da `--impronta "testo"`, si confronta con l'impronta di ogni parola e di ogni email della riga, ed è la forma installata il 2026-10-21 su questo PC e sulle sei VM, dove il dato in chiaro non deve stare. Le righe `ambito: <frammento>` dicono quali repository della macchina sono aziendali, per frammento di remoto o di email: dove ce ne sono, il controllo dei commit vale solo lì, perché su questo PC i progetti personali si firmano legittimamente con l'identità personale; dove non ce ne sono, come sulle VM, vale ovunque. Senza elenco sulla macchina il controllo dei commit avvisa a ogni commit e non ferma.
 
-Lo strumento non stampa mai l'identificativo, perché l'uscita finisce in log e trascrizioni. L'`--autotest` ha 17 casi; la prova su un clone vero di un repository aziendale, con un file in stage che conteneva l'utente personale, ha fermato il commit con il solo elenco di impronte.
+Dal 2026-10-27 il controllo guarda **nei due versi**. Le righe `lavoro: <voce>` dell'elenco sono gli identificativi del profilo di lavoro e si cercano nei repository **fuori** dall'ambito aziendale: in un repository aziendale non deve comparire l'identità personale, in uno personale non deve comparire quella di lavoro, e il verso lo decide l'ambito e non chi lancia il comando. Nel template, che propaga in entrambi i tipi, si cercano tutte le voci. Il verso mancava, ed è il motivo per cui l'indirizzo di lavoro è rimasto quattro mesi dentro sette repository personali pubblici senza che nessun controllo lo vedesse.
+
+`--tracciati` legge **tutti i file tracciati** del repository, non il perimetro del template e non il solo stage. Serve a ritrovare ciò che è entrato prima che il controllo esistesse: né `--stage`, che vede solo l'indice, né il controllo del template, che vede solo `.claude/`, rileggono mai un file già committato, e un dato entrato prima resta invisibile per sempre. Salta i binari e i file oltre 2 MiB.
+
+Nel perimetro del template vale inoltre un controllo **sulla forma** e non sull'elenco: ogni stringa che abbia l'aspetto di un indirizzo email o di un nome di file di chiave SSH ferma il commit se non è dichiarata in `identita-forme-ammesse.txt`, accanto a questo README e versionato perché contiene solo esempi inventati. È il solo controllo che non dipende da un censimento: riconosce la forma del dato invece dei colpevoli già schedati, quindi ferma anche l'indirizzo di un collega o uno nuovo che nessuno ha pensato di aggiungere. Vale solo nel template, perché il `.claude/` di un progetto contiene legittimamente gli indirizzi del proprio dominio.
+
+L'uscita **2** significa «non ho potuto guardare», ed è distinta sia dal successo sia dal reperto: elenco assente sulla macchina, oppure repository fuori ambito senza voci `lavoro:`. Prima questi due casi uscivano 0, cioè un controllo che non ha guardato si dichiarava verde. Il gancio pre-commit li tratta come rifiuto.
+
+Se la copia del progetto è diversa da quella del template, lo strumento lo dice in testa all'uscita. Il percorso del template si legge da `~/.config/template-claude-path.txt`, file della macchina e non versionato, perché un percorso concreto dentro un file propagato è esattamente il difetto che questo strumento esiste per impedire.
+
+Lo strumento non stampa mai l'identificativo, perché l'uscita finisce in log e trascrizioni. L'`--autotest` ha 31 casi, fra cui quello che riproduce il buco: un file già committato che `--stage` e il controllo del template dichiarano entrambi pulito e che solo `--tracciati` trova.
 
 ```
 python .claude/templates/tools/test-identita-personali.py
 python .claude/templates/tools/test-identita-personali.py --stage
+python .claude/templates/tools/test-identita-personali.py --tracciati
 python .claude/templates/tools/test-identita-personali.py --impronta "testo"
 python .claude/templates/tools/test-identita-personali.py --autotest
 ```

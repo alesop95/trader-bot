@@ -95,4 +95,14 @@ Prima di puntare una di queste applicazioni a una cartella, si guarda che cosa c
 
 ## Quando il lavoro è finito
 
-Si dichiara che cosa è stato prodotto, con quale applicazione e quale versione, e se si è passati dalla riga di comando o dal server. La fonte Markdown e il file di stile restano nel progetto, così l'artefatto si rigenera invece di ritoccarsi a mano; quando l'artefatto ha un formato nativo, per esempio un `.deckcraft`, si conserva anche l'esportazione in un formato che si legge altrove.
+Si dichiara che cosa è stato prodotto, con quale applicazione e quale versione, e se si è passati dalla riga di comando o dal server. La fonte Markdown e il file di stile restano nel progetto, così l'artefatto si rigenera invece di ritoccarsi a mano, **finché l'artefatto non viene modificato da una persona**; quando l'artefatto ha un formato nativo, per esempio un `.deckcraft`, si conserva anche l'esportazione in un formato che si legge altrove.
+
+## Quando l'artefatto smette di essere generato
+
+Salita il 2026-10-26 da un progetto istanziato (L-014), e corregge il paragrafo precedente nel solo caso in cui vale. La regola «si rigenera invece di ritoccarsi a mano» presuppone un autore solo. Nel momento in cui il proprietario apre l'artefatto e lo modifica, quel file ha due autori e resta uno solo, e rigenerarlo cancella le sue revisioni in silenzio: il file esiste, ha la data giusta, e nessun errore segnala la perdita. È una corsa che la persona perde sempre, perché il generatore riscrive l'intero file mentre lei ne cambia tre frasi.
+
+Nel caso osservato un documento di decisione è stato generato, poi rivisto dal proprietario in un elaboratore di testi, poi rigenerato quattro volte per aggiungervi contenuto; le revisioni lette e trascritte una volta sono sopravvissute, quelle successive sono andate perdute e non erano recuperabili, perché la cartella non era né versionata né sincronizzata e il programma non aveva conservato una copia di salvataggio.
+
+Ne discendono tre prescrizioni. Un artefatto diventa del proprietario nel momento in cui lui lo modifica, e da quel momento si tocca **solo sul posto**, cambiando il singolo punto richiesto con uno strumento che fallisce rumorosamente se l'ancora non individua esattamente un elemento, e prendendo una copia di salvataggio prima. Finché l'artefatto resta generato, va detto esplicitamente che rigenerarlo cancella le modifiche a mano, e va scritto nell'artefatto stesso, perché chi lo apre non ha modo di dedurlo. E se servono davvero entrambe le vie, la sorgente e l'uscita sono due file distinti con nomi diversi: il generatore produce, la persona rivede sulla sorgente o su una copia che nessuno sovrascrive.
+
+Quando un'uscita secondaria si ricava da un artefatto diventato del proprietario, per esempio una pagina web dal documento che lui edita, la si genera **da quell'artefatto** e non dalla sorgente parallela, altrimenti le due divergono alla prima revisione.

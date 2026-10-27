@@ -159,4 +159,26 @@ Il `CLAUDE.md` modello nomina la skill fra le norme caricate su richiesta con la
 
 Le applicazioni restano esterne e si installano a parte, con lo strumento stesso o con il launcher ufficiale. La prova dal vivo si salta da sé dove EffectCraft non è installato, così che la suite resti verde anche su una macchina che non ha la suite.
 
+## Il report condivisibile, e le cinque cose che si verificano prima di consegnarlo
+
+Un documento che esce dal repository, cioè una consegna a un collaboratore o una relazione per la direzione, ha un lettore diverso dalla documentazione interna e merita il design dell'organizzazione invece dello stile tecnico privato. La catena è quella ordinaria, cioè sorgente in Markdown e conversione con `craft-documento.py`, con un file di stile che lega il design system del progetto alla conversione; il modello da copiare è `stili/aziendale-design-system.esempio.json`, che si rinomina e si riempie con i valori veri del design system e non con ciò che somiglia al marchio.
+
+Due scelte di collocazione valgono sempre. Il file di stile resta tracciato, perché contiene scelte tipografiche e nessun valore reale, e serve a rigenerare l'artefatto invece di ritoccarlo. La sorgente Markdown invece segue il proprio contenuto: se porta indirizzi, utenze, percorsi o qualunque dato che il repository non pubblicherebbe, vive nel livello privato, e il documento stesso lo dichiara in testa insieme al divieto di allegarlo a comunicazioni verso terzi.
+
+Il formato si sceglie dal lettore e non dall'abitudine. Il `.docx` è preferibile quando chi riceve deve navigare un documento lungo, perché le intestazioni Markdown diventano stili di titolo e popolano il riquadro di spostamento; il PDF è preferibile quando il documento non deve essere modificato. Entrambi escono dalla stessa sorgente.
+
+Prima di consegnare si verificano cinque cose, e nessuna si può dare per fatta dal codice di uscita della conversione, che è zero anche quando l'applicazione ha ignorato in silenzio ciò che le si chiedeva.
+
+Primo, i font: vanno installati sulla macchina che costruisce, altrimenti la catena non fallisce ma sostituisce, e il documento esce con una tipografia che non è quella del marchio. Si elencano i font installati e si confrontano con i nomi scritti nel file di stile.
+
+Secondo, gli stili sui byte dell'archivio e non a video: in un `.docx` si apre `word/document.xml` e si contano i paragrafi con stile di titolo, perché sono quelli che popolano il riquadro di spostamento, e si cerca in `word/styles.xml` che i nomi dei font e i colori ci siano davvero.
+
+Terzo, l'artefatto reso a immagine e guardato, almeno la prima pagina e una pagina interna con una tabella. È il controllo che trova gli errori di impaginazione che nessun controllo testuale vede.
+
+Quarto, la tipografia della lingua: sulla sorgente si passano il correttore degli accenti e, se il pacchetto c'è, il linter della prosa, perché un documento che esce porta il nome dell'organizzazione e un accento scritto con l'apostrofo si vede.
+
+Quinto, le affermazioni che il documento fa su se stesso. Se una tabella delle fonti dichiara che una fonte non è stata letta, il documento non è pronto: o la si legge, o la si toglie. Vale in generale per ogni riserva che il testo contiene su se stesso.
+
+Un limite noto al momento della scrittura, da ricontrollare quando l'applicazione avanza: WordCraft 0.8.0 non incorpora le immagini Markdown nella conversione, né con percorso relativo né con percorso assoluto, e al loro posto rende il testo alternativo. Un logo si ottiene quindi per altra via, oppure si rinuncia e si mette una testatina testuale dichiarata, invece di lasciare nella sorgente un riferimento che non produce nulla.
+
 [^1]: *MCP*, Model Context Protocol - standard che permette a un client di intelligenza artificiale di parlare con sistemi esterni attraverso un'interfaccia comune; ogni server MCP espone strumenti, risorse e prompt che diventano disponibili all'agente.

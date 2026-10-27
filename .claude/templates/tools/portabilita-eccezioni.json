@@ -1,0 +1,26 @@
+{
+  "_perche": "Le capacita' che esistono in una forma sola e che vanno bene cosi'. Ogni voce porta la propria ragione, perche' una forma singola senza ragione scritta non si distingue da una dimenticanza, e un rilievo che ricompare a ogni giro senza essere ne' risolto ne' dichiarato insegna a ignorare il controllo. La chiave e' il percorso, o una sua porzione che lo identifichi.",
+  "forme-singole": {
+    "veeam-linux/": "Il pacchetto automatizza un prodotto che gira su Linux: una forma PowerShell non avrebbe oggetto.",
+    "cyber-lab/": "Il laboratorio si allestisce su macchine Linux; gli script agiscono sul sistema che stanno configurando.",
+    "llm-local/tools/bench-colibri.sh": "Misura su runtime Linux.",
+    "llm-local/tools/rileva.sh": "Coppia con Rileva-ModelloLocale.ps1: le due forme esistono entrambe, con nomi diversi, e il confronto per nome non le riconosce.",
+    "llm-local/tools/rileva-modellolocale.ps1": "Coppia con rileva.sh, vedi sopra.",
+    "llm-local/llm-local.valori.esempio.sh": "File di valori da includere, non uno script.",
+    "cyber-lab/cyber-lab.valori.esempio.sh": "File di valori da includere, non uno script.",
+    "veeam-linux/valori.example.sh": "File di valori da includere, non uno script.",
+    "agent-catalog/": "Gli strumenti interrogano cataloghi remoti con curl e jq, disponibili su entrambi i sistemi dalla stessa shell.",
+    "automation-starter/tools/headless-run.sh": "Avvio non interattivo pensato per ambienti di integrazione, che sono Linux.",
+    "tools/installa-chiudi.sh": "Installatore della controparte Linux di chiudi: la forma Windows e' l'altra meta' della coppia, non un gemello di questo file."
+  },
+  "_debito": "Qui sotto stanno le capacita' che dovrebbero esistere su entrambi i sistemi e che oggi esistono su uno solo. Non sono eccezioni: sono lavoro da fare, gia' guardato e misurato. Si tengono separate dalle dimenticanze perche' quindici avvisi identici a ogni giro spengono il controllo, e si tengono fuori dalle eccezioni perche' dichiararle legittime toglierebbe il motivo di portarle.",
+  "debito-noto": {
+    "tools/allinea-tutti.ps1": "Propaga il template ai progetti istanziati. Senza una forma Linux il template non si usa fuori da Windows: e' il primo da portare. Porta anche radici predefinite legate a lettere di unita'.",
+    "tools/chiudi-allineamento.ps1": "Chiude la passata di allineamento. Coppia del precedente, va portato con lui.",
+    "tools/trasporto-ssh.ps1": "Trasporto verso le macchine remote del registro di allineamento.",
+    "tools/latest-screenshot.ps1": "Restituisce l'ultimo screenshot catturato. La regola sugli screenshot nomina gia' gli strumenti Linux equivalenti, manca l'attuazione.",
+    "tools/tests/test-wipe-per-sessione.ps1": "Ha gia' un gemello Python per Linux con nome diverso, test_wipe_per_sessione_linux.py: da unificare, non da riscrivere.",
+    "lavoro-a-lotti/tools/esegui-lotti.ps1": "Esecuzione del lavoro a lotti.",
+    "agenti-terminale/": "Il README del pacchetto dichiara gia' che la gestione multi-account su Linux resta da portare e da provare. Sette strumenti."
+  }
+}

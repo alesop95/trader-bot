@@ -154,6 +154,125 @@
     "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md"
   },
   {
+    "progetto": "my-wedding-day",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una prova senza finestra non ha le barre di scorrimento"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-012",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione, e il suo gruppo ha più regole"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-013",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione (eccezioni osservate sul sistema vero)"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-014",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/git-commands-format.md, sezione Milestone: la sequenza consegnata a mano si simula"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-015",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/chat-non-e-memoria.md, sezione Il presidio: l'orario lo scrive la macchina"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-016",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/interaction-style.md, Convenzioni tipografiche: la forma sbagliata fra apici inversi"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-017",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di misura fa ciò che il suo nome promette"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-018",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Prima di correggere la risposta di un modulo a una domanda comune"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-019",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione (la sonda su tutta la suite)"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-020",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "PROJECT-SYSTEM.md, sezione 18: la finestra autonoma dura fino all'ora"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-021",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una copertura indiretta si dichiara dopo averla misurata"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-022",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "templates/fix-typography/README.md, Il limite sui sorgenti: il passo fatto con il parser"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-023",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di misura fa ciò che il suo nome promette; templates/fix-typography/README.md"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-024",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "PROJECT-SYSTEM.md, sezione 17 (il converso del presidio); rules/interaction-style.md, lint-md-tables si lancia a mano"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-025",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un'eccezione all'analisi statica senza la sua ragione"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-026",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di mutazione passa prima sul caso intatto"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-027",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un tema che segue il sistema si misura in tutte le sue varianti"
+  },
+  {
     "progetto": "network-design",
     "id": "L-001",
     "commit": "",
@@ -222,5 +341,47 @@
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/identita-git/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/recupero-dei-fatti.md e norme/recupero-dei-fatti.md: si cerca il token su tutto il corpus, i dati strutturati entrano nella ricerca, e fra due file tracciati la registrazione di una misura batte il racconto"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-012",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "templates/vps-baseline/: README e tools/baseline-vps.sh, il presupposto dell'immagine del fornitore e l'ordine dei passi; riga nel catalogo PACKAGES.md, settore Macchine e continuita' operativa"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-013",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md: il ripiego di un comando che richiede elevazione coincide con il valore che segnala l'assenza del problema, quindi la disponibilita' dei permessi si accerta prima e decide cosa lo strumento ha diritto di affermare"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-014",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/craft-apps/SKILL.md: un artefatto toccato da una persona non si rigenera piu', si modifica sul posto; riconciliata la frase che prescriveva la rigenerazione"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-015",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "templates/vps-baseline/README.md, sezione Tre cose diverse che tutti chiamano backup: istantanea del pannello, riproducibilita' della macchina e salvataggio dei dati, tre parole diverse e tre voci separate"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-016",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "templates/tools/lint-md-tables.py: bersagli() risolve il relativo sulla cartella corrente e poi sulla radice, si ferma sui percorsi inesistenti, e il self-test ne prova la guardia (16 casi)"
   }
 ]

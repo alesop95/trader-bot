@@ -74,6 +74,7 @@ SEMPRE_ATTIVE = {
     "regola:git-commands-format": "forma dei comandi consegnati all'utente, vale in ogni progetto",
     "regola:documenti-personali": "documenti personali mai letti senza richiesta espressa, vale in ogni progetto",
     "regola:interaction-style": "stile di documentazione e interazione, vale in ogni progetto",
+    "regola:recupero-dei-fatti": "dove si cerca un fatto prima di affermarlo, e quale artefatto si crede fra due che si contraddicono: vale in ogni progetto che affermi qualcosa sul sistema su cui lavora",
     "regola:manual-screenshots": "riscontro visivo dei passi manuali, vale in ogni progetto",
     "regola:security-permissions": "modalità di permesso e sandbox, vale in ogni sessione",
     "regola:token-economy": "economia del contesto, vale in ogni sessione",

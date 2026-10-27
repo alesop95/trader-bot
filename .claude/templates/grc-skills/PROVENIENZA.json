@@ -1,0 +1,29 @@
+{
+  "repository": "github:Sushegaad/Claude-Skills-Governance-Risk-and-Compliance",
+  "licenza": "MIT",
+  "tag": "v2.1.0",
+  "commit": "c5c0d4b9a40176d8534f3253a260efd7347b25cc",
+  "copiata": "2026-10-27",
+  "skill": [
+    "iso27001",
+    "nis2",
+    "gdpr-compliance",
+    "iso27701",
+    "tprm",
+    "nist-csf",
+    "cis-controls",
+    "iso42001",
+    "eu-ai-act"
+  ],
+  "ultima_verifica_a_monte": {
+    "iso27001": "2026-10-03",
+    "nis2": "2026-09-05",
+    "gdpr-compliance": "2026-10-03",
+    "iso27701": "2026-10-03",
+    "tprm": "2026-09-14",
+    "nist-csf": "2026-09-05",
+    "cis-controls": "2026-10-03",
+    "iso42001": "2026-10-03",
+    "eu-ai-act": "2026-08-15"
+  }
+}

@@ -171,15 +171,24 @@ def leggi_remoto(prj: str, rel: str) -> str | None:
         # -n e stdin chiuso: lanciato da un terminale interattivo, ssh ereditava la console e
         # restava in attesa sullo standard input, e con lui tutta la chiusura.
         r = subprocess.run(["ssh", "-n", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", m.group(1),
-                            "cat '" + m.group(2).rstrip("/") + "/" + rel + "' 2>/dev/null"],
+                            "test -f '" + m.group(2).rstrip("/") + "/" + rel
+                            + "' && cat '" + m.group(2).rstrip("/") + "/" + rel + "'"],
                            capture_output=True, text=True, encoding="utf-8", errors="replace",
                            stdin=subprocess.DEVNULL, timeout=25)
-    except subprocess.TimeoutExpired:
+    except (subprocess.TimeoutExpired, OSError):
         return None
-    return r.stdout if r.returncode == 0 else ""
+    # Un registro assente e una lettura fallita non sono la stessa cosa: il primo dice
+    # che quel progetto non deve niente, la seconda che non lo sappiamo. Prima di questa
+    # distinzione entrambi i casi restituivano la stringa vuota, e un progetto spento si
+    # leggeva nel rapporto come un progetto in pari.
+    if r.returncode == 0:
+        return r.stdout
+    if "No such file" in (r.stderr or "") or r.returncode == 1:
+        return ""   # raggiunto, nessun registro: debito zero accertato
+    return None     # non raggiunto: debito ignoto
 
 
-def cmd_raccogli(template: Path, solo_locali: bool = False) -> int:
+def cmd_raccogli(template: Path, solo_locali: bool = False, compatto: bool = False) -> int:
     reg = template / "_notes" / "allineamento" / "registro.json"
     if not reg.is_file():
         print("lezioni-template: registro di allinea-tutti assente, nessun elenco di progetti")
@@ -188,14 +197,19 @@ def cmd_raccogli(template: Path, solo_locali: bool = False) -> int:
     if solo_locali:
         progetti = [p for p in progetti if not p.startswith("ssh://")]
     recepite = leggi_recepite(template)
-    totale, con_debito, irraggiungibili = 0, 0, []
+    totale, con_debito, irraggiungibili, prima_voce = 0, 0, [], []
     for prj in progetti:
         if prj.startswith("ssh://"):
             testo = leggi_remoto(prj, REGISTRO.as_posix())
             nome = prj.rstrip("/").rsplit("/", 1)[-1]
         else:
             f = Path(prj) / REGISTRO
-            testo = f.read_text(encoding="utf-8") if f.is_file() else ""
+            if not Path(prj).is_dir():
+                testo = None          # radice sparita: debito ignoto, non debito zero
+            elif f.is_file():
+                testo = f.read_text(encoding="utf-8")
+            else:
+                testo = ""            # progetto presente senza registro: debito zero
             nome = Path(prj).name
         if testo is None:
             irraggiungibili.append(prj)
@@ -204,15 +218,43 @@ def cmd_raccogli(template: Path, solo_locali: bool = False) -> int:
         aperte = [v for v in leggi_voci(testo) if v["id"] not in chiuse]
         if aperte:
             con_debito += 1
-            print("%s  (%s)" % (nome, prj))
-            for v in aperte:
-                print("  %s del %s: %s" % (v["id"], v["data"], v["titolo"]))
+            prima_voce.append((min(v["data"] for v in aperte), nome, aperte[0]))
+            if not compatto:
+                print("%s  (%s)" % (nome, prj))
+                for v in aperte:
+                    print("  %s del %s: %s" % (v["id"], v["data"], v["titolo"]))
             totale += len(aperte)
-    print("\nlezioni aperte verso il template: %d in %d progetti su %d" % (totale, con_debito, len(progetti)))
+    letti = len(progetti) - len(irraggiungibili)
+    print("\nlezioni aperte verso il template: %d in %d progetti su %d letti" % (totale, con_debito, letti))
+    if irraggiungibili:
+        # Un progetto non letto non ha zero lezioni aperte: ne ha un numero che questo
+        # giro non ha potuto contare. Prima queste righe non esistevano e il rapporto si
+        # leggeva come completo anche quando meta' dei progetti non aveva risposto.
+        print("\n%d progetti NON LETTI, il cui debito resta ignoto:" % len(irraggiungibili))
+        for prj in irraggiungibili:
+            print("  %s" % prj)
+        print("Si rilancia quando tornano raggiungibili: finche' non lo sono, il totale qui")
+        print("sopra e' un minimo e non una misura.")
+    # Un elenco non e' un'istruzione. All'apertura di sessione serve sapere che cosa fare
+    # adesso, con il comando scritto per esteso: senza, il debito resta visibile e fermo.
     if totale:
-        print("Prima di una funzionalità nuova si recepiscono: si legge la voce nel registro del progetto,")
-        print("la si porta nel template se passa le due domande della sezione 16, e la si chiude con `recepisci`.")
-    return 0
+        data, prog, voce = sorted(prima_voce)[0]
+        print("\nPROSSIMO PASSO, prima di qualunque funzionalita' nuova:")
+        print("  1. leggere la voce piu' vecchia, %s del %s nel progetto %s," % (voce["id"], data, prog))
+        print("     cioe' \"%s\"," % voce["titolo"])
+        print("     dentro il file %s di quel progetto;" % REGISTRO.as_posix())
+        print("  2. decidere se passa le due domande della sezione 16 di .claude/PROJECT-SYSTEM.md,")
+        print("     cioe' se resta vera tolti i nomi propri e se non e' gia' nella testa di chi lavora bene;")
+        print("  3. se passa, attuarla qui nel template, dove la lezione diventa codice o norma;")
+        print("  4. chiuderla con:")
+        print("     python .claude/templates/tools/lezioni-template.py recepisci %s %s --dove \"<file toccato>\""
+              % (prog, voce["id"]))
+        print("  5. propagarla ai progetti con la passata di allineamento.")
+        print("  Se non passa le due domande si chiude lo stesso, dichiarando nel campo `dove` perche' no:")
+        print("  una lezione scartata senza motivo scritto torna identica fra un mese.")
+    else:
+        print("\nNessuna lezione da recepire: niente da fare su questo fronte.")
+    return 1 if irraggiungibili else 0
 
 
 def cmd_recepisci(template: Path, progetto: str, ident: str, commit: str, dove: str) -> None:
@@ -300,6 +342,8 @@ def main(argv=None) -> int:
     prc = sub.add_parser("raccogli", help="nel template: le lezioni aperte di tutti i progetti")
     prc.add_argument("--solo-locali", action="store_true", dest="solo_locali",
                      help="senza le macchine via SSH, per i controlli che devono restare veloci")
+    prc.add_argument("--hook", action="store_true",
+                     help="forma compatta per l'apertura di sessione: non blocca mai")
     pr = sub.add_parser("recepisci", help="nel template: chiude una lezione recepita")
     pr.add_argument("progetto")
     pr.add_argument("id")
@@ -319,7 +363,11 @@ def main(argv=None) -> int:
     if a.comando == "controlla":
         return cmd_controlla(radice, a.rigoroso)
     if a.comando == "raccogli":
-        return cmd_raccogli(radice, a.solo_locali)
+        esito = cmd_raccogli(radice, a.solo_locali, compatto=a.hook)
+        # All'apertura di sessione il debito va mostrato, mai imposto: un controllo che
+        # blocca l'avvio viene disattivato alla seconda volta che da' fastidio, e da quel
+        # momento non protegge piu' niente. Rumoroso e non bloccante, come gli altri.
+        return 0 if a.hook else esito
     if a.comando == "recepisci":
         cmd_recepisci(radice, a.progetto, a.id, a.commit, a.dove)
         print("recepita %s %s" % (a.progetto, a.id))

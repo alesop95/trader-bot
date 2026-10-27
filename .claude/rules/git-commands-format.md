@@ -62,6 +62,8 @@ Prima di proporre `chiudi`, l'agente esegue lui stesso i controlli di chiusura c
 
 La granularità dei commit e il momento del push sono scelte distinte: più milestone locali restano commit separati e possono partire con un unico push concordato. Quando si importa lavoro pregresso privo di storia Git, si legge la procedura «Importazione retrospettiva» nel riferimento esteso: date reali, perimetro e impronte per gruppo, ripresa dalla storia effettiva e pubblicazione soltanto dopo la riconciliazione. Prima di proporre una chiusura si verifica che lo script supporti il perimetro richiesto e il rinvio del push; la chiusura ordinaria non li acquisisce dalla sola prosa.
 
+Una sequenza di più commit consegnata a mano si simula prima, commit per commit, su una copia di HEAD fuori dal repository: un commit intermedio può non compilare (dettaglio nel riferimento esteso, L-014).
+
 Quando un sottoprogetto mantiene storia e rilascio indipendenti, si valuta il submodule con la procedura nel riferimento esteso: versione fissata, identità e controlli separati, pubblicazione del figlio prima del riferimento nel padre. Non si applica una chiusura globale ai due repository senza verificarne i perimetri.
 
 I comandi git per esteso, nel formato descritto sopra, restano per i casi che `chiudi` non copre: un progetto dove lo script non è istanziato, un commit che deve includere solo una parte delle modifiche presenti, un'operazione diversa dal commit sul ramo in uscita.
