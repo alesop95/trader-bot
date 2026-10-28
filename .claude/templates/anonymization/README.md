@@ -42,7 +42,7 @@ Chi adotta entrambi tenga presente anche il caveat che `secret-scan` dichiara di
 
 Nel progetto vanno tre cose, e la terza è quella che si dimentica.
 
-Lo strumento `tools/Test-Anonymization.py` va in `tools/`, oppure in `scripts/` se il progetto usa quella convenzione. La regola `rules/anonymization.md` va in `.claude/rules/anonymization.md`, sostituendo i segnaposto tra parentesi angolari, e va dichiarata fra le regole da caricare sempre nel `CLAUDE.md` del progetto: senza il criterio, lo strumento è un elenco di riscontri che nessuno sa come giudicare.
+Lo strumento `tools/Test-Anonymization.py` va in `tools/`, oppure in `scripts/` se il progetto usa quella convenzione. La regola `rules/anonymization.md` va in `.claude/rules/anonymization.md`, sostituendo i segnaposto tra parentesi angolari, e va dichiarata fra le regole da caricare sempre nel `CLAUDE.md` del progetto. La norma `norme/anonymization.md`, che raccoglie i casi osservati, va in `.claude/norme/anonymization.md` e non si carica all'avvio: senza il criterio, lo strumento è un elenco di riscontri che nessuno sa come giudicare.
 
 Il terzo file è quello che non si versiona. Si copia `patterns.example.json` nel layer privato del progetto, per default `_notes/.anonymization-patterns.json`, e si sostituisce ogni valore con quelli veri. Va verificato che il percorso sia effettivamente ignorato da git prima di scrivervi dentro il primo valore reale, e non dopo: è l'unico passo dell'istanziazione in cui un errore si paga con la storia git.
 
