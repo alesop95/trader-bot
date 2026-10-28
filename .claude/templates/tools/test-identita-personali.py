@@ -236,7 +236,9 @@ def strumento_disallineato(radice: Path) -> str:
         suo = (tpl / ".claude" / "templates" / "tools" / QUESTO).resolve()
         if suo == mio or not suo.is_file():
             return ""
-        if hashlib.sha256(suo.read_bytes()).hexdigest() != hashlib.sha256(mio.read_bytes()).hexdigest():
+        suo_bytes = suo.read_bytes().replace(b"\r\n", b"\n")
+        mio_bytes = mio.read_bytes().replace(b"\r\n", b"\n")
+        if hashlib.sha256(suo_bytes).digest() != hashlib.sha256(mio_bytes).digest():
             return "AVVISO: questa copia del controllo e' diversa da quella del template; allineare il progetto"
     except OSError:
         pass

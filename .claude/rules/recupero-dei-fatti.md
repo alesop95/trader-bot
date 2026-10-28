@@ -22,7 +22,7 @@ Dove il progetto ha una regola sulle fonti, quella distingue il repository dal m
 
 ## Quando il fatto va cercato in un guasto
 
-Un'indagine su qualcosa che non funziona e' lo stesso problema visto da vicino, e sbaglia in sei modi che si riconoscono prima di commetterli: la premessa ricevuta e mai verificata, il dato ambiguo letto dentro l'ipotesi corrente, il silenzio di un registro scambiato per assenza del fatto, due cause ordinate per plausibilita' invece che da un testimone, la domanda posta a chi fallisce invece che a chi detiene la risorsa, e la scadenza di un tempo massimo scambiata per una risposta. Ciascuno con il caso che l'ha prodotto sta nel riferimento della skill `prove-che-misurano`, che si carica quando si indaga un guasto; qui resta il fatto che sono sei e che hanno un nome, perche' un rimando a una cosa senza nome non si segue.
+Un'indagine su qualcosa che non funziona è lo stesso problema visto da vicino, e sbaglia in sei modi che si riconoscono prima di commetterli: la premessa ricevuta e mai verificata, il dato ambiguo letto dentro l'ipotesi corrente, il silenzio di un registro scambiato per assenza del fatto, due cause ordinate per plausibilità invece che da un testimone, la domanda posta a chi fallisce invece che a chi detiene la risorsa, e la scadenza di un tempo massimo scambiata per una risposta. Ciascuno con il caso che l'ha prodotto sta nel riferimento della skill `prove-che-misurano`, che si carica quando si indaga un guasto; qui resta il fatto che sono sei e che hanno un nome, perché un rimando a una cosa senza nome non si segue.
 
 ## Il presidio
 

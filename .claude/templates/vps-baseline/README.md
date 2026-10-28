@@ -2,7 +2,7 @@
 
 > Pacchetto opzionale. Porta una macchina noleggiata da un fornitore cloud dallo stato in cui arriva allo stato da cui si può rilasciare, e lo verifica. Nasce il 2026-10-26 dalla risalita di due lezioni di un progetto istanziato (L-012 e L-015), dove la procedura è stata percorsa per intero su una macchina reale.
 
-<!-- readme-summary: baseline di una macchina noleggiata da un fornitore cloud, verificata prima che applicata, con il presupposto dell'immagine del fornitore e le tre cose che si chiamano backup -->
+<!-- readme-summary: baseline di una macchina noleggiata da un fornitore cloud, verificata prima che applicata, con il presupposto dell'immagine del fornitore e le tre cose che si chiamano backup, più il seguito del ciclo di vita: la versione che si adotta, l'immagine fissata per impronta, la disdetta che tocca ogni nome -->
 
 ## Che cosa contiene
 
@@ -51,6 +51,16 @@ Si chiude poi la via parallela, si restringe il filtro, e si riavvia. Il riavvio
 ## I tre esiti dello strumento
 
 Lo strumento restituisce conforme, non conforme e **non verificabile**, e il terzo pesa sull'esito complessivo come il secondo. La ragione sta in un difetto che lo strumento stesso ha avuto nella prima stesura: i comandi che richiedono elevazione fallivano in silenzio quando l'elevazione non c'era, e il loro ripiego coincideva con il valore che segnala l'assenza del problema. La prima esecuzione riportò tre voci in regola e quattro fuori regola, e tutte e sette erano fittizie. La disponibilità dei permessi si accerta perciò una volta sola all'inizio e decide che cosa lo strumento ha il diritto di affermare.
+
+## Dopo la baseline: la versione che si adotta, l'immagine che si fissa, la disdetta che si prepara
+
+Tre lezioni salite il 2026-10-28 dallo stesso progetto istanziato (L-020, L-021, L-022) estendono questo pacchetto oltre l'arrivo della macchina, perché riguardano il tenerla e il lasciarla, e sono tutte e tre casi in cui la cosa ovvia è quella sbagliata.
+
+La versione correttiva non è la prima indicata come corretta. Un censimento di vulnerabilità risponde alla domanda da quale versione il difetto è chiuso, non a quale versione conviene installare: nel caso osservato un aggiornamento di sicurezza è andato in produzione alla prima versione corretta mentre il registro dei pacchetti ne aveva già due successive, con altre correzioni dentro. Prima di fissare la versione si legge quindi l'etichetta di rilascio corrente del registro e la data delle versioni successive, e si sceglie l'ultima compatibile con i vincoli dichiarati del progetto, verificando l'intervallo ammesso dalle dipendenze che la vincolano.
+
+Un'etichetta d'immagine è mobile anche quando sembra fissa. In un descrittore di contenitori di produzione con etichette come la major di una banca dati o una variante alpine, l'etichetta di versione esatta sul registro pubblico era già stata ricostruita e puntava a un'immagine diversa da quella in esercizio, a parità di numero di versione: anche un'etichetta completa non identifica un contenuto. In produzione l'immagine si scrive quindi come etichetta più impronta, presa da quella in esercizio dopo averne confrontato l'impronta, e si aggiorna di proposito cambiando entrambe. Nello stesso descrittore si mette la rotazione dei registri, che il formato predefinito del motore non fa e che altrimenti nessuno si accorge di non avere finché il disco non si riempie.
+
+Una disdetta dell'hosting tocca ogni nome che oggi risponde da quella macchina, non solo il sito. Preparando la disdetta di uno spazio web con il DNS che restava al fornitore sono emersi, in tempi diversi, un sottodominio creato sul pannello e dimenticato, e un dominio secondario il cui rimando al principale lo faceva il server dell'hosting e non il DNS: entrambi sarebbero rimasti a puntare a una macchina non più nostra, e il secondo non era visibile da nessuna zona DNS. Prima di una disdetta si interrogano quindi tutti i nomi delle zone coinvolte, compresi gli altri domini dello stesso titolare, e per ciascuno si annota se risponde o rimanda dall'hosting; ogni nome così trovato ottiene una destinazione o viene tolto nello stesso messaggio del passaggio, e il nome canonico, con o senza il prefisso www, si misura invece di presumerlo e si conserva.
 
 ## Che cosa questa baseline non copre
 

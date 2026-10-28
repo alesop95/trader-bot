@@ -476,6 +476,48 @@
     "dove": ".claude/templates/anonymization/rules/anonymization.md, stessa sezione: un verde misura i pattern e non il repository; audit per categorie, residui riprovati, voci brevi fuori dai pattern"
   },
   {
+    "progetto": "network-design",
+    "id": "L-019",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/alberi-di-lavoro/RIFERIMENTO.md: Prima di cancellare un ramo o un albero, si legge la sua cartella"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-020",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/vps-baseline/README.md, sezione Dopo la baseline: il censimento dice da quale versione il difetto e chiuso, non quale conviene installare"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-021",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/vps-baseline/README.md, stessa sezione: etichetta piu impronta in produzione, e la rotazione dei registri nello stesso descrittore"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-022",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/vps-baseline/README.md, stessa sezione: si interrogano tutti i nomi delle zone, compresi i domini dello stesso titolare, e il rimando fatto dal server non si vede nel DNS"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-023",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una misura che fallisce subito dopo che hai cambiato il modo di misurare si sospetta per prima"
+  },
+  {
+    "progetto": "scenia®",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "docs/proposta-tracciamento-esecuzioni.md, committato in d36db37 e in lavorazione: la lezione chiedeva al template di poter PROPORRE uno strumento riutilizzabile per tracciare il lavoro da terminale, non di averlo gia; quel documento e' esattamente quella proposta, con il contratto che separa autorizzazione, comando, trasporto, verifica dello stato e conclusione consentita. Si chiude qui: quando il pacchetto nascera sara una funzionalita nuova, non questa lezione"
+  },
+  {
     "progetto": "windows-status",
     "id": "L-001",
     "commit": "",
