@@ -19,3 +19,19 @@ Il terzo caso aggiunge la distinzione che la regola sulle classi di fonti non co
 ## La misura del costo
 
 Nella stessa giornata il proprietario ha fermato tre conclusioni sbagliate. Due di esse avrebbero prodotto un'azione: una domanda inutile a un fornitore, e una regola di filtro applicata su un presupposto falso che in caso di guasto della linea principale avrebbe tolto l'accesso amministrativo a una macchina esposta, proprio mentre la rete era già in avaria.
+
+## I sei modi dell'indagine, e dove sono stati misurati
+
+I casi che hanno prodotto la sezione sull'indagine vengono da due progetti istanziati e sono di ottobre 2026. Si riportano qui con le misure, perché la sezione della regola tiene la prescrizione e non l'episodio.
+
+La premessa ricevuta: un'indagine durata tre giorni, condotta da due agenti che si correggevano a vicenda, poggiava su una frase dell'utente mai verificata, cioè che un certo materiale stesse su un certo supporto. Era falsa. Il sistema operativo conservava l'etichetta di ogni supporto mai montato in una chiave di registro leggibile in sola lettura anche a dispositivo scollegato, e la verifica costava una interrogazione sola.
+
+Il dato ambiguo: su nove errori dichiarati da due sessioni indipendenti sullo stesso guasto, la maggioranza aveva la stessa forma, cioè un dato ambiguo interpretato dentro l'ipotesi già in testa invece che confrontato con le altre che lo spiegherebbero altrettanto bene. Due esempi dalla stessa indagine: un volume a zero byte letto come traccia fantasma del programma sotto esame era il supporto guasto, e un errore attribuito a un dispositivo per il suo numero di disco era di un altro, perché quel numero si riusa quando un supporto viene staccato.
+
+Il silenzio di un registro: il log di installazione dei dispositivi registra installazioni e rimozioni, ma non lo scollegamento fisico di un dispositivo già installato, che il sottosistema gestisce senza lasciare righe. Chi lo interrogava per datare una rimozione trovava silenzio e lo leggeva come assenza del fatto.
+
+Le due cause: due sessioni hanno agito sullo stesso guasto nello stesso minuto, un distacco fisico e una modifica al registro, ed entrambe si attribuivano lo sblocco. A ordinarle è stato un terzo evento indipendente datato al millisecondo, che cadeva fra le due.
+
+La contesa: per mezza giornata l'indagine ha chiesto perché un programma non ottenesse la risorsa che chiedeva, e la risposta stava in chi la teneva e non la rilasciava.
+
+La scadenza: tre chiamate di inventario del sottosistema di archiviazione non hanno un tempo massimo proprio e, per rispondere, enumerano tutti i dispositivi; un solo dispositivo guasto le blocca per sempre anche quando con la domanda non c'entra niente. Uno script che le usava in una guardia non è fallito, si è fermato: quarantadue minuti con zero CPU, zero I/O, nessuna riga di log e nessun codice di uscita, e l'unico modo di accorgersene era guardare l'elenco dei processi.

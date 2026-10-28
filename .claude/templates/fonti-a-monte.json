@@ -86,9 +86,9 @@
       "via": "github:github/github-mcp-server",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "v2.0.2",
+      "verificato": "v2.0.3",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "docker:lfoppiano/grobid",
@@ -107,8 +107,8 @@
       "ruolo": "scouting",
       "motivo": "Feed Atom di opensourceprojects.dev, l'unica fonte di scouting registrata: dice quali repository la fonte ha segnalato dopo l'ultimo passaggio.",
       "controllo": "versione",
-      "verificato": "2026-10-21T00:50:02Z",
-      "data": "2026-10-21"
+      "verificato": "2026-10-28T01:53:08Z",
+      "data": "2026-10-28"
     },
     {
       "id": "gist:karpathy/442a6bf555914893e9891c11519de94f",
@@ -193,9 +193,9 @@
       "motivo": "GitHub Action con cui il workflow d'esempio di md-unwrap installa Python per la verifica della convenzione in CI.",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v7.0.0",
+      "verificato": "v7.1.0",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:adamamer20/paper-search-mcp-openai",
@@ -226,9 +226,9 @@
       "motivo": "Banco di lavoro locale per la ricerca scientifica, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Domini scientifici»: maturità da verificare su un caso reale; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v1.0.1",
+      "verificato": "v1.0.5",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:akapet00/semantic-scholar-mcp",
@@ -303,9 +303,9 @@
       "motivo": "Gestore da terminale di sessioni di agenti, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Orchestrazione di agenti»: da confrontare con nimbalyst e psmux; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v1.16.30",
+      "verificato": "v1.16.34",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:aspi6246/Claude-Code-Skills-for-Academics",
@@ -357,9 +357,9 @@
       "motivo": "Annotazione visiva di piani e diff degli agenti, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Sviluppo, qualità e revisione»: da provare su un progetto reale; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v0.28.25",
+      "verificato": "v0.28.35",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:BehiSecc/awesome-claude-skills",
@@ -422,9 +422,9 @@
       "ruolo": "strumenti",
       "motivo": "Strumento a riga di comando per misurare il consumo di token per sessione e modello, baseline del settore economia del contesto e usato da Consumo-Agenti.ps1.",
       "controllo": "release",
-      "verificato": "v20.0.37",
+      "verificato": "v20.0.45",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:certifi/python-certifi",
@@ -433,9 +433,9 @@
       "scheda": "README.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "662df63d7906df66f1f07c0751a3dfe9da14d914",
+      "verificato": "c463746147ee894635ba5f67bab4bddff53abee2",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:cocoindex-io/cocoindex-code",
@@ -488,8 +488,8 @@
       "scheda": ".claude/templates/academic-researcher/INTEGRAZIONI-TOOL.md",
       "controllo": "release",
       "cartella": "",
-      "verificato": "v0.5.51",
-      "data": "2026-10-21",
+      "verificato": "v0.5.58",
+      "data": "2026-10-27",
       "ruolo": "strumenti",
       "licenza": "MIT"
     },
@@ -565,9 +565,9 @@
       "scheda": "README.md",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v0.5.6",
+      "verificato": "v0.5.7",
       "licenza": "AGPL-3.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:DeusData/codebase-memory-mcp",
@@ -621,9 +621,9 @@
       "scheda": ".claude/templates/doc-ingest/README.md",
       "ruolo": "librerie",
       "controllo": "release",
-      "verificato": "v2.141.0",
+      "verificato": "v2.143.1",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:dougwyu/claude-zotero-skills",
@@ -711,9 +711,9 @@
       "motivo": "Strumento esterno che trasforma codice e documenti in un grafo di conoscenza, consigliato dal catalogo con installazione via uv o pipx.",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v0.9.93",
+      "verificato": "v0.9.97",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:greenbone/openvas-scanner",
@@ -722,9 +722,9 @@
       "scheda": "README.md",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v23.52.3",
+      "verificato": "v23.52.6",
       "licenza": "GPL-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:grobidOrg/grobid",
@@ -756,9 +756,9 @@
       "motivo": "Elenco curato di plugin e skill per Codex, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Orchestrazione di agenti»: possibile seconda fonte di scouting; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "commit",
-      "verificato": "4fe80fd8c2c624f2eb35edbc24439de3386addfb",
+      "verificato": "2129dc6f3371afd9e6dcd64b8cfd56ad971450f7",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:headroomlabs-ai/headroom",
@@ -767,9 +767,9 @@
       "motivo": "Proxy locale esterno che comprime l'input dell'LLM, consigliato dal catalogo per le sessioni lunghe; installato con pip headroom-ai",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v0.41.0",
+      "verificato": "v0.42.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:heroku/12factor",
@@ -789,9 +789,9 @@
       "scheda": ".claude/templates/agent-catalog/commands/list-community-agents.md",
       "ruolo": "cataloghi",
       "controllo": "commit",
-      "verificato": "79847f3921824c452e4c195aa0f47d8f03ef324a",
+      "verificato": "e0351d1a1fa569ffe57ac1859ba5c100c848496f",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:Imbad0202/academic-research-skills",
@@ -800,9 +800,9 @@
       "scheda": ".claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v3.23.1",
+      "verificato": "v3.24.0",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:integralist/agent-skills",
@@ -811,8 +811,8 @@
       "ruolo": "candidati",
       "motivo": "Raccolta personale di skill senza licenza, segnalata nel thread del subreddit ClaudeAI del 2026-10-27: solo studio.",
       "controllo": "commit",
-      "verificato": "e7e0cccb9138910023547b05978cff445f6e6271",
-      "data": "2026-10-27"
+      "verificato": "8869589d3ca304988101e1115500646f18f236a4",
+      "data": "2026-10-28"
     },
     {
       "id": "github:InternScience/Awesome-Scientific-Skills",
@@ -832,9 +832,9 @@
       "motivo": "Alternativa community per pilotare NotebookLM, mai adottata; citata da notebooklm-bridge come possibile base di un fork proprio.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v0.15.6",
+      "verificato": "v0.15.8",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:jeremylongshore/tons-of-skills-marketplace",
@@ -843,9 +843,9 @@
       "motivo": "Candidato da rivalutare nel catalogo di agenti, con i volumi di skill dichiarati dal repository stesso; non integrato",
       "ruolo": "cataloghi",
       "controllo": "commit",
-      "verificato": "49811a252469a93bb74afb8f6b005edf305598f3",
+      "verificato": "ab85a061f7bcc039dac13ee193de7a4cd4388571",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:JonasBaath/mcp-refchecker",
@@ -942,8 +942,8 @@
       "scheda": ".claude/templates/PACKAGES.md",
       "controllo": "commit",
       "cartella": "SCANNING.md",
-      "verificato": "ed189b81e9e87429ef76cbe919a66d58e9bee976",
-      "data": "2026-10-21",
+      "verificato": "dc1c59c3978bc20fcd3b60b18bc89cf3429a3b32",
+      "data": "2026-10-27",
       "ruolo": "cataloghi",
       "licenza": "CC0-1.0"
     },
@@ -954,9 +954,9 @@
       "motivo": "Kanban che orchestra più agenti e apre pull request, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Orchestrazione di agenti»: AGPL-3.0, solo come strumento esterno; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v0.97.0",
+      "verificato": "v0.98.0",
       "licenza": "AGPL-3.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:kerim/zotero-code-execution",
@@ -976,9 +976,9 @@
       "ruolo": "candidati",
       "motivo": "Controllo che si interpone al push, candidato dal thread del subreddit ClaudeAI del 2026-10-27 come seconda barriera accanto a chiudi.",
       "controllo": "commit",
-      "verificato": "9982755297e65c81722b4e96572ea8b5e9e40d6f",
+      "verificato": "e758a76f58e2f36a902c119c8220625622ee0936",
       "licenza": "MIT",
-      "data": "2026-10-27"
+      "data": "2026-10-28"
     },
     {
       "id": "github:langfuse/langfuse",
@@ -987,9 +987,9 @@
       "motivo": "Tracciamento e misura dei costi di applicazioni LLM, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Economia del contesto»: richiede un servizio ospitato; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v4.66.0",
+      "verificato": "v4.71.0",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:Leonxlnx/imagegen-skills",
@@ -1009,8 +1009,8 @@
       "scheda": ".claude/templates/PACKAGES.md",
       "controllo": "release",
       "cartella": "",
-      "verificato": "v2.1.4",
-      "data": "2026-10-21",
+      "verificato": "v2.1.5",
+      "data": "2026-10-27",
       "ruolo": "skill-e-agenti",
       "licenza": "MIT"
     },
@@ -1076,8 +1076,8 @@
       "scheda": ".claude/templates/scientific-skills/MAPPA-SKILL-SCIENTIFICHE.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "98dd0357aa1e6b9fd87148234d34c129167bb1cb",
-      "data": "2026-10-21"
+      "verificato": "39b27ddaafe636f06776a2044b5df05d07648dc4",
+      "data": "2026-10-27"
     },
     {
       "id": "github:mattpocock/skills",
@@ -1109,9 +1109,9 @@
       "scheda": ".claude/templates/doc-ingest/README.md",
       "ruolo": "librerie",
       "controllo": "release",
-      "verificato": "v0.1.8",
+      "verificato": "v0.1.9",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:microsoft/playwright-mcp",
@@ -1131,9 +1131,9 @@
       "motivo": "Regole per agenti contro interfacce e testi generici, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Artefatti visivi»: omonimo e distinto dal pacchetto anti-slop; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v3.2.21",
+      "verificato": "v3.2.23",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:mksglu/context-mode",
@@ -1153,8 +1153,8 @@
       "scheda": ".claude/templates/rea/README.md",
       "controllo": "release",
       "cartella": "",
-      "verificato": "rea-agents-6.7.0",
-      "data": "2026-10-21",
+      "verificato": "rea-agents-6.8.0",
+      "data": "2026-10-27",
       "ruolo": "server-mcp",
       "licenza": "MIT"
     },
@@ -1208,9 +1208,9 @@
       "motivo": "Agent Netdata, fonte primaria iniziale della specifica del pacchetto linux-observability, ancora non rilasciato.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v2.12.1",
+      "verificato": "v2.12.2",
       "licenza": "GPL-3.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:nimbalyst/nimbalyst",
@@ -1224,15 +1224,15 @@
       "data": "2026-10-21"
     },
     {
-      "id": "github:nkapila6/mcp-local-rag",
-      "motivo": "Server MCP di ricerca web locale elencato nel documento di handoff di learning-agent come alternativa; il catalogo non lo adotta.",
+      "id": "github:nkapila6/mcpsurfr",
       "pacchetto": "learning-agent",
       "scheda": ".claude/templates/learning-agent/reference/learning-agent-handoff.md",
       "ruolo": "candidati",
+      "motivo": "Server MCP di ricerca web locale elencato nel documento di handoff di learning-agent come alternativa; il catalogo non lo adotta. Si chiamava nkapila6/mcp-local-rag fino alla release v1.1.0 del 2026-10-23: gli URL vecchi reindirizzano e il comando vecchio funziona ancora, e il documento di handoff, datato luglio 2026, porta i due nomi uno accanto all'altro.",
       "controllo": "release",
-      "verificato": "v1.0.4",
+      "verificato": "v1.1.1",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:olafgeibig/knowledge-mcp",
@@ -1252,9 +1252,9 @@
       "motivo": "Ambiente per agenti in sandbox con credenziali trattenute nel gateway, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Orchestrazione di agenti»: riferimento per l'isolamento dei segreti; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v2.14.0",
+      "verificato": "v2.16.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:ooples/token-optimizer-mcp",
@@ -1263,9 +1263,9 @@
       "scheda": "README.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "v7.5.1",
+      "verificato": "v7.7.1",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:openags/paper-search-mcp",
@@ -1297,8 +1297,8 @@
       "scheda": ".claude/templates/academic-researcher/INTEGRAZIONI-TOOL.md",
       "controllo": "commit",
       "cartella": "README.md",
-      "verificato": "9cc2f193e78daf1e788456cfe2cf5875646304f3",
-      "data": "2026-10-21",
+      "verificato": "1b83427a6c66a000a0b159eff676efa1f7e2f7b2",
+      "data": "2026-10-27",
       "ruolo": "server-mcp",
       "licenza": "MIT"
     },
@@ -1344,9 +1344,9 @@
       "scheda": ".claude/templates/scientific-skills/MAPPA-SKILL-SCIENTIFICHE.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "d9193d1d5b1132c46a5b53a9df63d992dc6de765",
+      "verificato": "528ba79ed4268ebf6fc4f3b8f9dff33749cdb11f",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:prettier/prettier",
@@ -1443,9 +1443,9 @@
       "scheda": ".claude/templates/PACKAGES.md",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v1.0.1",
+      "verificato": "v1.1.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:s4ntrx/Cybersecurity-Threats-Guide",
@@ -1454,9 +1454,9 @@
       "motivo": "Guida in sei categorie che il filone cybersecurity usa come indice di studio; gli script che toccano il sistema non sono stati eseguiti.",
       "ruolo": "fonti-di-norme",
       "controllo": "commit",
-      "verificato": "34c9097f8d40f573b8ff10612813424c6711d574",
+      "verificato": "96322f0c5c989d3a7598cd72817b5116cfa55edd",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:sourcebot-dev/sourcebot",
@@ -1465,9 +1465,9 @@
       "motivo": "Ricerca self-hosted su molti repository con citazioni, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Comprensione di una codebase»: utile fra i progetti istanziati; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v6.0.2",
+      "verificato": "v6.0.4",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:stanford-oval/storm",
@@ -1488,9 +1488,9 @@
       "controllo": "release",
       "cartella": "README.md",
       "ruolo": "strumenti",
-      "verificato": "v0.6.1",
+      "verificato": "v0.8.1",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:Sushegaad/Claude-Skills-Governance-Risk-and-Compliance",
@@ -1521,9 +1521,9 @@
       "scheda": ".claude/templates/scientific-skills/MAPPA-SKILL-SCIENTIFICHE.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "ee053c66194e56e8cbc6b8ca41edd420e8531adc",
+      "verificato": "5b861e4c4a06d56bac4b3f1398985416ae6ec6c7",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:systemd/systemd",
@@ -1543,9 +1543,9 @@
       "scheda": ".claude/templates/PACKAGES.md",
       "ruolo": "strumenti",
       "controllo": "release",
-      "verificato": "v15.0.1",
+      "verificato": "v15.4.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "github:travisvn/awesome-claude-skills",
@@ -1576,9 +1576,9 @@
       "scheda": ".claude/templates/codebase-learning/reference/codebase-learning-handoff.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "@upstash/context7-mcp@4.4.4",
+      "verificato": "@upstash/context7-sdk@0.6.0",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:virgiliojr94/book-to-skill",
@@ -1610,9 +1610,9 @@
       "scheda": ".claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md",
       "ruolo": "ispirazioni",
       "controllo": "release",
-      "verificato": "v1.7.10",
+      "verificato": "v1.7.14",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:wshobson/agents",
@@ -1644,9 +1644,9 @@
       "scheda": ".claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "2.0.2",
+      "verificato": "2.0.4",
       "licenza": "NOASSERTION",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:xingyulu23/Academix",
@@ -1688,9 +1688,9 @@
       "motivo": "Editor Markdown con Pandoc e citazioni Zotero, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Scrittura e tipografia»: applicazione desktop, non pacchetto; non adottato, esito in `docs/fonti-di-scouting.md`.",
       "ruolo": "candidati",
       "controllo": "release",
-      "verificato": "v4.8.0",
+      "verificato": "v4.9.0",
       "licenza": "GPL-3.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "github:zongmin-yu/semantic-scholar-fastmcp-mcp-server",
@@ -1732,9 +1732,9 @@
       "motivo": "CLI di Claude Code installata in globale dai workflow di automation-starter e claude-code-handoff.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "2.1.306",
+      "verificato": "2.1.312",
       "licenza": "SEE LICENSE IN README.md",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "npm:@colbymchenry/codegraph",
@@ -1754,9 +1754,9 @@
       "motivo": "CLI di ricerca Feynman da installare per il pacchetto academic-researcher, con runbook in INTEGRAZIONI-TOOL.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "0.5.51",
+      "verificato": "0.5.58",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "npm:@musistudio/claude-code-router",
@@ -1776,9 +1776,9 @@
       "motivo": "CLI di Codex installata globalmente con npm dal pacchetto agenti-terminale tramite gli script Installa-Codex e Avvia-Codex",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "0.163.0",
+      "verificato": "0.165.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "npm:@upstash/context7-mcp",
@@ -1798,9 +1798,9 @@
       "motivo": "Strumento eseguito via npx da Consumo-Agenti.ps1 del pacchetto agenti-terminale per leggere il consumo dei due agenti dai file di sessione.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "20.0.37",
+      "verificato": "20.0.45",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "npm:claude-mem",
@@ -1809,9 +1809,9 @@
       "motivo": "Memoria semantica persistente cross-sessione elencata dal catalogo come strumento esterno.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "15.0.1",
+      "verificato": "15.4.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-28"
     },
     {
       "id": "npm:code-context-provider-mcp",
@@ -1831,9 +1831,9 @@
       "motivo": "Server MCP e CLI di terzi per l'indagine su processi, che il catalogo consiglia e il pacchetto rea rende chiedibile con la skill rea-indagine.",
       "ruolo": "server-mcp",
       "controllo": "versione",
-      "verificato": "6.7.0",
+      "verificato": "6.8.0",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     },
     {
       "id": "npm:repomix",
@@ -1864,8 +1864,8 @@
       "motivo": "Dipendenza facoltativa di fetch-reddit.py in community-sources: fornisce radici dei certificati aggiornate, con ripiego sulle radici di sistema.",
       "ruolo": "librerie",
       "controllo": "versione",
-      "verificato": "2026.10.19",
-      "data": "2026-10-21"
+      "verificato": "2026.10.23",
+      "data": "2026-10-27"
     },
     {
       "id": "pypi:cisco-ai-skill-scanner",
@@ -1874,8 +1874,8 @@
       "motivo": "Scanner di sicurezza per pacchetti di skill, installato con uv dal pacchetto scientific-skills prima di adottare skill esterne",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "2.3.0",
-      "data": "2026-10-21"
+      "verificato": "2.3.2",
+      "data": "2026-10-27"
     },
     {
       "id": "pypi:docling",
@@ -1884,8 +1884,8 @@
       "motivo": "Motore di conversione opzionale di doc-ingest con il flag --engine docling.",
       "ruolo": "librerie",
       "controllo": "versione",
-      "verificato": "2.141.0",
-      "data": "2026-10-21"
+      "verificato": "2.143.1",
+      "data": "2026-10-28"
     },
     {
       "id": "pypi:graphifyy",
@@ -1894,8 +1894,8 @@
       "motivo": "Pacchetto PyPI con cui si installa graphify (uv tool install graphifyy), consigliato dal catalogo.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "0.9.93",
-      "data": "2026-10-21"
+      "verificato": "0.9.97",
+      "data": "2026-10-28"
     },
     {
       "id": "pypi:headroom-ai",
@@ -1904,8 +1904,8 @@
       "motivo": "Proxy locale di compressione del contesto elencato dal catalogo come strumento esterno, installato con pip.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "0.41.0",
-      "data": "2026-10-21"
+      "verificato": "0.42.0",
+      "data": "2026-10-27"
     },
     {
       "id": "pypi:markdown-it-py",
@@ -1924,8 +1924,8 @@
       "motivo": "Motore predefinito di conversione in Markdown di doc-ingest, importato da doc-ingest.py",
       "ruolo": "librerie",
       "controllo": "versione",
-      "verificato": "0.1.8",
-      "data": "2026-10-21"
+      "verificato": "0.1.9",
+      "data": "2026-10-27"
     },
     {
       "id": "pypi:pdf2image",
@@ -1984,8 +1984,8 @@
       "motivo": "Linter Python usato da lint-strumenti.py sugli strumenti del template, con le regole E4, E7, E9 e F fissate.",
       "ruolo": "strumenti",
       "controllo": "versione",
-      "verificato": "0.17.1",
-      "data": "2026-10-21"
+      "verificato": "0.17.3",
+      "data": "2026-10-27"
     },
     {
       "id": "pypi:serena-agent",
@@ -2008,6 +2008,16 @@
       "data": "2026-10-27"
     },
     {
+      "id": "web:https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers",
+      "pacchetto": "filone-crediti-inclusi-abbonamento",
+      "scheda": "docs/filone-crediti-inclusi-abbonamento.md",
+      "ruolo": "candidati",
+      "motivo": "Meccanismo dei crediti API inclusi in un abbonamento: riscatto, saldo comune, scadenza sul ciclo e prodotti coperti, da cui il filone trae le sei conseguenze e la lista di controllo",
+      "controllo": "versione",
+      "verificato": "27bb5dbc6351",
+      "data": "2026-10-28"
+    },
+    {
       "id": "web:https://snitchplugin.com/",
       "pacchetto": "scouting",
       "scheda": "docs/fonti-di-scouting.md",
@@ -2016,6 +2026,16 @@
       "controllo": "versione",
       "verificato": "ab5259031586",
       "data": "2026-10-27"
+    },
+    {
+      "id": "web:https://www.anthropic.com/legal/credit-terms",
+      "pacchetto": "filone-crediti-inclusi-abbonamento",
+      "scheda": "docs/filone-crediti-inclusi-abbonamento.md",
+      "ruolo": "fonti-di-norme",
+      "motivo": "Termini supplementari sui crediti: natura promozionale, scadenza, non trasferibilita e assenza di valore monetario, che reggono il punto su provvista e non sconto",
+      "controllo": "versione",
+      "verificato": "aa1cc7e26f32",
+      "data": "2026-10-28"
     },
     {
       "id": "winget:Nimbalyst.Nimbalyst",
@@ -2037,9 +2057,9 @@
       "ruolo": "strumenti",
       "via": "github:rtk-ai/rtk",
       "controllo": "release",
-      "verificato": "v1.0.1",
+      "verificato": "v1.1.0",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-10-27"
     }
   ],
   "falsi": [

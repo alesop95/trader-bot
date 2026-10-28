@@ -39,7 +39,7 @@ Il livello 3 è l'unico obbligatorio per partire: puoi iniziare con la sola orch
 
 - **knowledge-mcp** (olafgeibig) - MCP server che è una knowledge base locale con RAG ibrido vettoriale + grafo basato su LightRAG. Ingesta PDF, testo, Markdown, DOCX, fa chunking, estrae entità/relazioni e costruisce sia knowledge graph sia embedding. Espone la ricerca via FastMCP a client MCP (Claude Desktop, IDE). Richiede Python 3.12 e `uv`. È il candidato più forte per "libri e documenti come base di apprendimento" perché il grafo aiuta con topic strutturati (es. dipendenze concettuali di React). Repo: `github.com/olafgeibig/knowledge-mcp`.
 - **Local Knowledge RAG MCP** (patakuti) - ricerca semantica su documenti locali con embedding vettoriali; supporta più provider di embedding (OpenAI, Ollama, OpenAI-compatible). Adatto se vuoi restare 100% locale con Ollama.
-- **mcp-local-rag** (nkapila6) - RAG "primitivo" che gira interamente in locale, senza API key; pensato più per web search locale che per document store, ma include Agent Skills che insegnano a Claude a usarne i tool. Utile come fallback per colmare lacune della KB con ricerca fresca.
+- **mcp-local-rag** (nkapila6), dal 2026-10-23 **mcpsurfr** - RAG "primitivo" che gira interamente in locale, senza API key; pensato più per web search locale che per document store, ma include Agent Skills che insegnano a Claude a usarne i tool. Utile come fallback per colmare lacune della KB con ricerca fresca.
 - **DigitalOcean Knowledge Bases + MCP** - opzione gestita (non locale) se un domani vuoi hostare la KB fuori dalla macchina. Da tenere come alternativa, non come default.
 
 **Nota sull'integrazione con il tuo parsing.** Il tuo pipeline di parsing token-efficient va *a monte* dell'ingestione: produci Markdown pulito/chunked e dai in pasto quello a knowledge-mcp invece dei PDF grezzi. Questo evita di pagare due volte in token (parsing + re-chunking) e ti lascia il controllo su come i libri vengono spezzati (per capitolo, per concetto, per lezione).
@@ -224,7 +224,7 @@ L'agente rilegge e aggiorna questo file a ogni sessione; è la fonte di verità 
 
 - knowledge-mcp (LightRAG): github.com/olafgeibig/knowledge-mcp
 - Local Knowledge RAG MCP: lobehub.com/mcp/patakuti-local-knowledge-rag-mcp
-- mcp-local-rag: github.com/nkapila6/mcp-local-rag
+- mcp-local-rag, oggi mcpsurfr: github.com/nkapila6/mcpsurfr
 - anki-mcp-server: github.com/ankimcp/anki-mcp-server - ankimcp.ai
 - mcp-ankiconnect: pypi.org/project/mcp-ankiconnect
 - Claude Code - subagents/skills/hooks/agent teams: code.claude.com/docs

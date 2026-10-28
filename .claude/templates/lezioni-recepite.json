@@ -35,6 +35,20 @@
     "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
   },
   {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/tools/allinea-tutti.ps1: marcatore normalizzato a LF"
+  },
+  {
+    "progetto": "home-lab-cybersec-networking",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/tools/allinea-dal-template.py: strumenti nella radice di un pacchetto, esito SCOLLEGATO; .claude/templates/doc-ingest/doc-ingest.py: l'autotest prova che --esclusi esista"
+  },
+  {
     "progetto": "intrawelt-qa-verifier",
     "id": "L-001",
     "commit": "",
@@ -273,6 +287,69 @@
     "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un tema che segue il sistema si misura in tutte le sue varianti"
   },
   {
+    "progetto": "my-wedding-day",
+    "id": "L-028",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: il servizio esterno acceso dalla sola presenza della chiave"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-029",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Un esito che unisce due casi con una o nasconde una distinzione che il codice fa"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-030",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Dopo una modifica cade lontano cio che legge tutto il codice"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-031",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Si cercano le parole della condizione vecchia, non i chiamanti della funzione nuova"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-032",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "accolta a meta: in .claude/skills/prove-che-misurano/RIFERIMENTO.md sta la parte generale, cioe che un campo in cui nessuna prova scrive non e coperto. La prescrizione sul campo controllato non sale: tolta la tecnologia diventa una regola della piattaforma di interfaccia, che il template non porta"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-033",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una prova che cade per una ragione diversa da quella per cui e scritta si legge prima di aggiustarla; la meta sull interattivita in uscita resta del progetto perche e una regola di una piattaforma di interfaccia"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-034",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Quando la vista e la misura non coincidono si misura la vista, con i presupposti d ambiente e l esito non osservabile"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-035",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/chat-non-e-memoria.md, presidio: le verifiche da rifare dopo la pubblicazione vanno nel piano di test versionato"
+  },
+  {
+    "progetto": "my-wedding-day",
+    "id": "L-036",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/tools/lezioni-template.py: il campo si accetta anche in linea"
+  },
+  {
     "progetto": "network-design",
     "id": "L-001",
     "commit": "",
@@ -383,5 +460,138 @@
     "commit": "",
     "data": "2026-10-26",
     "dove": "templates/tools/lint-md-tables.py: bersagli() risolve il relativo sulla cartella corrente e poi sulla radice, si ferma sui percorsi inesistenti, e il self-test ne prova la guardia (16 casi)"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-017",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/anonymization/rules/anonymization.md, sezione Quattro cose che lo strumento non puo fare: la convenzione non si spiega fuori dal progetto, il controllo cerca la forma della relazione, la frase che toglie non nomina"
+  },
+  {
+    "progetto": "network-design",
+    "id": "L-018",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/anonymization/rules/anonymization.md, stessa sezione: un verde misura i pattern e non il repository; audit per categorie, residui riprovati, voci brevi fuori dai pattern"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/recupero-dei-fatti.md, sesto modo: la scadenza e un esito a se, e una chiamata di inventario che si appende accusa cio che sta enumerando"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Uno stub sul confine che si vuole provare rende le prove cieche proprio li"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una verifica fatta a sistema guasto non esercita il ramo in cui funziona"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "NON recepita: tolte le parole della piattaforma resta proiettare in un tipo semplice prima di attraversare un confine di serializzazione, che e un principio da manuale e passa la prima domanda solo perche un principio generale la passa sempre. Resta nel diario del progetto, dove l episodio e leggibile"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/recupero-dei-fatti.md, terzo modo: un log e una promessa su cio che registra, e la promessa si legge prima dei dati"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "NON recepita: e un fatto sui dispositivi, non sul modo di lavorare. La forma generale, verificare l unicita di un identificativo prima di costruirci sopra, e un principio da manuale. Resta nel diario del progetto"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/recupero-dei-fatti.md, quinto modo: davanti a una contesa si guarda chi detiene la risorsa, non chi fallisce"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/recupero-dei-fatti.md, quarto modo: due cause si ordinano con un terzo evento datato, non con la plausibilita"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/recupero-dei-fatti.md, secondo modo: davanti a un dato ambiguo si chiede che cos altro produrrebbe esattamente questa osservazione"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "NON recepita: descrive quali componenti di un sistema operativo preciso si buttano su un volume appena montato. Tolti i nomi propri resta chiedersi chi interroga un dispositivo a nostra insaputa, che e troppo sottile per guadagnare il posto. Resta nel diario del progetto"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "NON recepita: e una pratica del recupero dati su un supporto che cede, con le opzioni di uno strumento preciso. Non e del modo di lavorare del template. Resta nel diario del progetto"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-012",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/recupero-dei-fatti.md, primo modo: le premesse ricevute si verificano per prime, soprattutto dove esiste una fonte autoritativa a costo quasi nullo"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-013",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/anonymization/BONIFICA-STORIA.md, sezione 6: era gia nel template, scritta dalla sessione che fece quella bonifica"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-014",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/anonymization/BONIFICA-STORIA.md, sezione 1: ricognizione su tre superfici piu i tag, gia nel template"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-015",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/anonymization/rules/anonymization.md, Quando questa regola serve: la visibilita si stabilisce prima della prima riga, con il comando e il caso del 2026-10-27"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-016",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/identita-git/RIFERIMENTO.md e .claude/templates/tools/detect-ssh-profiles.py: la protezione e di due condizioni"
+  },
+  {
+    "progetto": "windows-status",
+    "id": "L-017",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/anonymization/BONIFICA-STORIA.md, sezione Quando si fa e quando non si fa: gia nel template, con il criterio del luogo e il costo asimmetrico"
   }
 ]

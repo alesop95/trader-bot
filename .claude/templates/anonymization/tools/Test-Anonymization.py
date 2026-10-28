@@ -482,9 +482,18 @@ def autotest():
             errori += 1
             print("analizza, versione Chrome: atteso il solo IP endpoint, ottenuti %d" % len(voci))
     totale = len(casi_iban) + len(casi_carta) + 3
-    # esclusione per decisione: toglie solo la categoria dichiarata, sotto il solo prefisso
-    finto = {"IMPORTO": [("vendor/x.md", 1, "€10", "", "tracciato"), ("docs/y.md", 1, "€10", "", "tracciato")],
-             "NOME PROPRIO": [("vendor/x.md", 2, "Mario Rossi", "", "tracciato")]}
+    # esclusione per decisione: toglie solo la categoria dichiarata, sotto il solo prefisso.
+    # I valori di prova si compongono a tempo di esecuzione e non stanno scritti per intero in
+    # questo file, che è tracciato: scritti per intero, lo strumento trova sé stesso in ogni
+    # progetto che lo istanzia sotto tools/, dove ESCLUSIONI_PREDEFINITE non arriva perché copre
+    # il solo prefisso .claude/templates/. Osservato il 2026-10-27 su windows-status e su
+    # retrogame-mod-pok-dev, dove due riscontri bloccanti fermavano il commit subito dopo
+    # l'allineamento. È la stessa ragione per cui un autotest non porta mai un valore reale.
+    importo_finto = "€" + "10"
+    nome_finto = "Mario" + " " + "Rossi"
+    finto = {"IMPORTO": [("vendor/x.md", 1, importo_finto, "", "tracciato"),
+                         ("docs/y.md", 1, importo_finto, "", "tracciato")],
+             "NOME PROPRIO": [("vendor/x.md", 2, nome_finto, "", "tracciato")]}
     pat_esc = {"percorsi_esclusi_per_decisione": [{"prefisso": "vendor/", "categorie": ["IMPORTO"], "motivo": "prova"}]}
     resto = escludi_per_decisione(pat_esc, finto)
     totale += 1

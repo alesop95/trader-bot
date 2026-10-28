@@ -74,13 +74,17 @@ Resta buona una convenzione di nomi, purché sia offerta come convenzione e non 
 
 ## Protezione globale dal commit con identità sbagliata
 
-Una sola impostazione globale, da fare una volta per macchina, fa si che git rifiuti di committare in un repository dove non è stata impostata l'identità locale.
+La protezione contro il commit firmato con l'identità sbagliata è di due condizioni e non di una, e per anni questo riferimento ne ha dichiarata una sola, sbagliando. L'impostazione globale, da fare una volta per macchina, è questa.
 
 ```bash
 git config --global user.useConfigOnly true
 ```
 
-Con questa impostazione git non ripiega mai sull'email globale: se il repo non ha `user.email` locale, il commit viene rifiutato finché non lo si imposta esplicitamente. Questo elimina il commit accidentale con l'email di lavoro mentre si sviluppa con identità personale. Essendo una modifica globale, va eseguita solo dopo conferma dell'utente.
+Quello che fa davvero è vietare a git di *dedurre* un'identità da nome utente e nome host, non di leggerne una che qualcuno ha configurato. Ne segue la seconda condizione, che è quella che si dimentica: nel file di configurazione globale non deve esistere un blocco `[user]` con `name` o `email`. Se esiste, `useConfigOnly` non rifiuta niente, e il commit in un repository senza identità locale parte firmato con l'identità globale, in silenzio e senza nessun sintomo. Verificato in una sandbox il 2026-10-28, con `GIT_CONFIG_GLOBAL` puntato a un file finto: con il blocco globale presente e `useConfigOnly` a true il commit riesce e porta l'identità di ripiego; con lo stesso `useConfigOnly` e il blocco privo di nome ed email git risponde `Author identity unknown` e rifiuta.
+
+La forma generale vale oltre questo caso, ed è la ragione per cui la prescrizione cambia invece di limitarsi a una nota: una protezione il cui meccanismo è fallire in assenza di un valore viene disarmata da chiunque riempia quel posto, spesso per una ragione legittima e in un file diverso da quello dove la protezione è scritta. Il disarmo va nella direzione comoda, perché i commit continuano a funzionare. Una protezione così non si dichiara attiva perché l'impostazione è presente: si prova nella condizione che dovrebbe bloccare, e la prova si rifà su ogni macchina, perché ciò che la disarma è configurazione locale e non codice.
+
+Il controllo è `detect-ssh-profiles.py`, che legge le due condizioni insieme e dichiara la protezione attiva, disarmata o assente invece di stampare il solo valore dell'impostazione. Essendo una modifica globale, l'abilitazione va eseguita solo dopo conferma dell'utente, e con lei va guardato il blocco `[user]` globale: se contiene un'identità di ripiego, la protezione resta disarmata finché quel blocco non si svuota.
 
 ## Bootstrap di un repository nuovo
 

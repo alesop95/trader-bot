@@ -331,13 +331,25 @@ def autotest():
             if rel not in visti:
                 errori += 1
                 print("materiale di studio escluso per errore: %s" % rel)
+    opzioni = {s for a in costruisci_parser()._actions for s in a.option_strings}
+    if "--esclusi" not in opzioni:
+        errori += 1
+        print("questa copia non ha l'opzione --esclusi: la regola dei documenti personali non e' attuata")
     print("autotest: %d file, %d errori" % (len(personali) + len(studio), errori))
     return 1 if errori else 0
 
 
-def main():
-    if "--autotest" in sys.argv[1:]:
-        sys.exit(autotest())
+def costruisci_parser():
+    """Costruito a parte perché l'autotest possa controllare che `--esclusi` ci sia.
+
+    Una copia istanziata anteriore al 2026-10-07 non ha quell'opzione, e una conversione
+    lanciata con quella copia apre i documenti personali senza che niente protesti: la
+    regola resta scritta e lo strumento che deve attuarla non la attua. Finché la copia
+    nei progetti non si aggiornava da sola, il difetto era latente e nessun controllo lo
+    vedeva (L-007 di un progetto istanziato, 2026-10-26). La prova sta qui, dentro
+    l'autotest che `chiudi` lancia su ogni copia, invece che in un controllo del template
+    che la copia non esegue mai.
+    """
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[2])
     parser.add_argument("source", nargs='?', help="Cartella sorgente da scansionare ricorsivamente")
     parser.add_argument('--compression', choices=['plain', 'auto', 'gzip', 'bzip2', 'xz'], default='plain',
@@ -369,6 +381,13 @@ def main():
         help="File degli schemi dei documenti personali da non aprire, una regex per riga "
              "(regola documenti-personali.md; esempio in esclusi-personali.esempio.txt)",
     )
+    return parser
+
+
+def main():
+    if "--autotest" in sys.argv[1:]:
+        sys.exit(autotest())
+    parser = costruisci_parser()
     args = parser.parse_args()
     if args.read_cache:
         with storage_tool().open_text(args.read_cache) as stream:

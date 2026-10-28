@@ -241,6 +241,20 @@ def report(info: dict) -> None:
     print(f"  user.name          {g['global_user_name'] or '(non impostata)'}")
     print(f"  user.email         {g['global_user_email'] or '(non impostata)'}")
     print(f"  user.useConfigOnly {g['use_config_only'] or '(non impostata)'}")
+    # useConfigOnly vieta a git di DEDURRE un'identita' da utente e nome host, non di
+    # leggerne una configurata: con un blocco [user] globale il commit passa lo stesso,
+    # firmato con quella. La protezione e' quindi di due condizioni, non di una, e la
+    # seconda si disarma da sola la prima volta che qualcuno riempie quel posto, in un
+    # file diverso da quello dove la protezione e' scritta e senza nessun sintomo.
+    attiva = (g["use_config_only"] or "").lower() == "true"
+    ripiego = bool(g["global_user_name"] or g["global_user_email"])
+    if attiva and ripiego:
+        print("  -> protezione DISARMATA: con un'identita' globale presente il commit senza")
+        print("     identita' locale non viene rifiutato, viene firmato con quella globale")
+    elif attiva:
+        print("  -> protezione attiva: senza identita' locale git rifiuta il commit")
+    else:
+        print("  -> protezione assente: senza identita' locale git firma con cio' che trova")
 
     if "repo" in info:
         r = info["repo"]
@@ -249,7 +263,7 @@ def report(info: dict) -> None:
         if not r["is_repo"]:
             print("  (non è un repository git)")
         else:
-            manca = "(non impostata: con user.useConfigOnly a true git rifiuta il commit)"
+            manca = "(non impostata: il commit prende l'identita' globale, se c'e')"
             print(f"  user.name        {r['local_user_name'] or manca}")
             print(f"  user.email       {r['local_user_email'] or '(non impostata)'}")
             print(f"  remote.origin    {r['remote_origin'] or '(nessun remoto)'}")

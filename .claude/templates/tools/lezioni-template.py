@@ -50,7 +50,14 @@ WORKLOG = Path(".claude") / "memory" / "progress.md"
 VOCE = re.compile(r"^## (L-\d{3,}) - (\d{4}-\d{2}-\d{2}) - (.+?)\s*$", re.M)
 ADOTTATO = re.compile(r"^Adottato il: (\d{4}-\d{2}-\d{2})", re.M)
 VOCE_LOG = re.compile(r"^## (\d{4}-\d{2}-\d{2})\b(.*)$", re.M)
-CAMPO = re.compile(r"^\*\*Template:\*\*\s*(.+)$", re.M)
+# Il campo si accetta sia a inizio riga sia in linea dopo altri campi, perche' un
+# progetto puo' scrivere la voce del work-log con i campi uno dopo l'altro sulla
+# stessa riga. Ancorato a ^, lo strumento non li vedeva e avvisava su ogni voce:
+# 136 avvisi in un progetto istanziato, cioe' nessun avviso, perche' quello vero
+# non si distingueva piu' (L-036 di un progetto istanziato, 2026-10-28). Il valore
+# si ferma al campo successivo, altrimenti i riferimenti L-### degli altri campi
+# entrerebbero in questo.
+CAMPO = re.compile(r"\*\*Template:\*\*[ \t]*(.*?)(?=[ \t]*\*\*[^*\n]+:\*\*|$)", re.M)
 
 TESTA = """# Lezioni per il template
 
@@ -296,12 +303,15 @@ def autotest() -> int:
         (prj / WORKLOG).write_text(
             "# Work-log\n\n## %s - passo con lezione\n\nTesto.\n\n**Template:** L-001, l'allineamento non sincronizza Codex\n\n"
             "## %s - passo senza campo\n\nTesto.\n\n## %s - passo che cita una lezione inesistente\n\n**Template:** L-009\n\n"
-            "## 2000-01-01 - voce anteriore all'adozione\n\nNiente campo, e va bene.\n" % (ad, ad, ad), encoding="utf-8")
+            "## %s - passo con i campi in linea\n\nTesto.\n\n**Didattica:** nessuna **Template:** L-002 **Altro:** L-777\n\n"
+            "## 2000-01-01 - voce anteriore all'adozione\n\nNiente campo, e va bene.\n" % (ad, ad, ad, ad), encoding="utf-8")
         e = esamina_progetto(prj)
         caso("due lezioni aperte finché il template non le recepisce", len(e["aperte"]) == 2)
         caso("una voce del work-log senza campo si segnala", len(e["senza_campo"]) == 1 and "senza campo" in e["senza_campo"][0])
         caso("una voce anteriore all'adozione non si segnala", not any("anteriore" in x for x in e["senza_campo"]))
         caso("una citazione a una lezione inesistente si segnala", e["citazioni_rotte"] == ["L-009"])
+        caso("il campo scritto in linea dopo un altro campo si riconosce", not any("in linea" in x for x in e["senza_campo"]))
+        caso("il valore del campo si ferma al campo successivo", "L-777" not in e["citazioni_rotte"])
         caso("il controllo avvisa ma non blocca", cmd_controlla(prj, False) == 0)
         caso("con --rigoroso gli avvisi bloccano", cmd_controlla(prj, True) == 1)
         cmd_recepisci(prj, "progetto-prova", "L-001", "abc1234", "allinea-tutti.ps1")

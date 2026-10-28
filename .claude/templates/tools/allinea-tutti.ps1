@@ -635,7 +635,13 @@ try {
           if (Esiste $prj $marcatore 'file') { try { $vecchio = (Leggi-Testo $prj $marcatore) | ConvertFrom-Json } catch {} }
           if (-not $vecchio -or $vecchio.template_albero_claude -ne $tplAlbero) {
             $m = [ordered]@{ template_commit = $tplHead; template_albero_claude = $tplAlbero; data_commit_template = $tplData; allineato_il = (Get-Date -Format 'yyyy-MM-dd'); strumento = 'allinea-tutti.ps1' }
-            if (-not (Scrivi-Testo $prj $marcatore (($m | ConvertTo-Json) + "`n"))) { $o.avvisi += 'marcatore di allineamento non scritto' }
+            # ConvertTo-Json su Windows PowerShell 5.1 separa le righe con CRLF: con un LF
+            # accodato il marcatore nasceva misto, e check-eol dentro chiudi fermava il primo
+            # commit dopo l'allineamento (L-006 di un progetto istanziato, 2026-10-26). Si
+            # normalizza a LF perche' lo stesso file si scrive anche nei progetti sulle
+            # macchine Linux via SSH; check-eol non impone una convenzione, vieta di mescolarle.
+            $json = (($m | ConvertTo-Json) -replace "`r`n", "`n").TrimEnd("`n") + "`n"
+            if (-not (Scrivi-Testo $prj $marcatore $json)) { $o.avvisi += 'marcatore di allineamento non scritto' }
           }
         }
 
@@ -651,7 +657,16 @@ try {
             $global:LASTEXITCODE = if ($u) { [int]$u.Substring(7) } else { 0 }
           }
           else { $mis = & python $misura --root $prj 2>&1 }
-          if ($LASTEXITCODE -ne 0) { $tot = ($mis | Select-String 'progetto [0-9.]+ caratteri' | Select-Object -First 1); $o.avvisi += 'carico istruzioni oltre soglia' + $(if ($tot) { " ($($tot.Line.Trim()))" } else { '' }) }
+          # La causa si prende dalla riga che lo strumento scrive per dirla, non dal totale:
+          # misura-istruzioni fallisce anche per il tetto del singolo file, e in quel caso il
+          # totale e' sotto la soglia che l'avviso cita, cosi' l'avviso contraddice il proprio
+          # numero e manda a guardare nel posto sbagliato. Misurato il 2026-10-28 su un progetto
+          # del parco: totale 72.939 su 100.000, e la causa era una regola da 20.431 caratteri.
+          if ($LASTEXITCODE -ne 0) {
+            $causa = ($mis | Select-String '^ERRORE:' | Select-Object -First 1)
+            if (-not $causa) { $causa = ($mis | Select-String 'progetto [0-9.]+ caratteri' | Select-Object -First 1) }
+            $o.avvisi += 'carico istruzioni' + $(if ($causa) { ": $($causa.Line.Trim())" } else { ' oltre soglia' })
+          }
         }
       }
     }
