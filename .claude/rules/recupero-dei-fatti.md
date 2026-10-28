@@ -22,19 +22,7 @@ Dove il progetto ha una regola sulle fonti, quella distingue il repository dal m
 
 ## Quando il fatto va cercato in un guasto
 
-Un'indagine su qualcosa che non funziona è lo stesso problema visto da vicino, e sbaglia in sei modi che si riconoscono prima di commetterli. Vengono da due indagini lunghe in progetti istanziati, condotte da agenti che si correggevano a vicenda e sbagliavano lo stesso, che è la ragione per cui stanno scritte invece di essere lasciate all'attenzione.
-
-Il primo è la premessa ricevuta. Un'indagine di tre giorni è stata costruita sopra una frase detta dall'utente e mai messa in discussione, cioè che un certo materiale stesse su un certo supporto; era sbagliata, e il sistema operativo aveva registrato il dato giusto fin dall'inizio, leggibile in sola lettura al costo di una interrogazione. Una premessa non diventa più solida perché tutto il resto le si è appoggiato sopra: le premesse di partenza si verificano per prime, e per prime fra tutte quelle per cui esiste una fonte autoritativa a costo quasi nullo.
-
-Il secondo è il dato ambiguo letto dentro l'ipotesi corrente, ed è il più frequente: su nove errori dichiarati da due sessioni indipendenti, la maggioranza aveva quella forma. Non si corregge con più prudenza, perché la prudenza non cambia la lettura. Si corregge con una domanda fissa, da porre davanti a ogni dato ambiguo prima di usarlo: che cos'altro produrrebbe esattamente questa osservazione?
-
-Il terzo è concludere da un silenzio. Un registro tace anche su ciò che non si impegna a registrare, e chi lo interroga per datare un evento che quel registro non copre trova silenzio e lo legge come assenza del fatto. Un log è una promessa su che cosa registra, e la promessa si legge prima dei dati.
-
-Il quarto è ordinare due cause con un argomento. Quando due interventi ravvicinati rivendicano lo stesso effetto, la plausibilità non li ordina: li ordina un terzo evento che non sia nessuno dei due, datato alla risoluzione più fine disponibile, che cada fra i due e ne escluda uno.
-
-Il quinto è guardare dalla parte di chi fallisce. Davanti a una contesa su una risorsa, che sia una lettera di unità, una porta, un lock o un nome di file, la domanda produttiva non è perché il richiedente fallisce ma chi la detiene e perché non la rilascia: il richiedente vede solo il proprio fallimento, il detentore ha tutto il contesto.
-
-Il sesto è confondere una scadenza con una risposta. Una chiamata di inventario che dovrebbe essere istantanea e invece si appende dice che il guasto sta in ciò che sta enumerando, non nel soggetto dell'indagine; va quindi eseguita dietro un tetto di tempo, e la scadenza si tratta come esito a sé, perché non lo so non è assente e non è pieno, e confonderli manda a cercare il guasto nel posto sbagliato.
+Un'indagine su qualcosa che non funziona e' lo stesso problema visto da vicino, e sbaglia in sei modi che si riconoscono prima di commetterli: la premessa ricevuta e mai verificata, il dato ambiguo letto dentro l'ipotesi corrente, il silenzio di un registro scambiato per assenza del fatto, due cause ordinate per plausibilita' invece che da un testimone, la domanda posta a chi fallisce invece che a chi detiene la risorsa, e la scadenza di un tempo massimo scambiata per una risposta. Ciascuno con il caso che l'ha prodotto sta nel riferimento della skill `prove-che-misurano`, che si carica quando si indaga un guasto; qui resta il fatto che sono sei e che hanno un nome, perche' un rimando a una cosa senza nome non si segue.
 
 ## Il presidio
 

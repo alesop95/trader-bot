@@ -2,7 +2,8 @@
 name: prove-che-misurano
 description: >
   Stabilisce se una prova automatica misuri davvero il difetto che dice di misurare, invece
-  di essere verde perché non lo esercita. Si carica quando si scrive o si valuta un test,
+  di essere verde perché non lo esercita. Si carica quando si indaga un guasto e si deve stabilire che cosa dicono davvero le prove raccolte,
+  quando si scrive o si valuta un test,
   quando si chiude un difetto e si aggiunge la prova che lo copre, quando una verifica
   manuale smentisce una suite verde, quando si sta per aggiungere una guardia o
   un'esclusione a uno strumento, quando si scrive una sequenza di verifica manuale, e

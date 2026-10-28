@@ -615,6 +615,15 @@ def main():
             voce = {"file": p, "template": dst}
             if blob_id(loc) in storici:
                 voce["esito"], voce["_dati"] = "SPOSTATO", t
+            elif RISOLTI.get(p, {}).get("testa") == testa[dst]:
+                # Stessa regola del passo 1: risolto a mano contro questa stessa testa, non
+                # c'e' niente di nuovo da decidere. Mancava qui, e una risoluzione registrata
+                # su un file che il template ha rinominato veniva scritta e poi mai guardata:
+                # il conflitto tornava identico a ogni passata, cioe' la registrazione non
+                # proteggeva. Osservato il 2026-10-28 su un progetto, due volte nello stesso
+                # giorno prima di capire che non era la risoluzione a scadere.
+                voce["esito"] = "ADATTATO"
+                voce["nota"] = f"risolto a mano il {RISOLTI[p].get('il', '?')}, testa invariata"
             else:
                 unito, n, perse, duplicate, ok, _ = fondi(tpl, storici, loc, t)
                 rp = righe_proprie(tpl, storici, loc, dst) if not ok else ([], False)
