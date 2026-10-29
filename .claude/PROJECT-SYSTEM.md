@@ -243,9 +243,10 @@ Il wipe totale, per essere davvero totale, deve raggiungere due residui che non 
 
 ```sh
 # Wipe per-progetto del magazzino nascosto. KEEP elenca gli slug da preservare;
-# l'insieme e specifico della macchina (qui i progetti di sviluppo stanno sotto D: ed E:).
+# l'insieme e specifico della macchina (qui i progetti di sviluppo stanno sotto D: ed E:), e
+# si estende con lo slug di ogni cartella che va preservata, senza scriverne i nomi qui.
 # Agisce solo nella home dell'account, mai sul codice dei progetti su disco.
-KEEP="D-- D--scenia- E--"
+KEEP="D-- E--"
 find "$CLAUDE_CONFIG_DIR/projects" -mindepth 1 -maxdepth 1 -type d | while read -r p; do
   case " $KEEP " in *" $(basename "$p") "*) continue ;; esac
   rm -rf "$p"

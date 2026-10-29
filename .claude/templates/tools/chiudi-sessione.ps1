@@ -201,6 +201,11 @@ $controlli = @(
     @{ n = "test-documenti-personali.py"; a = @(); solobundle = $true },
     # Dal 2026-10-21: nessun identificativo personale nei file che il template porta nei progetti.
     @{ n = "test-identita-personali.py"; a = @(); solobundle = $true },
+    # Dal 2026-10-28: la visibilita' dichiarata si confronta con quella del servizio. La
+    # regola di anonimizzazione si appoggia a quel presupposto, e un repository passa a
+    # pubblico con un clic senza che niente lo dica. Fallisce solo se la dichiarazione
+    # mente: se manca, o se non si e' potuto guardare, avvisa e lascia passare.
+    @{ n = "check-visibilita.py";     a = @() },
     # Dal 2026-10-20: il controllo delle fonti a monte e i segni della retrospettiva.
     @{ n = "fonti-a-monte.py";        a = @("--autotest"); solobundle = $true },
     @{ n = "retro-segnali.py";        a = @("--autotest"); solobundle = $true },

@@ -19,3 +19,4 @@ npersona.privata@posta.example
 io@privato.example
 lavoro@azienda.example
 privacy@example.com
+git@servizio.example

@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import re
 import subprocess
@@ -92,8 +93,22 @@ def leggi_recepite(radice: Path) -> list[dict]:
     return json.loads(f.read_text(encoding="utf-8"))
 
 
+def chiave(progetto: str) -> str:
+    """Impronta del nome del progetto, che e' cio' che il registro scrive al posto del nome.
+
+    Il registro arriva in ogni progetto con l'allineamento: scrivendovi i nomi, ogni
+    repository portava l'elenco degli altri, e fra quelli ce ne sono di clienti e di
+    pubblici. Al progetto serve riconoscere le proprie voci, non leggere quelle altrui,
+    e per questo basta un'impronta che ciascuno ricalcola dal proprio nome di cartella.
+    Dodici caratteri bastano: le voci sono decine, non milioni, e una collisione
+    mostrerebbe a un progetto una lezione non sua invece di nasconderne una.
+    """
+    return hashlib.sha256(progetto.encode("utf-8")).hexdigest()[:12]
+
+
 def chiuse_per(recepite: list[dict], progetto: str) -> dict[str, dict]:
-    return {r["id"]: r for r in recepite if r.get("progetto") == progetto}
+    k = chiave(progetto)
+    return {r["id"]: r for r in recepite if r.get("progetto") in (k, progetto)}
 
 
 # --------------------------------------------------------------------------- nel progetto
@@ -267,8 +282,9 @@ def cmd_raccogli(template: Path, solo_locali: bool = False, compatto: bool = Fal
 def cmd_recepisci(template: Path, progetto: str, ident: str, commit: str, dove: str) -> None:
     f = template / RECEPITE
     dati = leggi_recepite(template)
-    dati = [r for r in dati if not (r["progetto"] == progetto and r["id"] == ident)]
-    dati.append({"progetto": progetto, "id": ident, "commit": commit, "data": oggi(), "dove": dove})
+    k = chiave(progetto)
+    dati = [r for r in dati if not (r["progetto"] in (k, progetto) and r["id"] == ident)]
+    dati.append({"progetto": k, "id": ident, "commit": commit, "data": oggi(), "dove": dove})
     dati.sort(key=lambda r: (r["progetto"], r["id"]))
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(json.dumps(dati, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")

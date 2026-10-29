@@ -1,639 +1,653 @@
 [
   {
-    "progetto": "home-lab-cybersec-networking",
+    "progetto": "71947b5a11ed",
     "id": "L-001",
     "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/lint-md-tables.py: riga staccata fuori dalla tabella, riquadri a caratteri esclusi, 16 prove"
+    "data": "2026-10-28",
+    "dove": "tre interventi: .claude/skills/gate-pacchetti/SKILL.md, un rifiuto in blocco non copre i trigger indipendenti dal settore; .claude/templates/anonymization/rules/anonymization.md, la visibilita si dichiara nel CLAUDE.md del progetto con verifica e data; .claude/rules/chat-non-e-memoria.md, il contrappeso: una misura che viene da un percorso ignorato si persiste con segnaposto"
   },
   {
-    "progetto": "home-lab-cybersec-networking",
+    "progetto": "71947b5a11ed",
     "id": "L-002",
     "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/lezioni-template.py: il corpo della lezione si conserva com'e', --testo-file, prova sulla struttura"
-  },
-  {
-    "progetto": "home-lab-cybersec-networking",
-    "id": "L-003",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "marcatore ref-assente sulla riga di skills/craft-apps che nomina il file di stile opzionale, entrato in 953e506"
-  },
-  {
-    "progetto": "home-lab-cybersec-networking",
-    "id": "L-004",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una fixture che fallisce prima di misurare il codice"
-  },
-  {
-    "progetto": "home-lab-cybersec-networking",
-    "id": "L-005",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
-  },
-  {
-    "progetto": "home-lab-cybersec-networking",
-    "id": "L-006",
-    "commit": "",
     "data": "2026-10-28",
-    "dove": ".claude/templates/tools/allinea-tutti.ps1: marcatore normalizzato a LF"
+    "dove": "due interventi: .claude/templates/anonymization/patterns.example.json, la chiave nomi_propri dichiara anche i nomi di progetto e porta la taratura misurata (5.979 riscontri con i token singoli contro 16 con i nomi completi); .claude/templates/anonymization/README.md, il controllo si esegue anche nel template perche i valori possono vivere li e una bonifica a valle e lavoro perso"
   },
   {
-    "progetto": "home-lab-cybersec-networking",
-    "id": "L-007",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/templates/tools/allinea-dal-template.py: strumenti nella radice di un pacchetto, esito SCOLLEGATO; .claude/templates/doc-ingest/doc-ingest.py: l'autotest prova che --esclusi esista"
-  },
-  {
-    "progetto": "intrawelt-qa-verifier",
-    "id": "L-001",
-    "commit": "",
-    "data": "2026-10-19",
-    "dove": "allinea-tutti.ps1 e chiudi-allineamento.ps1: sync-codex-skills dopo la scrittura, adattatori nel commit"
-  },
-  {
-    "progetto": "intrawelt-qa-verifier",
-    "id": "L-002",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "marcatore ref-assente sulle righe che nominano file creati al bisogno: skills/craft-apps, rules/chat-non-e-memoria, PROJECT-SYSTEM sez.16"
-  },
-  {
-    "progetto": "intrawelt-qa-verifier",
-    "id": "L-003",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
-  },
-  {
-    "progetto": "intrawelt-qa-verifier",
-    "id": "L-004",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "fix-typography/tools/fix-accents.py: rifiuta un sorgente passato per nome salvo --anche-sorgenti, e nella modalita' codice non tocca le citazioni fra apici singoli; prove in test-tipografia e nell'autotest"
-  },
-  {
-    "progetto": "intrawelt-qa-verifier",
-    "id": "L-005",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/lint-doc-references.py: categoria propagato, i documenti scritti dall'allineamento non fermano la chiusura di un progetto"
-  },
-  {
-    "progetto": "local-audio-transcriptor",
-    "id": "L-001",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/lint-cultura.py, lanciato da chiudi-sessione: blocca nel template, avvisa nei progetti"
-  },
-  {
-    "progetto": "log-collector",
-    "id": "L-001",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-001",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione Una prova dal vivo si fa dove sta il codice"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-002",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": ".claude/templates/fix-typography/README.md, esclusioni per percorso"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-003",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "chiudi-sessione.ps1 e .sh: sync-codex-skills --check solo dove esiste .agents/skills, come la passata; stessa condizione in skills/riprendi"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-004",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-005",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "templates/dev-skills/skills/security-review/SKILL.md, punto 4: audit del gestore del lockfile presente, forma grezza, prima di aggiungere una dipendenza"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-006",
-    "commit": "",
-    "data": "2026-10-20",
-    "dove": "skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: l'assenza si misura sull'artefatto, non sui soli file versionati"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-007",
-    "commit": "",
-    "data": "2026-10-21",
-    "dove": ".claude/templates/dev-skills/skills/security-review/SKILL.md, .claude/skills/prove-che-misurano/RIFERIMENTO.md"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-008",
-    "commit": "",
-    "data": "2026-10-21",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-009",
-    "commit": "",
-    "data": "2026-10-21",
-    "dove": ".claude/rules/chat-non-e-memoria.md"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-010",
-    "commit": "",
-    "data": "2026-10-21",
-    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-011",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una prova senza finestra non ha le barre di scorrimento"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-012",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione, e il suo gruppo ha più regole"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-013",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione (eccezioni osservate sul sistema vero)"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-014",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "rules/git-commands-format.md, sezione Milestone: la sequenza consegnata a mano si simula"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-015",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "rules/chat-non-e-memoria.md, sezione Il presidio: l'orario lo scrive la macchina"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-016",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "rules/interaction-style.md, Convenzioni tipografiche: la forma sbagliata fra apici inversi"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-017",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di misura fa ciò che il suo nome promette"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-018",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Prima di correggere la risposta di un modulo a una domanda comune"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-019",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione (la sonda su tutta la suite)"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-020",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "PROJECT-SYSTEM.md, sezione 18: la finestra autonoma dura fino all'ora"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-021",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una copertura indiretta si dichiara dopo averla misurata"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-022",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "templates/fix-typography/README.md, Il limite sui sorgenti: il passo fatto con il parser"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-023",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di misura fa ciò che il suo nome promette; templates/fix-typography/README.md"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-024",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "PROJECT-SYSTEM.md, sezione 17 (il converso del presidio); rules/interaction-style.md, lint-md-tables si lancia a mano"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-025",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un'eccezione all'analisi statica senza la sua ragione"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-026",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di mutazione passa prima sul caso intatto"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-027",
-    "commit": "",
-    "data": "2026-10-26",
-    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un tema che segue il sistema si misura in tutte le sue varianti"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-028",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: il servizio esterno acceso dalla sola presenza della chiave"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-029",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Un esito che unisce due casi con una o nasconde una distinzione che il codice fa"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-030",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Dopo una modifica cade lontano cio che legge tutto il codice"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-031",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Si cercano le parole della condizione vecchia, non i chiamanti della funzione nuova"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-032",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": "accolta a meta: in .claude/skills/prove-che-misurano/RIFERIMENTO.md sta la parte generale, cioe che un campo in cui nessuna prova scrive non e coperto. La prescrizione sul campo controllato non sale: tolta la tecnologia diventa una regola della piattaforma di interfaccia, che il template non porta"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-033",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una prova che cade per una ragione diversa da quella per cui e scritta si legge prima di aggiustarla; la meta sull interattivita in uscita resta del progetto perche e una regola di una piattaforma di interfaccia"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-034",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Quando la vista e la misura non coincidono si misura la vista, con i presupposti d ambiente e l esito non osservabile"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-035",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/rules/chat-non-e-memoria.md, presidio: le verifiche da rifare dopo la pubblicazione vanno nel piano di test versionato"
-  },
-  {
-    "progetto": "my-wedding-day",
-    "id": "L-036",
-    "commit": "",
-    "data": "2026-10-28",
-    "dove": ".claude/templates/tools/lezioni-template.py: il campo si accetta anche in linea"
-  },
-  {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-001",
     "commit": "",
     "data": "2026-10-20",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-002",
     "commit": "",
     "data": "2026-10-21",
     "dove": ".claude/templates/tools/verifica-ripresa.py"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-003",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-004",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/templates/PACKAGES.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-005",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-006",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/alberi-di-lavoro/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-007",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-008",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-009",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-010",
     "commit": "",
     "data": "2026-10-22",
     "dove": ".claude/skills/identita-git/RIFERIMENTO.md"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-011",
     "commit": "",
     "data": "2026-10-26",
     "dove": "rules/recupero-dei-fatti.md e norme/recupero-dei-fatti.md: si cerca il token su tutto il corpus, i dati strutturati entrano nella ricerca, e fra due file tracciati la registrazione di una misura batte il racconto"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-012",
     "commit": "",
     "data": "2026-10-26",
     "dove": "templates/vps-baseline/: README e tools/baseline-vps.sh, il presupposto dell'immagine del fornitore e l'ordine dei passi; riga nel catalogo PACKAGES.md, settore Macchine e continuita' operativa"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-013",
     "commit": "",
     "data": "2026-10-26",
     "dove": "skills/prove-che-misurano/RIFERIMENTO.md: il ripiego di un comando che richiede elevazione coincide con il valore che segnala l'assenza del problema, quindi la disponibilita' dei permessi si accerta prima e decide cosa lo strumento ha diritto di affermare"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-014",
     "commit": "",
     "data": "2026-10-26",
     "dove": "skills/craft-apps/SKILL.md: un artefatto toccato da una persona non si rigenera piu', si modifica sul posto; riconciliata la frase che prescriveva la rigenerazione"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-015",
     "commit": "",
     "data": "2026-10-26",
     "dove": "templates/vps-baseline/README.md, sezione Tre cose diverse che tutti chiamano backup: istantanea del pannello, riproducibilita' della macchina e salvataggio dei dati, tre parole diverse e tre voci separate"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-016",
     "commit": "",
     "data": "2026-10-26",
     "dove": "templates/tools/lint-md-tables.py: bersagli() risolve il relativo sulla cartella corrente e poi sulla radice, si ferma sui percorsi inesistenti, e il self-test ne prova la guardia (16 casi)"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-017",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/anonymization/rules/anonymization.md, sezione Quattro cose che lo strumento non puo fare: la convenzione non si spiega fuori dal progetto, il controllo cerca la forma della relazione, la frase che toglie non nomina"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-018",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/anonymization/rules/anonymization.md, stessa sezione: un verde misura i pattern e non il repository; audit per categorie, residui riprovati, voci brevi fuori dai pattern"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-019",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/skills/alberi-di-lavoro/RIFERIMENTO.md: Prima di cancellare un ramo o un albero, si legge la sua cartella"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-020",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/vps-baseline/README.md, sezione Dopo la baseline: il censimento dice da quale versione il difetto e chiuso, non quale conviene installare"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-021",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/vps-baseline/README.md, stessa sezione: etichetta piu impronta in produzione, e la rotazione dei registri nello stesso descrittore"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-022",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/vps-baseline/README.md, stessa sezione: si interrogano tutti i nomi delle zone, compresi i domini dello stesso titolare, e il rimando fatto dal server non si vede nel DNS"
   },
   {
-    "progetto": "network-design",
+    "progetto": "7bdce874415c",
     "id": "L-023",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una misura che fallisce subito dopo che hai cambiato il modo di misurare si sospetta per prima"
   },
   {
-    "progetto": "scenia®",
+    "progetto": "8244a68c44aa",
     "id": "L-001",
     "commit": "",
-    "data": "2026-10-28",
-    "dove": "docs/proposta-tracciamento-esecuzioni.md, committato in d36db37 e in lavorazione: la lezione chiedeva al template di poter PROPORRE uno strumento riutilizzabile per tracciare il lavoro da terminale, non di averlo gia; quel documento e' esattamente quella proposta, con il contratto che separa autorizzazione, comando, trasporto, verifica dello stato e conclusione consentita. Si chiude qui: quando il pacchetto nascera sara una funzionalita nuova, non questa lezione"
+    "data": "2026-10-20",
+    "dove": "templates/tools/lint-md-tables.py: riga staccata fuori dalla tabella, riquadri a caratteri esclusi, 16 prove"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "8244a68c44aa",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lezioni-template.py: il corpo della lezione si conserva com'e', --testo-file, prova sulla struttura"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "marcatore ref-assente sulla riga di skills/craft-apps che nomina il file di stile opzionale, entrato in 953e506"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una fixture che fallisce prima di misurare il codice"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/tools/allinea-tutti.ps1: marcatore normalizzato a LF"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/tools/allinea-dal-template.py: strumenti nella radice di un pacchetto, esito SCOLLEGATO; .claude/templates/doc-ingest/doc-ingest.py: l'autotest prova che --esclusi esista"
+  },
+  {
+    "progetto": "86a83b3800c7",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "92ab8dd14a43",
     "id": "L-001",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/rules/recupero-dei-fatti.md, sesto modo: la scadenza e un esito a se, e una chiamata di inventario che si appende accusa cio che sta enumerando"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-002",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Uno stub sul confine che si vuole provare rende le prove cieche proprio li"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-003",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una verifica fatta a sistema guasto non esercita il ramo in cui funziona"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-004",
     "commit": "",
     "data": "2026-10-28",
     "dove": "NON recepita: tolte le parole della piattaforma resta proiettare in un tipo semplice prima di attraversare un confine di serializzazione, che e un principio da manuale e passa la prima domanda solo perche un principio generale la passa sempre. Resta nel diario del progetto, dove l episodio e leggibile"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-005",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/rules/recupero-dei-fatti.md, terzo modo: un log e una promessa su cio che registra, e la promessa si legge prima dei dati"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-006",
     "commit": "",
     "data": "2026-10-28",
     "dove": "NON recepita: e un fatto sui dispositivi, non sul modo di lavorare. La forma generale, verificare l unicita di un identificativo prima di costruirci sopra, e un principio da manuale. Resta nel diario del progetto"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-007",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/rules/recupero-dei-fatti.md, quinto modo: davanti a una contesa si guarda chi detiene la risorsa, non chi fallisce"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-008",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/rules/recupero-dei-fatti.md, quarto modo: due cause si ordinano con un terzo evento datato, non con la plausibilita"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-009",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/rules/recupero-dei-fatti.md, secondo modo: davanti a un dato ambiguo si chiede che cos altro produrrebbe esattamente questa osservazione"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-010",
     "commit": "",
     "data": "2026-10-28",
     "dove": "NON recepita: descrive quali componenti di un sistema operativo preciso si buttano su un volume appena montato. Tolti i nomi propri resta chiedersi chi interroga un dispositivo a nostra insaputa, che e troppo sottile per guadagnare il posto. Resta nel diario del progetto"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-011",
     "commit": "",
     "data": "2026-10-28",
     "dove": "NON recepita: e una pratica del recupero dati su un supporto che cede, con le opzioni di uno strumento preciso. Non e del modo di lavorare del template. Resta nel diario del progetto"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-012",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/rules/recupero-dei-fatti.md, primo modo: le premesse ricevute si verificano per prime, soprattutto dove esiste una fonte autoritativa a costo quasi nullo"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-013",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/anonymization/BONIFICA-STORIA.md, sezione 6: era gia nel template, scritta dalla sessione che fece quella bonifica"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-014",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/anonymization/BONIFICA-STORIA.md, sezione 1: ricognizione su tre superfici piu i tag, gia nel template"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-015",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/anonymization/rules/anonymization.md, Quando questa regola serve: la visibilita si stabilisce prima della prima riga, con il comando e il caso del 2026-10-27"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-016",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/skills/identita-git/RIFERIMENTO.md e .claude/templates/tools/detect-ssh-profiles.py: la protezione e di due condizioni"
   },
   {
-    "progetto": "windows-status",
+    "progetto": "92ab8dd14a43",
     "id": "L-017",
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/anonymization/BONIFICA-STORIA.md, sezione Quando si fa e quando non si fa: gia nel template, con il criterio del luogo e il costo asimmetrico"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione Una prova dal vivo si fa dove sta il codice"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": ".claude/templates/fix-typography/README.md, esclusioni per percorso"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "chiudi-sessione.ps1 e .sh: sync-codex-skills --check solo dove esiste .agents/skills, come la passata; stessa condizione in skills/riprendi"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/dev-skills/skills/security-review/SKILL.md, punto 4: audit del gestore del lockfile presente, forma grezza, prima di aggiungere una dipendenza"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: l'assenza si misura sull'artefatto, non sui soli file versionati"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/templates/dev-skills/skills/security-review/SKILL.md, .claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/rules/chat-non-e-memoria.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-10-21",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una prova senza finestra non ha le barre di scorrimento"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-012",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione, e il suo gruppo ha più regole"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-013",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione (eccezioni osservate sul sistema vero)"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-014",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/git-commands-format.md, sezione Milestone: la sequenza consegnata a mano si simula"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-015",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/chat-non-e-memoria.md, sezione Il presidio: l'orario lo scrive la macchina"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-016",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "rules/interaction-style.md, Convenzioni tipografiche: la forma sbagliata fra apici inversi"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-017",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di misura fa ciò che il suo nome promette"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-018",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Prima di correggere la risposta di un modulo a una domanda comune"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-019",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un avviso del browser è un campione (la sonda su tutta la suite)"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-020",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "PROJECT-SYSTEM.md, sezione 18: la finestra autonoma dura fino all'ora"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-021",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Una copertura indiretta si dichiara dopo averla misurata"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-022",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "templates/fix-typography/README.md, Il limite sui sorgenti: il passo fatto con il parser"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-023",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di misura fa ciò che il suo nome promette; templates/fix-typography/README.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-024",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "PROJECT-SYSTEM.md, sezione 17 (il converso del presidio); rules/interaction-style.md, lint-md-tables si lancia a mano"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-025",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un'eccezione all'analisi statica senza la sua ragione"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-026",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Uno strumento di mutazione passa prima sul caso intatto"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-027",
+    "commit": "",
+    "data": "2026-10-26",
+    "dove": "skills/prove-che-misurano/RIFERIMENTO.md, sezione Un tema che segue il sistema si misura in tutte le sue varianti"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-028",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: il servizio esterno acceso dalla sola presenza della chiave"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-029",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Un esito che unisce due casi con una o nasconde una distinzione che il codice fa"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-030",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Dopo una modifica cade lontano cio che legge tutto il codice"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-031",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Si cercano le parole della condizione vecchia, non i chiamanti della funzione nuova"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-032",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "accolta a meta: in .claude/skills/prove-che-misurano/RIFERIMENTO.md sta la parte generale, cioe che un campo in cui nessuna prova scrive non e coperto. La prescrizione sul campo controllato non sale: tolta la tecnologia diventa una regola della piattaforma di interfaccia, che il template non porta"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-033",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una prova che cade per una ragione diversa da quella per cui e scritta si legge prima di aggiustarla; la meta sull interattivita in uscita resta del progetto perche e una regola di una piattaforma di interfaccia"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-034",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Quando la vista e la misura non coincidono si misura la vista, con i presupposti d ambiente e l esito non osservabile"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-035",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/rules/chat-non-e-memoria.md, presidio: le verifiche da rifare dopo la pubblicazione vanno nel piano di test versionato"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-036",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": ".claude/templates/tools/lezioni-template.py: il campo si accetta anche in linea"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-19",
+    "dove": "allinea-tutti.ps1 e chiudi-allineamento.ps1: sync-codex-skills dopo la scrittura, adattatori nel commit"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "marcatore ref-assente sulle righe che nominano file creati al bisogno: skills/craft-apps, rules/chat-non-e-memoria, PROJECT-SYSTEM sez.16"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "fix-typography/tools/fix-accents.py: rifiuta un sorgente passato per nome salvo --anche-sorgenti, e nella modalita' codice non tocca le citazioni fra apici singoli; prove in test-tipografia e nell'autotest"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lint-doc-references.py: categoria propagato, i documenti scritti dall'allineamento non fermano la chiusura di un progetto"
+  },
+  {
+    "progetto": "b3f9f458b450",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-20",
+    "dove": "templates/tools/lint-cultura.py, lanciato da chiudi-sessione: blocca nel template, avvisa nei progetti"
+  },
+  {
+    "progetto": "f00655740f68",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-10-28",
+    "dove": "docs/proposta-tracciamento-esecuzioni.md, committato in d36db37 e in lavorazione: la lezione chiedeva al template di poter PROPORRE uno strumento riutilizzabile per tracciare il lavoro da terminale, non di averlo gia; quel documento e' esattamente quella proposta, con il contratto che separa autorizzazione, comando, trasporto, verifica dello stato e conclusione consentita. Si chiude qui: quando il pacchetto nascera sara una funzionalita nuova, non questa lezione"
   }
 ]

@@ -52,6 +52,10 @@ Ne aggiungo o ne tolgo qualcuno?
 
 Un settore che l'utente aggiunge si attraversa come gli altri. Un settore che l'utente toglie si salta, e l'esclusione si registra con la sua ragione: senza quella riga la tornata successiva riproporrà lo stesso settore alla stessa persona, e un gate che ripete diventa un gate che si impara a scorrere senza leggere.
 
+## Un rifiuto in blocco non copre i pacchetti il cui trigger non dipende dal settore
+
+Il gate si attraversa per settore, ma il trigger di alcuni pacchetti non dipende dal settore del progetto: quello dell'anonimizzazione dipende da chi può leggere il repository e da chi appartengono i dati documentati, due condizioni che valgono insieme e che nessuna valutazione sulla dimensione della base di codice tocca. Un rifiuto in blocco al gate copre quindi in silenzio anche i pacchetti il cui trigger è soddisfatto, e dopo non se ne accorge nessun controllo. Misurato il 2026-10-28: un repository pubblico che documentava centoundici caselle di colleghi aveva liquidato l'intero catalogo con un giudizio sulla dimensione del codice. Ne segue che un rifiuto in blocco si registra pacchetto per pacchetto per quelli a trigger indipendente, e che quei pacchetti si riesaminano ogni volta che cambia la visibilità del repository o la natura dei dati documentati, non una volta sola all'inizializzazione.
+
 ## Passo 3 - Attraversare un settore per volta
 
 Per ciascun settore riconosciuto si apre la sezione corrispondente del catalogo, si legge la frase che spiega a chi quel settore serve, e la si riporta all'utente prima delle righe: è quella frase a dire perché le domande che seguono hanno senso.

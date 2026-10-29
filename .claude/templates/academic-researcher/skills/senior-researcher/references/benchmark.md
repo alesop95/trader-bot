@@ -1,6 +1,6 @@
 # Protocollo R&D per benchmark e test
 
-Questo riferimento distilla il metodo della guida operativa e degli audit statistici del benchmark IntraLino, esaminati durante la costruzione del pacchetto. I numeri e i dati del progetto di origine non sono trasferibili ad altri workload: si riusa il disegno sperimentale, non i risultati.
+Questo riferimento distilla il metodo della guida operativa e degli audit statistici del benchmark di un progetto istanziato, esaminati durante la costruzione del pacchetto. I numeri e i dati del progetto di origine non sono trasferibili ad altri workload: si riusa il disegno sperimentale, non i risultati.
 
 ## Prima della raccolta
 
