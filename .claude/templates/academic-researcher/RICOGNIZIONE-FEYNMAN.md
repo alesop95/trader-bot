@@ -1,6 +1,6 @@
 # Feynman e strumenti aperti per la ricerca assistita
 
-Ricognizione del 25 settembre 2026 per il pacchetto `academic-researcher`. È una fotografia delle interfacce pubbliche, non una prova locale di qualità. Il caso di metodo è `D:\intralino-benchmark`, in particolare `ingestione/VALUTAZIONE_FEYNMAN.md`, `ingestione/PROTOCOLLO_RICERCA.md` e `GUIDA-OPERATIVA-BENCHMARK-SCIENTIFICO.md`. Da quel progetto si trasferiscono protocollo, registro delle evidenze e gate dei claim; nessun dato, risultato o identificativo privato.
+Ricognizione del 25 settembre 2026 per il pacchetto `academic-researcher`. È una fotografia delle interfacce pubbliche, non una prova locale di qualità. Il caso di metodo è `D:\<progetto-di-esempio>`, in particolare `ingestione/VALUTAZIONE_FEYNMAN.md`, `ingestione/PROTOCOLLO_RICERCA.md` e `GUIDA-OPERATIVA-BENCHMARK-SCIENTIFICO.md`. Da quel progetto si trasferiscono protocollo, registro delle evidenze e gate dei claim; nessun dato, risultato o identificativo privato.
 
 ## Scelta architetturale
 
