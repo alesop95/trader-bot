@@ -427,3 +427,9 @@ Esegue ruff, alle regole predefinite, sugli strumenti Python del template, ed è
 ```powershell
 python .claude/templates/tools/lint-strumenti.py
 ```
+
+## Ponte Codex e adattatori delle skill
+
+`sync-codex-skills.py --check` controlla i wrapper e, nei progetti del sistema, anche AGENTS.md alla radice. Un ponte mancante non può più dare verde quando i wrapper sono già corretti. Senza --check viene creato dal modello; un ponte personalizzato esistente resta intatto. La passata gestisce AGENTS con il rapporto e la storia ordinari nei soli progetti già Codex. Dettaglio e limiti nella [scheda della correzione](../../../docs/correzione-ponte-codex.md).
+
+Le prove funzionali si eseguono con `python -m pytest .claude/templates/tools/tests/test_codex_bridge.py .claude/templates/tools/tests/test_allinea_dal_template.py -q`; includono repository temporanei per misurare il report reale di allineamento, senza commit nei progetti di lavoro.

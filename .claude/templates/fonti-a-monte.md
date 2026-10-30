@@ -15,13 +15,13 @@ Le fonti stanno qui per ruolo, cioè per ciò che il template ne fa, e la colonn
 | Skill, agenti, comandi e plugin | 16 | 8 | 8 | 0 |
 | Server MCP | 22 | 17 | 5 | 0 |
 | Strumenti, programmi e servizi | 46 | 42 | 1 | 3 |
-| Librerie | 18 | 13 | 5 | 0 |
+| Librerie | 19 | 14 | 5 | 0 |
 | Fonti di norme e guide | 9 | 4 | 5 | 0 |
 | Cataloghi e indici | 7 | 1 | 6 | 0 |
 | Ispirazioni e crediti | 7 | 7 | 0 | 0 |
-| Candidati e alternative | 61 | 35 | 26 | 0 |
+| Candidati e alternative | 65 | 39 | 26 | 0 |
 | Fonti di scouting | 2 | 2 | 0 | 0 |
-| Totale | 188 | | | |
+| Totale | 193 | | | |
 
 ## Skill, agenti, comandi e plugin
 
@@ -150,6 +150,7 @@ Librerie che gli strumenti del template importano o fanno installare. Quando il 
 | [pypi:pdf2image](https://pypi.org/project/pdf2image/) | Libreria opzionale di doc-ingest per convertire i PDF in immagini prima dell'OCR con pytesseract. | doc-ingest | `.claude/templates/doc-ingest/doc-ingest.py` | versione | 1.17.0, 2026-10-21 |
 | [pypi:pillow](https://pypi.org/project/pillow/) | Libreria Python usata da cache-storage.py del pacchetto doc-ingest per le immagini raster; il solo testo non la richiede. | doc-ingest | `.claude/templates/doc-ingest/cache-storage.py` | versione | 13.0.0, 2026-10-21 |
 | [pypi:pytesseract](https://pypi.org/project/pytesseract/) | Libreria Python importata da doc-ingest per il fallback OCR sui PDF scansionati. | doc-ingest | `.claude/templates/doc-ingest/doc-ingest.py` | versione | 0.3.13, 2026-10-21 |
+| [pypi:pytest](https://pypi.org/project/pytest/) | Framework già disponibile per regressioni CLI e fixture isolate; fonte PyPI MIT letta il30/10/2026 | strumenti | `docs/allineamento-e-posta-sessioni.md` | versione | 9.2.0, 2026-10-30 |
 | [pypi:python-docx](https://pypi.org/project/python-docx/) | Libreria per leggere i file Word, dipendenza del pacchetto docx-to-docs e del suo docx-to-md.py. | docx-to-docs | `.claude/templates/docx-to-docs/docx-to-md.py` | versione | 1.2.0, 2026-10-21 |
 | [pypi:pyyaml](https://pypi.org/project/pyyaml/) | Dipendenza dello strumento roadmap.py per leggere le voci della roadmap in YAML | roadmap | `.claude/templates/roadmap/tools/roadmap.py` | versione | 6.0.3, 2026-10-21 |
 
@@ -262,8 +263,12 @@ Repository valutati e non adottati: candidati segnalati da una fonte di scouting
 | [github:Zettlr/Zettlr](https://github.com/Zettlr/Zettlr) | Editor Markdown con Pandoc e citazioni Zotero, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Scrittura e tipografia»: applicazione desktop, non pacchetto; non adottato, esito in `docs/fonti-di-scouting.md`. | scouting | `docs/fonti-di-scouting.md` | release | v4.9.0, 2026-10-27 |
 | [github:zongmin-yu/semantic-scholar-fastmcp-mcp-server](https://github.com/zongmin-yu/semantic-scholar-fastmcp-mcp-server) | Elencato come candidato o alternativa nel documento di ricerca datato di academic-researcher; il catalogo non lo adotta | academic-researcher | `.claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md` | commit | 68e7b0656262, 2026-10-21 |
 | [github:zvec-ai/zvec-grep](https://github.com/zvec-ai/zvec-grep) | Ricerca locale ibrida testuale e vettoriale, candidato del passaggio di scouting del 2026-10-16, destinato al settore «Fonti e corpus documentali»: da affiancare a doc-ingest; non adottato, esito in `docs/fonti-di-scouting.md`. | scouting | `docs/fonti-di-scouting.md` | release | v0.2.0, 2026-10-21 |
+| [web:https://docs.wokwi.com/](https://docs.wokwi.com/) | Documentazione primaria letta; simulazione MCU/rete candidata, condizioni personali e funzioni a pagamento distinte | firmware-e-microserver | `docs/filone-microcontrollori-e-microserver.md` | versione | f07732ab2c07, 2026-10-29 |
+| [web:https://learn-arduino-red.vercel.app/](https://learn-arduino-red.vercel.app/) | HTML didattico Arduino letto; simulazione e licenza ancora da collaudare | firmware-e-microserver | `docs/filone-microcontrollori-e-microserver.md` | versione | 09f30800dde8, 2026-10-29 |
+| [web:https://learn-esp32.vercel.app/](https://learn-esp32.vercel.app/) | HTML didattico ESP32 letto; simulazione e licenza ancora da collaudare | firmware-e-microserver | `docs/filone-microcontrollori-e-microserver.md` | versione | c2b765b8541a, 2026-10-29 |
 | [web:https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers](https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers) | Meccanismo dei crediti API inclusi in un abbonamento: riscatto, saldo comune, scadenza sul ciclo e prodotti coperti, da cui il filone trae le sei conseguenze e la lista di controllo | filone-crediti-inclusi-abbonamento | `docs/filone-crediti-inclusi-abbonamento.md` | versione | 27bb5dbc6351, 2026-10-28 |
 | [web:https://snitchplugin.com/](https://snitchplugin.com/) | Sito di una raccolta di skill segnalata nel thread del subreddit ClaudeAI del 2026-10-27; sorvegliato per contenuto finché non viene letto e valutato. | scouting | `docs/fonti-di-scouting.md` | versione | ab5259031586, 2026-10-27 |
+| [web:https://www.falstad.com/circuit/](https://www.falstad.com/circuit/) | Pagina primaria letta; simulazione circuiti candidata, nessuna prova di consumo o host Linux | firmware-e-microserver | `docs/filone-microcontrollori-e-microserver.md` | versione | f94ec170ff87, 2026-10-29 |
 
 ## Fonti di scouting
 

@@ -17,11 +17,12 @@
       codex-account2
 
   DIFFERENZA INTERNA, documentata perche' non e' arbitraria. La funzione di
-  Claude imposta la variabile d'ambiente e chiama l'eseguibile: basta cosi',
-  perche' la pulizia di fine sessione la fa un hook nativo. La funzione di Codex
-  passa invece per `Avvia-Codex.ps1`, perche' Codex NON ha un hook di ciclo di
-  vita: le guardie sulla radice, il vincolo sulla cartella di lavoro e la pulizia
-  all'uscita vivono nel wrapper. Stessa invocazione, motori diversi.
+  Claude passa per Avvia-Claude.ps1, che imposta radice e cassetta comune;
+  la pulizia di fine sessione resta nell'hook nativo. La funzione di Codex
+  passa invece per `Avvia-Codex.ps1`: il suo hook SessionEnd non copre codex exec
+  e scatta prima che la sessione corrente sia chiusa. Le guardie sulla radice,
+  il vincolo sulla cartella di lavoro e la pulizia dopo l'uscita vivono nel
+  wrapper. Stessa invocazione, motori diversi.
 
   La cartella di lavoro e' quella corrente, come ci si aspetta da un comando di
   shell, e resta sovrascrivibile passando `-Progetto`.
@@ -77,6 +78,7 @@ if (-not $Profilo) { $Profilo = $PROFILE.CurrentUserCurrentHost }
 Nota ("Profilo     {0}" -f $Profilo) 'White'
 
 $avvia = Join-Path $PSScriptRoot 'Avvia-Codex.ps1'
+$avviaClaude = Join-Path $PSScriptRoot 'Avvia-Claude.ps1'
 if (-not (Test-Path -LiteralPath $avvia)) {
   Nota "MANCA $avvia. Interrotto." 'Red'
   exit 1
@@ -106,8 +108,8 @@ $righe.Add('')
 
 foreach ($n in $claude) {
   $righe.Add("function claude-account$n {")
-  $righe.Add("    `$env:CLAUDE_CONFIG_DIR = `"`$env:USERPROFILE\.claude-account$n`"")
-  $righe.Add('    claude @args')
+  $righe.Add("    if (`$args -contains '-Progetto') { & '$avviaClaude' -Account $n @args }")
+  $righe.Add("    else { & '$avviaClaude' -Account $n -Progetto (Get-Location).Path @args }")
   $righe.Add('}')
 }
 if ($claude.Count -gt 0) { $righe.Add('') }
@@ -147,7 +149,7 @@ if ($Verifica) {
   Write-Host $blocco
   Nota '' 'Gray'
   if (Test-Path -LiteralPath $Profilo) {
-    $att = Get-Content -LiteralPath $Profilo -Raw
+    $att = Get-Content -LiteralPath $Profilo -Raw -Encoding UTF8
     if ($att -match [regex]::Escape($INIZIO)) { Nota 'Nel profilo esiste gia un blocco generato: verrebbe SOSTITUITO.' 'Yellow' }
     else { Nota 'Nel profilo non c e ancora un blocco generato: verrebbe AGGIUNTO in coda.' 'Yellow' }
     $fuori = @(Select-String -LiteralPath $Profilo -Pattern '^\s*function\s+(claude|codex)-account\d+' -ErrorAction SilentlyContinue |
@@ -171,7 +173,7 @@ if (Test-Path -LiteralPath $Profilo) {
   $backup = "$Profilo.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
   Copy-Item -LiteralPath $Profilo -Destination $backup -Force
   Nota ("Copia del profilo: {0}" -f $backup) 'DarkGray'
-  $attuale = Get-Content -LiteralPath $Profilo -Raw
+  $attuale = Get-Content -LiteralPath $Profilo -Raw -Encoding UTF8
 }
 
 # Le definizioni precedenti, scritte a mano fuori dal blocco, farebbero ombra a
@@ -216,10 +218,15 @@ else {
   Nota 'Blocco aggiunto in coda al profilo.' 'Green'
 }
 
-Set-Content -LiteralPath $Profilo -Value $nuovo -Encoding UTF8
+$bomProfilo = $false
+if (Test-Path -LiteralPath $Profilo) {
+  $bytesProfilo = [IO.File]::ReadAllBytes($Profilo)
+  $bomProfilo = $bytesProfilo.Length -ge 3 -and $bytesProfilo[0] -eq 239 -and $bytesProfilo[1] -eq 187 -and $bytesProfilo[2] -eq 191
+}
+[IO.File]::WriteAllText($Profilo, $nuovo, (New-Object Text.UTF8Encoding $bomProfilo))
 
 # --- verifica: cio che doveva esserci c e -----------------------------------
-$riletto = Get-Content -LiteralPath $Profilo -Raw
+$riletto = Get-Content -LiteralPath $Profilo -Raw -Encoding UTF8
 $mancanti = @()
 foreach ($n in $claude) { if ($riletto -notmatch "function claude-account$n\b") { $mancanti += "claude-account$n" } }
 foreach ($n in $codex) { if ($riletto -notmatch "function codex-account$n\b") { $mancanti += "codex-account$n" } }

@@ -123,9 +123,9 @@ def git(radice: Path, *args) -> subprocess.CompletedProcess:
 
 
 def file_del_perimetro(radice: Path) -> list:
-    """I file tracciati da git, perché l'allineamento propaga ciò che è committato e non i file
-    locali ignorati, come `settings.local.json`; fuori da un repository, tutti i file."""
-    r = git(radice, "ls-files", "-z", *PERIMETRO)
+    """File tracciati e nuovi candidati al commit, esclusi i file locali ignorati
+    come `settings.local.json`; fuori da un repository, tutti i file."""
+    r = git(radice, "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", *PERIMETRO)
     if r.returncode == 0:
         return [radice / p for p in r.stdout.decode("utf-8", errors="replace").split("\0") if p]
     return [f for base in PERIMETRO for f in sorted((radice / base).rglob("*"))]

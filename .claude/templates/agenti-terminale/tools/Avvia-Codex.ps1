@@ -77,6 +77,9 @@ param(
 
   [switch]$NoPulizia,
 
+  [string]$Posta,
+  [switch]$NoPosta,
+
   # Conserva le sessioni invece di azzerarle. Per default la pulizia e' TOTALE,
   # perche' una trascrizione che sopravvive nella radice dell'account e' memoria
   # fuori dal progetto: la memoria di un progetto vive dentro il progetto,
@@ -150,6 +153,13 @@ elseif (-not $Resto -or $Resto.Count -eq 0) {
   exit 1
 }
 
+# Cassetta comune Claude/Codex: perimetro aggiuntivo stretto e visibile.
+if ($Progetto -and -not $NoPosta) {
+  . (Join-Path $PSScriptRoot 'Posta-Sessioni.ps1')
+  $cassetta = Prepara-PostaSessioni 'codex' $Account $Progetto $Posta
+  $argomenti += @('--add-dir', $cassetta)
+}
+
 # --- Esecuzione -------------------------------------------------------------
 try {
   $tutti = @($argomenti) + @($Resto | Where-Object { $_ })
@@ -161,6 +171,7 @@ try {
   }
 }
 finally {
+  Remove-Item Env:PROJECT_AGENT_MAILBOX_ROOT,Env:PROJECT_AGENT_MAILBOX_ID,Env:PROJECT_AGENT_MAILBOX_TOOL,Env:PROJECT_TEMPLATE_ROOT -ErrorAction SilentlyContinue
   # Il finally copre anche Ctrl+C e un'uscita per errore, che sono i casi in cui
   # una pulizia messa in coda al blocco try non verrebbe mai eseguita.
   if (-not $NoPulizia) {

@@ -242,17 +242,27 @@ def cmd_installa(a) -> int:
                      "non si prende a mano nel progetto, altrimenti l'aggiornamento mensile non la raggiunge")
         dest = a.radice / ".claude" / "skills" / s
         if dest.exists():
-            print(f"{s}: già istanziata, la aggiorna l'allineamento")
-            continue
-        shutil.copytree(src, dest)
-        print(f"{s}: istanziata in {dest.relative_to(a.radice).as_posix()}")
+            print(f"{s}: gia istanziata, verifico anche le esclusioni")
+        else:
+            shutil.copytree(src, dest)
+            print(f"{s}: istanziata in {dest.relative_to(a.radice).as_posix()}")
+        paths = [f".claude/skills/{s}/"]
+        if (a.radice / ".agents/skills").is_dir():
+            paths.append(f".agents/skills/{s}/")
         for nome in ("dashes-exclude.txt", "accents-exclude.txt"):
             esc = a.radice / "tools" / nome
-            riga = f".claude/skills/{s}/ # {MOTIVO_TIPOGRAFIA}"
-            if esc.is_file() and riga not in esc.read_text(encoding="utf-8"):
-                with esc.open("a", encoding="utf-8", newline="") as h:
-                    h.write(("" if esc.read_bytes().endswith(b"\n") else "\n") + riga + "\n")
-                print(f"{s}: esclusa da tools/{nome}")
+            if not esc.is_file():
+                continue
+            for path in paths:
+                riga = f"{path} # {MOTIVO_TIPOGRAFIA}"
+                before = esc.read_bytes()
+                if riga in before.decode("utf-8-sig").splitlines():
+                    continue
+                eol = b"\r\n" if before.endswith(b"\r\n") else b"\n"
+                data = before + (b"" if not before or before.endswith(b"\n") else eol) + riga.encode("utf-8") + eol
+                esc.write_bytes(data)
+                assert esc.read_bytes() == data
+                print(f"{s}: esclusa {path} da tools/{nome}")
     print("Se il progetto ha adapter Codex, rigenerarli (sync-codex-skills.py).")
     return 0
 

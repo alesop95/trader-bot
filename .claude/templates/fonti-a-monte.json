@@ -1958,6 +1958,16 @@
       "data": "2026-10-21"
     },
     {
+      "id": "pypi:pytest",
+      "ruolo": "librerie",
+      "motivo": "Framework già disponibile per regressioni CLI e fixture isolate; fonte PyPI MIT letta il30/10/2026",
+      "pacchetto": "strumenti",
+      "scheda": "docs/allineamento-e-posta-sessioni.md",
+      "controllo": "versione",
+      "verificato": "9.2.0",
+      "data": "2026-10-30"
+    },
+    {
       "id": "pypi:python-docx",
       "pacchetto": "docx-to-docs",
       "scheda": ".claude/templates/docx-to-docs/docx-to-md.py",
@@ -2008,6 +2018,36 @@
       "data": "2026-10-27"
     },
     {
+      "id": "web:https://docs.wokwi.com/",
+      "pacchetto": "firmware-e-microserver",
+      "scheda": "docs/filone-microcontrollori-e-microserver.md",
+      "ruolo": "candidati",
+      "motivo": "Documentazione primaria letta; simulazione MCU/rete candidata, condizioni personali e funzioni a pagamento distinte",
+      "controllo": "versione",
+      "verificato": "f07732ab2c07",
+      "data": "2026-10-29"
+    },
+    {
+      "id": "web:https://learn-arduino-red.vercel.app/",
+      "pacchetto": "firmware-e-microserver",
+      "scheda": "docs/filone-microcontrollori-e-microserver.md",
+      "ruolo": "candidati",
+      "motivo": "HTML didattico Arduino letto; simulazione e licenza ancora da collaudare",
+      "controllo": "versione",
+      "verificato": "09f30800dde8",
+      "data": "2026-10-29"
+    },
+    {
+      "id": "web:https://learn-esp32.vercel.app/",
+      "pacchetto": "firmware-e-microserver",
+      "scheda": "docs/filone-microcontrollori-e-microserver.md",
+      "ruolo": "candidati",
+      "motivo": "HTML didattico ESP32 letto; simulazione e licenza ancora da collaudare",
+      "controllo": "versione",
+      "verificato": "c2b765b8541a",
+      "data": "2026-10-29"
+    },
+    {
       "id": "web:https://platform.claude.com/docs/en/about-claude/api-credits-for-subscribers",
       "pacchetto": "filone-crediti-inclusi-abbonamento",
       "scheda": "docs/filone-crediti-inclusi-abbonamento.md",
@@ -2036,6 +2076,16 @@
       "controllo": "versione",
       "verificato": "aa1cc7e26f32",
       "data": "2026-10-28"
+    },
+    {
+      "id": "web:https://www.falstad.com/circuit/",
+      "pacchetto": "firmware-e-microserver",
+      "scheda": "docs/filone-microcontrollori-e-microserver.md",
+      "ruolo": "candidati",
+      "motivo": "Pagina primaria letta; simulazione circuiti candidata, nessuna prova di consumo o host Linux",
+      "controllo": "versione",
+      "verificato": "f94ec170ff87",
+      "data": "2026-10-29"
     },
     {
       "id": "winget:Nimbalyst.Nimbalyst",

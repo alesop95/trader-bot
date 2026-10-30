@@ -56,7 +56,7 @@ Esiti per progetto:
   allineato            niente da fare rispetto al commit corrente del template
   incompleto           scritto, ma la seconda misura trova ancora file da trattare
   fuori-perimetro      scritto, ma e cambiato un file fuori da .claude/, tools/,
-                       docs/, .githooks/pre-commit.d/ e CLAUDE.md: niente si annulla da
+                       docs/, .githooks/pre-commit.d/, CLAUDE.md e AGENTS.md: niente si annulla da
                        solo, decide la persona
 
 Solo a verifica passata si scrive nel progetto .claude/allineamento-template.json,
@@ -514,7 +514,17 @@ try {
     $prj = $p.percorso
     $o = [pscustomobject]@{ nome = $p.nome; percorso = $prj; slug = ($prj -replace '[:\\/]+', '--').Trim('-'); stato = $null; sporco = $false; sporchi = @(); c = $null; avvisi = @() }
     $escl = In-Elenco $esclusi $prj
-    if ($escl) { $o.stato = 'escluso'; $o.avvisi += 'escluso: ' + $escl }
+    if ($escl) {
+      $o.stato = 'escluso'; $o.avvisi += 'escluso: ' + $escl
+      $ancoraEscluso = ''
+      if (Esiste $prj '.claude/allineamento-template.json' 'file') {
+        try { $ancoraEscluso = ((Leggi-Testo $prj '.claude/allineamento-template.json') | ConvertFrom-Json).template_commit } catch {}
+      }
+      $statoArgs = @((Join-Path $PSScriptRoot 'stato-template.py'), '--progetto', $prj, '--template', $tpl, '--esclusione', $escl)
+      if ($ancoraEscluso) { $statoArgs += '--ancora', $ancoraEscluso }
+      $statoEscluso = @(& python @statoArgs 2>&1)
+      $o.avvisi += ($statoEscluso -join ' ')
+    }
     elseif ((Test-Remoto $prj) -and -not (In-Elenco $approvati $prj)) { $o.stato = 'da-confermare' }
     elseif (-not (Esiste $prj '.git')) { $o.stato = 'non-git' }
     elseif ((Esiste $prj '.git' 'file') -and -not $IncludiAlberi) { $o.stato = 'albero-secondario' }
@@ -596,7 +606,7 @@ try {
           # progetto. Lo strumento e' quello del template, che arriva in ogni progetto.
           # Solo dove gli adattatori esistono gia': la prima corsa del 2026-10-20 li lanciava ovunque e
           # ha creato da zero .agents/ in ventotto progetti che non avevano mai scelto Codex.
-          if ($codice -lt 2 -and (Esiste $prj '.agents/skills' 'cartella')) {
+          if ($codice -lt 2 -and ((Esiste $prj '.agents/skills' 'cartella') -or (Esiste $prj 'AGENTS.md' 'file'))) {
             if (Test-Remoto $prj) {
               $r = Dividi-Remoto $prj
               $null = Esegui-Ssh $r.alias ('python3 ' + (Q "$($tplRemoti[$r.alias])/.claude/templates/tools/sync-codex-skills.py") + ' --project-root ' + (Q $r.percorso) + ' >/dev/null 2>&1')
@@ -609,7 +619,7 @@ try {
           # senza questa sottrazione un progetto con lavoro in corso fuori dal perimetro
           # verrebbe marcato fuori-perimetro per modifiche che non ha fatto l'allineamento.
           $fuori = @((Sporchi $prj) | Where-Object { $o.sporchi -notcontains $_ } |
-            Where-Object { $_ -notmatch '^(\.claude|\.agents|tools|docs|\.githooks/pre-commit\.d)/' -and $_ -ne 'CLAUDE.md' })
+            Where-Object { $_ -notmatch '^(\.claude|\.agents|tools|docs|\.githooks/pre-commit\.d)/' -and $_ -notin @('CLAUDE.md', 'AGENTS.md') })
           if ($codice -ge 2 -or $codice2 -ge 2 -or -not (Test-Path -LiteralPath $json2)) { $o.stato = 'errore-strumento' }
           else {
             $c2 = Conta (Leggi-Json $json2)

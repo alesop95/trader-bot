@@ -149,3 +149,7 @@ Nella prova del 2026-10-26 entrambe le sessioni hanno ritirato qualcosa, e la ri
 Studio e disegno, **non attuazione**. Il pacchetto non contiene oggi alcuno script di fermo posta, e l'elenco dei pezzi non ne cita. Chi lo realizza deve, nell'ordine: scegliere la radice condivisa, aggiungerla a `writable_roots` delle radici Codex interessate documentando la modifica, e decidere dove istruire Codex a guardare la casella.
 
 Il canale nativo fra sessioni Claude Code, invece, è disponibile senza installare niente.
+
+## Attuazione del30/10/2026
+
+Lo studio precedente rimane la fotografia dei limiti osservati. Ora il pacchetto contiene posta-sessioni.py, Posta-Sessioni.ps1 e un launcher Claude parallelo a quello Codex. Il [contratto aggiornato](../../../docs/allineamento-e-posta-sessioni.md) descrive la cassetta, il perimetro --add-dir e le verifiche. La consegna su file è attuata; il polling ai giri di lavoro è esplicito e nessuna notifica push viene promessa. Non si presume che sessioni già aperte abbiano caricato il nuovo impianto.

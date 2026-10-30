@@ -96,6 +96,7 @@ import collections
 import difflib
 import hashlib
 import json
+import importlib.util
 import subprocess
 import sys
 import tempfile
@@ -785,6 +786,13 @@ def main():
         f_risolti.write_text(json.dumps(dict(sorted(RISOLTI.items())), ensure_ascii=False, indent=2) + "\n",
                              encoding="utf-8", newline="\n")
 
+    # 6b. il ponte Codex appartiene al rapporto della passata, anche nei progetti
+    # gia' istanziati: i soli wrapper possono essere allineati mentre nessuno
+    # dice a Codex di leggere CLAUDE.md. Non si adotta Codex nei progetti solo Claude.
+    ponte_codex = ".claude/templates/AGENTS.md"
+    if ((prj / ".agents" / "skills").is_dir() or (prj / "AGENTS.md").is_file()) and ponte_codex in testa:
+        valuta("AGENTS.md", ponte_codex, blob.get(ponte_codex, set()))
+
     # 7. righe di innesco nel CLAUDE.md, fuori dal perimetro dei file e quindi solo su richiesta
     if a.innesco:
         nomi = {p.split("/")[2] for p in testa
@@ -807,6 +815,21 @@ def main():
             nome = "CLAUDE.md" if (prj / "CLAUDE.md").is_file() else ".claude/CLAUDE.md"
             esiti.append({"file": nome, "template": ".claude/templates/CLAUDE.md", "esito": "INNESCO",
                           "skill": mancanti, "nota": f"righe per {', '.join(mancanti)}, {dove}", "_dati": dati})
+
+    # La ricevuta appartiene al rapporto: chiudi-allineamento la versiona con i
+    # soli file consegnati; non costituisce una promessa di risoluzione dei conflitti.
+    spec = importlib.util.spec_from_file_location("stato_template", Path(__file__).with_name("stato-template.py"))
+    stato_template = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(stato_template)
+    effettivi = [e for e in esiti if e["esito"] != "RIMOSSO" or a.rimuovi]
+    consegna = stato_template.ricevuta(effettivi, stato_template.git(tpl, "rev-parse", "HEAD"))
+    if consegna:
+        relativo = ".claude/ultimo-allineamento.md"
+        dest = prj / relativo
+        if dest.is_file() and "<!-- generato da allinea-dal-template.py -->" not in dest.read_text(encoding="utf-8-sig"):
+            esiti.append({"file": relativo, "esito": "CONFLITTO", "nota": "ricevuta locale non generata: non sovrascritta"})
+        else:
+            esiti.append({"file": relativo, "esito": "VECCHIO" if dest.is_file() else "NUOVO", "_dati": consegna.encode("utf-8")})
 
     # applicazione
     if a.applica:

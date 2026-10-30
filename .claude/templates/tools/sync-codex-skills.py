@@ -4,6 +4,8 @@
 Le procedure restano sotto ``.claude/skills``. Per ciascuna crea un wrapper minimale sotto
 ``.agents/skills`` che espone a Codex nome e descrizione e gli fa leggere il file canonico.
 Non copia il corpo della skill, così una modifica della procedura ha una sola fonte di verità.
+Nei progetti del sistema verifica anche il ponte AGENTS.md: se manca, lo crea dal modello
+canonico. Un AGENTS.md esistente resta del progetto e non viene sovrascritto.
 
 Uso:
     python tools/sync-codex-skills.py
@@ -54,6 +56,8 @@ def _frontmatter(testo):
 
 def _wrapper(nome, descrizione, percorso_canonico, base_wrapper):
     descrizione = descrizione or "Esegue la procedura canonica del progetto quando viene richiesta esplicitamente."
+    # Il wrapper e testo generato; la descrizione canonica resta intatta.
+    descrizione = descrizione.replace("\u2013", "-").replace("\u2014", "-")
     righe = textwrap.wrap(descrizione, width=92, break_long_words=False, break_on_hyphens=False)
     descrizione_yaml = "\n".join("  " + riga for riga in righe)
     percorso = os.path.relpath(percorso_canonico, base_wrapper).replace(os.sep, "/")
@@ -97,6 +101,17 @@ def _attesi(radice, destinazione):
 def sincronizza(radice, destinazione, solo_controllo=False):
     attesi = _attesi(radice, destinazione)
     difformi = []
+    ponte = radice / "AGENTS.md"
+    modello_ponte = radice / ".claude" / "templates" / "AGENTS.md"
+    progetto_di_sistema = (radice / ".claude" / "PROJECT-SYSTEM.md").is_file()
+    destinazione_standard = destinazione == radice / ".agents" / "skills"
+    if progetto_di_sistema and destinazione_standard and not ponte.is_file():
+        if ponte.exists() or not modello_ponte.is_file():
+            print("Ponte Codex non riparabile: AGENTS.md o modello canonico assente/non valido.")
+            return 2
+        difformi.append(ponte)
+        if not solo_controllo:
+            ponte.write_bytes(modello_ponte.read_bytes())
     for percorso, contenuto in attesi.items():
         presente = percorso.read_text(encoding="utf-8-sig") if percorso.is_file() else None
         if presente == contenuto:
@@ -139,7 +154,7 @@ def sincronizza(radice, destinazione, solo_controllo=False):
                 mostrato = percorso
             print("%s: %s" % (azione, mostrato))
         return 1 if solo_controllo else 0
-    print("Wrapper Codex allineati alle skill canoniche.")
+    print("Ponte e wrapper Codex allineati alle skill canoniche.")
     return 0
 
 

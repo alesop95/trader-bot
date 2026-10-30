@@ -224,6 +224,27 @@
     "dove": ".claude/templates/tools/allinea-dal-template.py: strumenti nella radice di un pacchetto, esito SCOLLEGATO; .claude/templates/doc-ingest/doc-ingest.py: l'autotest prova che --esclusi esista"
   },
   {
+    "progetto": "8244a68c44aa",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-10-29",
+    "dove": ".claude/templates/tools/sync-codex-skills.py; .claude/templates/tools/allinea-dal-template.py; .claude/templates/tools/allinea-tutti.ps1; .claude/templates/tools/tests/test_codex_bridge.py; docs/correzione-ponte-codex.md"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-10-30",
+    "dove": ".claude/templates/tools/sync-codex-skills.py; .claude/templates/grc-skills/tools/grc-skills.py; .claude/templates/tools/tests/test_session_alignment.py"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-10-30",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md; docs/correzione-ponte-codex.md"
+  },
+  {
     "progetto": "86a83b3800c7",
     "id": "L-001",
     "commit": "",
@@ -600,6 +621,20 @@
     "commit": "",
     "data": "2026-10-28",
     "dove": ".claude/templates/tools/lezioni-template.py: il campo si accetta anche in linea"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-039",
+    "commit": "",
+    "data": "2026-10-30",
+    "dove": ".claude/templates/tools/allinea-tutti.ps1; .claude/templates/tools/stato-template.py; .claude/templates/tools/tests/test_session_alignment.py; docs/allineamento-e-posta-sessioni.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-040",
+    "commit": "",
+    "data": "2026-10-30",
+    "dove": ".claude/templates/tools/stato-template.py; .claude/templates/tools/tests/test_session_alignment.py; docs/allineamento-e-posta-sessioni.md"
   },
   {
     "progetto": "9781581909d7",

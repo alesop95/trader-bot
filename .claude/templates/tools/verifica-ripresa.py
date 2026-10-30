@@ -61,6 +61,8 @@ oppure attraverso i wrapper di hooks-starter, che leggono il codice e tornano se
 """
 
 import argparse
+import importlib.util
+from pathlib import Path
 import hashlib
 import io
 import os
@@ -677,6 +679,21 @@ def main():
 
     if a.hook:
         a.breve = True
+
+    if not a.registra:
+        base = Path(a.radice or ".").resolve()
+        candidati = [Path(__file__).with_name("stato-template.py"), base / ".claude/templates/tools/stato-template.py"]
+        helper = next((p for p in candidati if p.is_file()), None)
+        if helper:
+            try:
+                spec = importlib.util.spec_from_file_location("stato_template", helper)
+                modulo = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modulo)
+                print(modulo.stato(base)["messaggio"])
+                if (base / ".claude/ultimo-allineamento.md").is_file():
+                    print("Ultima consegna: leggere .claude/ultimo-allineamento.md")
+            except Exception as exc:
+                print("template: confronto non eseguito (%s)" % type(exc).__name__)
 
     try:
         if a.registra:

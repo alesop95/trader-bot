@@ -136,7 +136,9 @@ function Percorsi-Corse([string]$prj, [string]$rapporto) {
   # commit del progetto: un'altra sessione che committa il proprio lavoro dopo una corsa non
   # rende committato cio' che la corsa aveva scritto.
   $dataHead = @(Invoca-Git $prj log -1 --format=%cd --date=format:%Y%m%d-%H%M%S -- .claude/allineamento-template.json) | Select-Object -First 1
-  if (-not $dataHead -or -not (Test-Path -LiteralPath $cartella)) { return , $tutti }
+  if (-not (Test-Path -LiteralPath $cartella)) { return , $tutti }
+  # Al primo allineamento nessun marcatore e ancora versionato: valgono tutte le corse scritte.
+  if (-not $dataHead) { $dataHead = "" }
   foreach ($c in (Get-ChildItem -LiteralPath $cartella -Directory -ErrorAction SilentlyContinue)) {
     if ($c.Name -le $dataHead) { continue }
     if (-not (Test-Path -LiteralPath (Join-Path $c.FullName "$slug.dopo.json"))) { continue }
@@ -366,6 +368,31 @@ function Esegui-Autotest {
     Prova "una corsa precedente che ha scritto dopo l'ultimo allineamento entra nel commit" ($dentroU -contains 'a.md' -and $dentroU -contains 'b.md')
     Prova "una corsa anteriore all'ultimo allineamento, o che ha solo misurato, resta fuori" (-not ($dentroU -contains 'c.md') -and -not ($dentroU -contains 'd.md') -and $rU.lasciati -eq 2)
 
+    # 3f. CLI reale dopo due passate, prima di versionare il primo marcatore.
+    $ripetuto = Nuovo-Repo 'riallineato'
+    Scrivi $ripetuto 'mio.md' "prima`n"
+    & git -C $ripetuto add -A | Out-Null; & git -C $ripetuto commit -q -m 'base' | Out-Null
+    Scrivi $ripetuto 'mio.md' "dopo`n"; Scrivi $ripetuto 'altrui.md' "locale`n"
+    $tplProva = Join-Path $radice 'template-prova'
+    Scrivi $tplProva '.claude/PROJECT-SYSTEM.md' "prova`n"
+    $primaDir = Join-Path $tplProva '_notes/allineamento/corse/20200101-000000'
+    $dopoDir = Join-Path $tplProva '_notes/allineamento/corse/20200102-000000'
+    New-Item -ItemType Directory -Force -Path $primaDir, $dopoDir | Out-Null
+    $null = Rapporto (Join-Path $primaDir 'prj.json') @(@{file='mio.md';esito='VECCHIO'})
+    [IO.File]::WriteAllText((Join-Path $primaDir 'prj.dopo.json'),'[]',$utf8)
+    [IO.File]::WriteAllText((Join-Path $dopoDir 'prj.json'),'[]',$utf8)
+    $regProva = @{}
+    $regProva[$ripetuto] = @{stato='allineato';rapporto=(Join-Path $dopoDir 'prj.json');template_commit='abc1234';misurato_il=(Get-Date).ToString('s')}
+    $regProva[(Join-Path $radice 'escluso')] = @{stato='escluso';template_commit='abc1234'}
+    $regProva[(Join-Path $radice 'allineato-vecchio')] = @{stato='allineato';template_commit='abc1234';rapporto=(Join-Path $primaDir 'prj.json')}
+    [IO.File]::WriteAllText((Join-Path $tplProva '_notes/allineamento/registro.json'),(ConvertTo-Json $regProva -Depth 6),$utf8)
+    $cli = (& powershell -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath -Template $tplProva -SaltaPush 2>&1 | Out-String)
+    Prova "la CLI include un progetto allineato con consegna precedente non committata" ($cli -match 'da committare' -and $cli -match 'file 1, lasciati 1')
+    Prova "la CLI lascia escluso il progetto escluso" ($cli -notmatch 'escluso\s+(da committare|cartella sparita)')
+    Prova "la CLI non riapre copie allineate assenti dall'ultima corsa" ($cli -notmatch 'allineato-vecchio\s+')
+    & git -C $ripetuto diff --cached --quiet
+    Prova "l'anteprima della CLI non mette file in stage" ($LASTEXITCODE -eq 0)
+
     # 4. un albero senza niente da committare non produce un commit vuoto
     $b = Nuovo-Repo 'pulito'
     Scrivi $b 'mio.md' "prima`n"
@@ -508,16 +535,19 @@ $registro = @{}
 try { (Get-Content -LiteralPath $fileRegistro -Raw -Encoding UTF8 | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $registro[$_.Name] = $_.Value } }
 catch { Esci-Guardia 'registro illeggibile' }
 
+# I vecchi allineato del registro possono riferirsi a copie non piu presenti.
+$ultimaCorsa = @($registro.Values | Where-Object { $_.stato -in @('applicato', 'allineato') -and $_.rapporto } | ForEach-Object { Split-Path $_.rapporto -Parent } | Sort-Object | Select-Object -Last 1)
 $voci = @()
 foreach ($k in ($registro.Keys | Sort-Object)) {
   $v = $registro[$k]
-  if ($v.stato -ne 'applicato') { continue }
+  if ($v.stato -notin @('applicato', 'allineato')) { continue }
+  if ($v.stato -eq 'allineato' -and (Split-Path $v.rapporto -Parent) -ne $ultimaCorsa[0]) { continue }
   $nome = Nome-Progetto $k
   if ($Solo -and -not ($Solo | Where-Object { $nome -like "*$_*" })) { continue }
   if ($Escludi | Where-Object { $nome -like "*$_*" }) { continue }
   $voci += [pscustomobject]@{ percorso = $k; nome = $nome; rapporto = $v.rapporto; commit = $v.template_commit; misurato = $v.misurato_il }
 }
-if (-not $voci) { Write-Host 'nessun progetto in stato applicato nel registro: niente da chiudere'; exit 0 }
+if (-not $voci) { Write-Host 'nessun progetto applicato o allineato nel registro: niente da chiudere'; exit 0 }
 
 $msg = $Messaggio
 if (-not $msg) { $msg = Messaggio-Predefinito ($voci[0].commit) }
@@ -528,7 +558,7 @@ if ($Applica) { $modo = 'applica' }
 $cosa = 'commit e push'
 if ($SoloPush) { $cosa = 'solo push' }
 if ($SaltaPush) { $cosa = 'solo commit' }
-Write-Host ("template {0}  registro {1} progetti applicati" -f $Template, $voci.Count)
+Write-Host ("template {0}  registro {1} progetti applicati o allineati" -f $Template, $voci.Count)
 Write-Host ("modo: {0}   {1}   messaggio: {2}" -f $modo, $cosa, $msg)
 
 # Lo stage si fonda su quali file la passata ha scritto, non su quali modifiche
