@@ -171,6 +171,7 @@ try {
   }
 }
 finally {
+  if (Get-Command Congeda-PostaSessioni -ErrorAction SilentlyContinue) { Congeda-PostaSessioni }
   Remove-Item Env:PROJECT_AGENT_MAILBOX_ROOT,Env:PROJECT_AGENT_MAILBOX_ID,Env:PROJECT_AGENT_MAILBOX_TOOL,Env:PROJECT_TEMPLATE_ROOT -ErrorAction SilentlyContinue
   # Il finally copre anche Ctrl+C e un'uscita per errore, che sono i casi in cui
   # una pulizia messa in coda al blocco try non verrebbe mai eseguita.

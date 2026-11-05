@@ -260,7 +260,7 @@ class RisoltoAMano(BaseDelMerge):
         self.commit(corpo + ["riga del template riscritta dal template"], "testa")
         self.scrivi_progetto(corpo + ["riga riscritta in modo diverso dal progetto, per scelta"])
         self.assertEqual(self.allinea_con()["esito"], "CONFLITTO", self.uscita)
-        self.assertEqual(self.allinea_con("--risolto", REGOLA)["esito"], "ADATTATO", self.uscita)
+        self.assertEqual(self.allinea_con("--risolto", REGOLA)["esito"], "RISOLTO", self.uscita)
         self.assertTrue((self.prj / ".claude/allineamento-risolti.json").is_file())
         self.assertEqual(self.allinea_con()["esito"], "ADATTATO", self.uscita)
         self.commit(corpo + ["riga del template riscritta dal template"] + righe("nuovo", 5), "testa 2")

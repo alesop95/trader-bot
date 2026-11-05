@@ -1,5 +1,7 @@
 # Comandi a mano: i casi che hanno prodotto le prescrizioni
 
+Una quotatura della shell protegge da quel livello, non dall'interprete successivo. Un heredoc con delimitatore quotato non impedisce a un programma che riceve il testo di interpretare a sua volta le sequenze di escape. Per file con barre rovesciate o byte significativi si usa un file o lo strumento di modifica e si controllano i byte scritti; attraverso più interpreti si preferisce un payload in un file con impronta verificata, senza costruire codice da stringhe. Nei file misti la modifica conserva i terminatori di ogni riga.
+
 > Riferimento esteso della regola `.claude/rules/git-commands-format.md`, che resta la norma. Questo file non viene caricato all'avvio di una sessione: sta fuori da `.claude/rules/` di proposito, perché la prescrizione si paga in ogni sessione mentre il caso che la giustifica si legge soltanto quando la norma va estesa, discussa o rimessa in discussione. Chi applica la regola legge la regola; chi la cambia legge anche questo.
 
 
@@ -108,3 +110,10 @@ Conseguenza: un blocco che contiene un commit si chiude con una riga che ne most
 ## Una sequenza di commit consegnata a mano si simula prima di consegnarla
 
 Quando più voci di lavoro toccano gli stessi file e vanno committate separate, la sequenza consegnata a mano si simula prima di consegnarla, perché un commit intermedio può non compilare: un file condiviso entra in un commit e il codice che lo usa in un altro. Uno script assegna ogni file toccato a un commit solo e verifica che nessuno resti fuori; una simulazione parte da una copia di HEAD fuori dal repository, vi copia i file commit per commit e a ogni passo compila e lancia le prove. Le voci che condividono un file si fondono in un commit, e una prova che cambia con un componente sta nel commit di quel componente o in uno successivo, mai prima (L-014 di un progetto istanziato, dove una sequenza di trentasette commit è stata simulata così prima di ogni consegna). Lo script e la simulazione sono strumenti del progetto, non ancora del template.
+
+## Argomenti opzionali e confine nativo di PowerShell
+
+Un wrapper PowerShell consegnato a mano passava sempre una coppia opzione/valore a Python, anche quando il valore era vuoto. Windows PowerShell 5.1 ha omesso la stringa vuota nel passaggio nativo: il parser ha ricevuto l'opzione priva di argomento e si è fermato. La sintassi PowerShell e il motore Linux erano stati verificati; mancava la prova del confine reale fra i due processi.
+
+Quando il contratto del programma prevede un valore predefinito, costruire l'array degli argomenti e aggiungere la coppia opzionale solo quando il valore è presente. Se invece il valore vuoto ha un significato distinto, non ometterlo senza definire un trasporto che lo preservi. Provare il wrapper tramite la stessa versione di PowerShell usata dall'operatore, con runner sintetico: opzione assente, valore presente e percorsi con spazi e Unicode. Riprodurre il difetto con la versione precedente e controllare ciò che il parser riceve; help e sola analisi sintattica non provano quel confine. Un errore precedente alla creazione della ricevuta non va presentato come se una ricevuta esistesse già.
+

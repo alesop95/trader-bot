@@ -37,6 +37,7 @@ da usare quando si dichiara di aver allineato tutto.
     python tools/verifica-schede.py --rigoroso
     python tools/verifica-schede.py --self-test
 """
+import argparse
 import glob
 import io
 import os
@@ -57,7 +58,7 @@ def leggi_frontmatter(testo):
     if len(parti) < 3:
         return None
     fm = parti[1]
-    ancora = re.search(r"^last-verified-commit:\s*(\S+)", fm, re.MULTILINE)
+    ancora = re.search(r"^last-verified(?:-commit)?:[ \t]*(\S+)", fm, re.MULTILINE)
     percorsi = None
     in_linea = re.search(r"^covers-paths:\s*\[(.*?)\]", fm, re.MULTILINE | re.DOTALL)
     if in_linea:
@@ -86,7 +87,7 @@ def classifica(nome, percorsi, ancora, esiste, commit_valido, cambiati):
         difetti.append(f"{nome}: ha `covers-paths` ma nessun `last-verified-commit`, quindi nessun confronto la guarda")
         return difetti, []
     if not commit_valido(ancora):
-        difetti.append(f"{nome}: l'ancora `{ancora}` non è un commit di questo repository")
+        difetti.append(f"{nome}: l'ancora `{ancora}` non è un commit antenato di HEAD (inesistente o fuori dalla storia del ramo)")
         return difetti, []
     if ancora == SEGNAPOSTO:
         return difetti, []
@@ -111,7 +112,7 @@ def ancora_valida(ancora, senza_commit):
     """Il segnaposto è legittimo solo finché il repository non ha commit: dopo è un'ancora dimenticata."""
     if ancora == SEGNAPOSTO:
         return senza_commit
-    r = subprocess.run(["git", "cat-file", "-e", f"{ancora}^{{commit}}"], capture_output=True)
+    r = subprocess.run(["git", "merge-base", "--is-ancestor", ancora, "HEAD"], capture_output=True)
     return r.returncode == 0
 
 
@@ -175,10 +176,20 @@ def self_test():
 
 
 def main():
-    if "--self-test" in sys.argv[1:]:
+    parser = argparse.ArgumentParser(description="Verifica copertura e ancore delle schede di contesto")
+    parser.add_argument("--radice", help="radice del progetto da controllare; altrimenti il repository corrente")
+    parser.add_argument("--rigoroso", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    if args.self_test:
         return self_test()
-    rigoroso = "--rigoroso" in sys.argv[1:]
-    os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    radice = args.radice or os.getcwd()
+    repo = subprocess.run(["git", "-C", radice, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    if repo.returncode:
+        print("radice non verificabile: non è un repository git")
+        return 2
+    os.chdir(repo.stdout.strip())
+    rigoroso = args.rigoroso
     difetti, superate = [], []
     con_frontmatter = non_applicabili = 0
     for f in sorted(glob.glob(".claude/context/**/*.md", recursive=True)):

@@ -1,0 +1,21 @@
+#!/bin/sh
+# Una voce nuova di risoluzione deve descrivere il contenuto nello stesso commit.
+root=$(git rev-parse --show-toplevel) || exit 1
+git diff --cached --name-only -- .claude/allineamento-risolti.json | grep -q . || exit 0
+py="${PYTHON_CMD:-}"
+if [ -z "$py" ]; then
+    for candidate in python3 python; do
+        if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys' >/dev/null 2>&1; then
+            py="$candidate"
+            break
+        fi
+    done
+fi
+[ -n "$py" ] || { echo "Risoluzioni: Python manca, commit fermato." >&2; exit 1; }
+for folder in tools .claude/templates/tools; do
+    if [ -f "$root/$folder/verifica-milestone.py" ]; then
+        exec "$py" "$root/$folder/verifica-milestone.py" --radice "$root" --stage-risoluzioni
+    fi
+done
+echo "Risoluzioni: manca verifica-milestone.py, commit fermato." >&2
+exit 1

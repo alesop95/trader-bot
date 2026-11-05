@@ -1,5 +1,40 @@
 [
   {
+    "progetto": "51462580c4f1",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": "allinea-dal-template.py: firma locale normalizzata LF e rivalutazione quando cambia, stato RISOLTO e file fuso nello stesso rapporto del registro; chiudi-allineamento.ps1 e stato-template.py: perimetro completo; verifica-milestone.py, chiudi-sessione e hook risoluzioni: corrispondenza fra indice e firma prima del commit; test_resolution_integrity.py."
+  },
+  {
+    "progetto": "51462580c4f1",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/templates/grc-skills/skills/soc2/.md-unwrap-ignore, autotest grc-skills.py e COMMIT-SCOPE: gia corretto nel lotto in preparazione; il marcatore deve entrare nella pubblicazione con le pagine, la presenza nel working tree non prova la consegna. Nessun allineamento dichiarato prima del commit."
+  },
+  {
+    "progetto": "51462580c4f1",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-11-05",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: copertura per identificatori e classi equivalenti, attribuzione verificata e denominatore dichiarato"
+  },
+  {
+    "progetto": "51462580c4f1",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-11-05",
+    "dove": "Gia coperta in .claude/norme/git-commands-format.md: la quotatura della shell non protegge dall interprete successivo; file o strumento di modifica, controllo dei byte. Nessuna duplicazione normativa"
+  },
+  {
+    "progetto": "51462580c4f1",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-11-05",
+    "dove": ".claude/norme/token-economy.md: ripresa dello stesso contesto dopo la quota se supportata, altrimenti mandato sul residuo; nessuna autorizzazione implicita a delegare"
+  },
+  {
     "progetto": "71947b5a11ed",
     "id": "L-001",
     "commit": "",
@@ -175,6 +210,174 @@
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Una misura che fallisce subito dopo che hai cambiato il modo di misurare si sospetta per prima"
   },
   {
+    "progetto": "7bdce874415c",
+    "id": "L-024",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": "Gia attuata nel commit 8a42d36: esempi generici in RICOGNIZIONE-FEYNMAN.md e tools/README.md; test-identita-personali presidia i nomi nel materiale distribuito. La configurazione privata di anonymization resta distinta dal solo modello."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-025",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/studio-didattico/SKILL.md e init-project-system/SKILL.md: richiamo all adozione e lint-prosa; verifica-milestone.py e chiudi-sessione nelle due varianti: avviso su ADR, strumenti e deploy senza didattica; test_milestone_scope.py."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-026",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/rules/chat-non-e-memoria.md: perimetro privato; anonymization/tools/Test-Anonymization.py e patterns.example.json: riferimenti personali non bloccanti; test_private_references.py."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-027",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/rules/chat-non-e-memoria.md: anche lo strumento di modifica dell agente deve conservare i terminatori per byte nei file mixed."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-028",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": "verifica-milestone.py, chiudi-sessione.ps1 e .sh: COMMIT-SCOPE.json separato dal messaggio di una riga, inventario con impronte, stage preesistente preservato, conferma per piu aree, git add sui soli percorsi mostrati; test_milestone_scope.py e test_chiudi_linux.py."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-029",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/templates/context/deployment.md: accesso dell agente, esecutore delle misure, data e perimetro, autorizzazioni esplicite del runtime."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-030",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Sintassi, stato iniziale e valori limite; primo giro, successivo e limite eseguiti, distinti dal parsing."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-031",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Il contratto di un integrazione precede le misure; negoziazione dei soli schemi documentati, errori distinti e prova dei rami."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-032",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: preflight di licenza e accesso prima di pianificare sui dati, senza dedurre l abilitazione da menu o permessi."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-033",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: creazione e aggiornamento di chiavi ammesse, rifiuto dei duplicati, nessun segreto nei file tracciati o nei log."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-034",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": "verifica-schede.py e verifica-ripresa.py: merge-base --is-ancestor e last-verified storico; sync-context/SKILL.md: quinta cecita; test_resume_parity.py: oggetto esistente con albero identico ma fuori storia. Data e soggetto propongono un candidato, non provano equivalenza e non autorizzano rimappature automatiche."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-035",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: Un presidio deve vedere anche il lavoro che non finisce; eta dell ultimo risultato valido oltre agli errori di esecuzione."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-036",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: confronto fra fusi espliciti e istanti comuni, verifica sui confini dell ora legale senza compensazioni manuali."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-037",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: piano misurato con simulazione prima dell esecuzione e perimetro delle modifiche da autorizzare."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-038",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": ".claude/templates/context/deployment.md: Deroghe temporanee e revoca, pendente aperto nello stesso giro con responsabile e condizione di chiusura."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-039",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": ".claude/norme/git-commands-format.md: la quotatura protegge un solo livello di interprete; payload in file, controllo dei byte e conservazione dei terminatori. Il divieto operativo degli heredoc era gia nella regola principale."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-040",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/templates/grc-skills/skills/soc2/.md-unwrap-ignore e grc-skills.py autotest: marcatore presente per ogni skill assorbita; il comando aggiorna lo scriveva gia, il contributo manuale lo aveva omesso."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-041",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: esito vuoto distinto da assenza verificata, controllo del perimetro e seconda via indipendente."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-042",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: comandi e percorsi non esercitati consegnati con provenienza e limite della verifica."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-043",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: limite con valore, unita, ragione e condizione di revisione o revoca."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-044",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: preferire il documento gia usato dal pubblico, nuovo artefatto giustificato da bisogno o pubblico distinto."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-045",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: arresto tramite sistema gestore prima del segnale, senza generalizzare il nesso causale sullo stato non interrompibile."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-046",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: chiusura riflessa nello stesso giro nella vista di pianificazione, con stato e data se conservata."
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-047",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: spiegare i messaggi normali ambigui prima della procedura, distinguendoli dai guasti."
+  },
+  {
     "progetto": "8244a68c44aa",
     "id": "L-001",
     "commit": "",
@@ -250,6 +453,20 @@
     "commit": "",
     "data": "2026-10-20",
     "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "90c4372dac0a",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": "Accolta con limite in .claude/templates/anonymization/BONIFICA-STORIA.md, sezione 5bis: prevedere piani senza supporto e valutare una migrazione autogestita soltanto con inventario, approvazione e verifiche. Non accolta la garanzia che cancellare e ricreare elimini fisicamente tutti gli oggetti: la documentazione ufficiale ammette ripristino entro 90 giorni e fork pubblici persistenti. Nessuna cancellazione eseguita."
+  },
+  {
+    "progetto": "90c4372dac0a",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": "Parte generale in .claude/skills/prove-che-misurano/RIFERIMENTO.md: cambio del contratto e prova aggiornati nello stesso giro, comandi e casi dichiarati, esecuzioni registrate. Non si eseguono comandi arbitrari estratti dalla prosa di dev-testing; il collegamento alla suite concreta resta nella pipeline del progetto. Prova del nuovo contratto nel template: test_resolution_integrity.py."
   },
   {
     "progetto": "92ab8dd14a43",
@@ -624,6 +841,20 @@
   },
   {
     "progetto": "9546cca6109b",
+    "id": "L-037",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-038",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "9546cca6109b",
     "id": "L-039",
     "commit": "",
     "data": "2026-10-30",
@@ -635,6 +866,55 @@
     "commit": "",
     "data": "2026-10-30",
     "dove": ".claude/templates/tools/stato-template.py; .claude/templates/tools/tests/test_session_alignment.py; docs/allineamento-e-posta-sessioni.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-041",
+    "commit": "",
+    "data": "2026-11-02",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-042",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": ".claude/templates/tools/fonti-a-monte.py: citazione distinta dall installazione, binari npm risolti dai metadati delle dipendenze, correzione dei vecchi motivi automatici senza sovrascrivere quelli manuali; test_source_citations.py."
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-043",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": "Parte generale in .claude/skills/prove-che-misurano/RIFERIMENTO.md: misurare il file risolto dal loader prima di diagnosticare cicli o spostare dati. preferTsExts e tsconfig restano nel progetto TypeScript: non si impone un loader specifico ai progetti del template."
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-044",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/norme/git-commands-format.md: gia coperta dalla norma sui livelli di interprete e verifica dei byte introdotta con L-039; evitare di duplicarla. Le raw string sono un altra possibilita Python, chr(92) non e obbligatorio."
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-045",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: censimento di richieste e dati prima di introdurre origini remote, alternativa locale e limiti della sola CSP; nessuna generalizzazione giuridica sul consenso."
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-046",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: prima e dopo con identica funzione sui due stati identificati, nessun risultato per sottrazione."
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-047",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/templates/grc-skills/skills/soc2/.md-unwrap-ignore e grc-skills.py autotest: stesso difetto di L-040, prova del marcatore su tutte le skill assorbite."
   },
   {
     "progetto": "9781581909d7",
@@ -679,10 +959,122 @@
     "dove": "templates/tools/lint-cultura.py, lanciato da chiudi-sessione: blocca nel template, avvisa nei progetti"
   },
   {
+    "progetto": "bae518523f0d",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-03",
+    "dove": "tre interventi: .claude/templates/agenti-terminale/tools/posta-sessioni.py, nuova azione congeda per nome o per eta', elenca mostra per difetto i soli vivi, invia rifiuta un congedato, undici prove di autotest; .claude/templates/agenti-terminale/tools/Posta-Sessioni.ps1, funzione Congeda-PostaSessioni e scopa delle registrazioni oltre 24 ore all'avvio; Avvia-Claude.ps1 e Avvia-Codex.ps1, congedo nel blocco finally prima della rimozione delle variabili. Resta scoperta la meta' che non dipende dallo strumento: una sessione avviata fuori dai launcher non si registra e nessun elenco la vede"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: errori per file, conteggi dei parziali e stderr del sottoprocesso; prescrizione generale, nessun convertitore specifico installato."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: dispositivo reale del servizio e ritmo misurato prima del lotto, senza dedurli dall hardware presente."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: limiti degli schemi realmente applicati dal motore e diagnosi dell uscita troncata."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: risorse condivise nel livello macchina, avvio idempotente e verifica del servizio finale; nessuna installazione persistente implicita."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: provenienza distinta da pertinenza, controllo lessicale diagnostico e limiti derivati dal contratto delle ancore."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: dimensionamento sul massimo ammesso, margine verificato sul tokenizer, prova sui limiti; non accolta come assoluta la frase che alzare il tetto non costa niente, dipende dal motore."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: coppia domanda-risposta e verifica nel documento, senza trasformare una cella interrogativa in dichiarazione."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: uso dello strumento canonico delle trasformazioni e prove dei confini di parola; richiamo esplicito a fix-accents.py."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: configurazione esercitata come dal consumatore, campioni positivi e negativi; copertura gia attuata nel commit b358741 in guardia-pubblicazione."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: varianti ricavate dal corpus, nomi completi e preferenza per parser, separazione della decorazione senza perdita di contenuto."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-012",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/PROMPT-allinea-progetto-esistente.md: diagnosi e migrazione delle direttive ripetute nei file locali; .claude/skills/riprendi/SKILL.md: confronto work-log e attivita Git come sintomo e verifica delle istruzioni locali superate. Nessuna soglia cronologica arbitraria e nessuna riscrittura automatica dei registri."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-013",
+    "commit": "",
+    "data": "2026-11-05",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: processo non visibile, due misure dell effetto e incertezza prima di rilanciare"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-014",
+    "commit": "",
+    "data": "2026-11-05",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: enumerazioni per caso, copia profonda e prove di indipendenza dello schema"
+  },
+  {
     "progetto": "f00655740f68",
     "id": "L-001",
     "commit": "",
     "data": "2026-10-28",
     "dove": "docs/proposta-tracciamento-esecuzioni.md, committato in d36db37 e in lavorazione: la lezione chiedeva al template di poter PROPORRE uno strumento riutilizzabile per tracciare il lavoro da terminale, non di averlo gia; quel documento e' esattamente quella proposta, con il contratto che separa autorizzazione, comando, trasporto, verifica dello stato e conclusione consentita. Si chiude qui: quando il pacchetto nascera sara una funzionalita nuova, non questa lezione"
+  },
+  {
+    "progetto": "f00655740f68",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/templates/tools/gh-progetto.py; .claude/templates/tools/tests/test_pr_text.py; .claude/skills/identita-git/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "f00655740f68",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-11-04",
+    "dove": ".claude/norme/git-commands-format.md"
   }
 ]

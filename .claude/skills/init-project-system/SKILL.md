@@ -20,6 +20,8 @@ Se la cartella non è ancora un repository git, questi comandi stampano un error
 
 ## Premessa
 
+Quando il progetto adotta esplicitamente il livello didattico, applicare anche il passo di adozione della skill `studio-didattico`: richiamo nel `CLAUDE.md`, controlli didattici e `lint-prosa.py` sul master e sulle schede. Un livello non adottato non si attiva per effetto dell'allineamento.
+
 Questa skill installa il sistema descritto in `.claude/PROJECT-SYSTEM.md`, che è la fonte di verità della procedura. Se quel file non è presente nella radice del progetto o sotto `.claude/`, fermarsi e avvisare l'utente: il sistema non può essere installato senza il file portabile, che va copiato dal progetto di riferimento. Non duplicare qui il contenuto del runbook: leggerlo e applicarlo.
 
 ## Modalità: greenfield o allineamento

@@ -319,8 +319,11 @@ def analizza(pat, files):
     mac_ok = tuple(m.upper() for m in pat["mac_ammessi_prefissi"])
     mail_ok = set(m.lower() for m in pat["email_ammesse"])
     nomi = pat["nomi_propri"]
+    nomi_pattern = [(n, re.compile(r"(?<!\w)" + re.escape(n) + r"(?!\w)", re.I)) for n in nomi if n]
     nomi_ctx = pat.get("nomi_ammessi_in_contesto", [])
     segreti = pat.get("segreti_letterali", [])
+    servizi_cloud = pat.get("servizi_cloud_personali", [])
+    percorso_personale = re.compile(r"(?:[A-Za-z]:[\\/]Users[\\/][^\\/\s`<>]+|/(?:home|Users)/[^/\s`<>]+)")
 
     for f, origine in files:
         if os.path.splitext(f)[1].lower() in SKIP_EXT:
@@ -335,6 +338,10 @@ def analizza(pat, files):
             continue
 
         for ln, riga in enumerate(contenuto.split("\n"), 1):
+            for match in percorso_personale.finditer(riga):
+                aggiungi("RIFERIMENTO PERSONALE da valutare", f, ln, riga, "<percorso personale>", origine)
+            if any(service.casefold() in riga.casefold() for service in servizi_cloud if service):
+                aggiungi("RIFERIMENTO PERSONALE da valutare", f, ln, riga, "<servizio cloud personale>", origine)
             for m in IPV4.finditer(riga):
                 ip = m.group(0)
                 base = ip.split("/")[0]
@@ -380,8 +387,8 @@ def analizza(pat, files):
                     aggiungi("SEGRETO LETTERALE", f, ln, riga, "<valore oscurato>", origine)
 
             bassa = riga.lower()
-            for n in nomi:
-                if n.lower() not in bassa:
+            for n, nome_pattern in nomi_pattern:
+                if not nome_pattern.search(riga):
                     continue
                 # un nome dentro la ragione sociale legale è ammesso per decisione
                 if any(c.lower() in bassa for c in nomi_ctx):

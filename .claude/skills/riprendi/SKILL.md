@@ -22,6 +22,8 @@ Il danno non è la perdita del lavoro, che sta su disco e in git. È più sottil
 
 ## Passo 1 - Verificare prima di leggere
 
+La procedura vale per entrambi gli agenti. In Codex CLI si richiede con `$riprendi` o da `/skills`; se il client non espone il selettore, si legge questo file su richiesta esplicita o per istruzione di `AGENTS.md`. Il nome slash di Claude non è un requisito della procedura. Nel repository del template gli strumenti citati come `tools/` si eseguono da `.claude/templates/tools/`, nella radice del progetto.
+
 Il primo comando non legge il file di ripresa: verifica che si possa credergli.
 
 ```
@@ -52,6 +54,20 @@ Solo quando lo stato è chiaro si segue la procedura ordinaria, che vive qui e s
 
 Dove il progetto ha scelto Codex, cioè dove esiste `.agents/skills`, si esegue `python tools/sync-codex-skills.py --check`, che controlla che Claude Code e Codex scoprano le stesse skill; dove non esiste il controllo non ha oggetto, ed è la stessa condizione con cui l'allineamento genera gli adattatori. Se il `CLAUDE.md` del progetto prescrive controlli da eseguire all'apertura, come fa quello del template, si eseguono qui. Dove esiste `.claude/templates/tools/fonti-a-monte.py` si lancia `python .claude/templates/tools/fonti-a-monte.py controlla`, che riconosce da sé se gira nel template o in un progetto: nel progetto sorveglia i repository da cui il progetto ha installato skill, agenti o comandi, aggiunge da sé al registro `.claude/fonti-a-monte.json` ogni fonte nuova, con ruolo e motivo dedotti dal posto dove l'ha trovata, e per ciascuna cambiata o mai confrontata si rilegge la copia installata, la si aggiorna se serve e si registra la verifica con `segna`. Si legge `.claude/memory/index.md`, che dà branch, commit di riferimento, stato di verifica di ogni scheda e punto di ripresa; se il progetto usa più alberi di lavoro la memoria vale per la branch su cui è scritta, e quando la verifica segnala un albero con la memoria più avanti `index.md`, `progress.md` e `decisions.md` si leggono da quell'albero per percorso assoluto, come prescrive `.claude/skills/alberi-di-lavoro/RIFERIMENTO.md`. Si legge `.claude/context/current-work.md` se c'è una feature attiva, si invoca `sync-context` per misurare il drift fra schede e codice, e si leggono le sole schede pertinenti al task, mai tutte insieme. Il work-log `.claude/memory/progress.md` e il registro `.claude/memory/decisions.md` danno la storia e le decisioni quando servono; il materiale grezzo sotto `_notes/` si apre solo per verificare un requisito originale.
 
+<a id="vulnerabilita-runtime"></a>
+
+### Controllare anche lo stato delle vulnerabilità
+
+Dopo il confronto col template si esegue, se presente, `python .claude/templates/tools/stato-vulnerabilita.py --radice .`. L'allineamento dei file del sistema di progetto e lo stato di sicurezza hanno due verdetti distinti. Un rapporto assente, scaduto, incompleto o relativo ad altro codice non è un controllo superato. Il comando è una verifica delle prove conservate, non uno scanner: non apre SSH, non manda inventari a servizi esterni e non aggiorna pacchetti.
+
+Se il rapporto manca o non vale più, l'agente prepara la ricognizione nel perimetro autorizzato usando avvisi correnti dei produttori e delle distribuzioni e strumenti appropriati all'ecosistema. Distingue dipendenze dichiarate, lockfile e pacchetti installati; runtime dell'host e delle immagini; versione upstream e backport di distribuzione; esposizione e condizioni effettive. Un host non raggiunto o una sorgente non leggibile restano non verificati. Non si usano prove che provocano esaurimento di memoria o eseguono exploit sui servizi operativi. I valori reali e le prove restano privati; il contesto di un altro progetto riceve soltanto il perimetro approvato dal proprietario.
+
+La ricognizione produce `_notes/sicurezza/ultimo-controllo.json`, schema `project-security-review-0.1`. Il campo `verificato_il` è una data con fuso, non si rinnova leggendo il rapporto; `commit` e `ramo` identificano il codice; `input_sha256` è la mappa esatta dei manifest rilevati dalla funzione `inputs` dello strumento. `prove` elenca percorso relativo e SHA-256 delle evidenze. `copertura` dichiara i sei perimetri `dipendenze`, `runtime`, `host`, `immagini`, `esposizione` e `integrita`, ognuno con stato `verificato`, `non_verificato` o `non_applicabile`; quest'ultimo richiede il motivo. `rilievi` conserva identificativo, gravità e stato `aperto`, `mitigato` o `risolto`. Un rilievo mitigato resta aperto. Il rapporto deve corrispondere alle verifiche realmente effettuate, senza compilare i campi mancanti con valori rassicuranti. Per impostazione predefinita scade dopo 24 ore; codice non committato, un nuovo manifest, una prova cambiata o un riferimento Git diverso lo invalidano.
+
+Gli aggiornamenti si affrontano uno alla volta nel progetto proprietario. Prima si riscontrano il riferimento di rilascio e le modifiche locali sui server; poi si prepara una correzione delimitata in ambiente isolato, con prove prima e dopo, backup e ripristino adeguati. Su un'applicazione delicata si conclude prima la diagnosi e si concordano i passi. Uno script di allineamento non aggiorna tutte le dipendenze e non distribuisce immagini. Una dipendenza affetta non dimostra un attacco; una configurazione modificata o un database locale dei pacchetti integro non certificano l'assenza di compromissione.
+
+Per un hook si usa `--hook`: il testo conserva il problema e il codice di uscita resta zero. La CLI ordinaria restituisce 1 quando conserva rilievi aperti, 2 quando il controllo non è qualificabile e 0 soltanto per un rapporto corrente senza rilievi nel perimetro dichiarato. Il riesame dal vivo di runtime, host e immagini si effettua nel progetto autorizzato; la lettura del rapporto non osserva eventuali cambiamenti successivi della macchina.
+
 Il file di ripresa si legge dopo, non prima, e con la consapevolezza di quanto sia attendibile: se la verifica non ha trovato divergenze descrive il presente, e allora il prompt che contiene si può eseguire così com'è; se ne ha trovate, il file resta utile per il contesto ma il punto di ripresa vero è quello ricostruito adesso.
 
 ## Passo 4 - Il recap, e poi fermarsi
@@ -73,6 +89,8 @@ Il modo ordinario di farlo è `chiudi`, che l'utente lancia dopo aver chiuso la 
 Una sessione che finisce senza registrare non produce un danno: produce esattamente la situazione che questa skill sa riconoscere, cioè un file di ripresa che non descrive il presente. È il comportamento voluto, ed è la ragione per cui l'impronta si registra e non si deduce.
 
 ## Automatizzarlo, se il progetto lo vuole
+
+Nella diagnosi confronta anche la data dell'ultima voce del work-log con l'attività di Git successiva: un lungo scarto richiede di verificare che la persistenza non sia stata disattivata da un'istruzione locale superata. Il confronto è un sintomo, non prova di perdita del lavoro né autorizzazione a riscrivere la storia del registro. Controlla le istruzioni ripetute in `CLAUDE.md` e `AGENTS.md` rispetto alle regole canoniche correnti; ricostruisci soltanto gli aggiornamenti sostenuti da evidenze e dichiara gli intervalli non ricostruibili.
 
 Il pacchetto `hooks-starter` copre la famiglia degli hook di apertura sessione. Dove sia attivo, la forma breve dello strumento sta in una riga e stampa un solo esito, così che la divergenza si veda senza che nessuno debba invocare niente.
 

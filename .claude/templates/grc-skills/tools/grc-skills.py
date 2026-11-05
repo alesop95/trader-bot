@@ -299,6 +299,8 @@ def autotest() -> int:
         ns = argparse.Namespace(radice=prj, skill=None, sorgente=monte, commit="abc", tag="v1")
         assert cmd_aggiorna(ns) == 0, "una skill pulita non deve fermare"
         prov = leggi_provenienza(prj)
+        for skill in prov["skill"]:
+            assert (prj / PACCHETTO / "skills" / skill / MARCATORE).is_file(), "copia verbatim senza marcatore"
         assert prov["tag"] == "v1" and prov["ultima_verifica_a_monte"]["aa"] == "2026-10-03"
         testo = (prj / PACCHETTO / "skills" / "aa" / "SKILL.md").read_text(encoding="utf-8")
         assert "privacy@example.com" in testo and "info@example.com" in testo, "indirizzo reale non neutralizzato"

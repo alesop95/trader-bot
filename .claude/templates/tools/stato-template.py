@@ -179,7 +179,7 @@ def ricevuta(esiti, commit):
         e
         for e in esiti
         if e["esito"]
-        in ("NUOVO", "VECCHIO", "SUPERATO", "MERGE", "INNESCO", "SPOSTATO", "RIMOSSO")
+        in ("NUOVO", "VECCHIO", "SUPERATO", "MERGE", "RISOLTO", "INNESCO", "SPOSTATO", "RIMOSSO")
     ]
     if not written:
         return None

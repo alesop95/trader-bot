@@ -79,3 +79,7 @@ Quando il risparmio nativo non basta, per esempio in sessioni operative molto lu
 `caveman` riduce i token di output facendo rispondere l'agente in modo telegrafico, senza toccare il ragionamento. È utile nelle sessioni operative pesanti, ma va tenuto spento quando il progetto produce documentazione o prosa leggibile, perché ne degraderebbe lo stile. Vive come tool di sessione, non come stato del progetto. Vedi la voce `caveman` in `templates/PACKAGES.md`.
 
 Per esigenze più spinte esistono alternative come un server MCP di compressione e caching del contesto (per esempio `token-optimizer-mcp`). Si adottano solo se il guadagno giustifica la dipendenza, valutando caso per caso.
+
+## Riprendere un agente dopo un limite di utilizzo
+
+Quando un agente si arresta per quota esaurita si conservano il suo identificativo, il checkpoint e l'eventuale orario di ripristino dichiarato dal servizio. Se il client consente di riprendere quel contesto, dopo il ripristino si invia allo stesso agente il punto da cui continuare e si verifica che riparta dal lavoro salvato. Non si crea un nuovo agente con il mandato intero per il solo fatto che il precedente è fermo: rifarebbe quanto già consumato. Se il contesto non è recuperabile si prepara un nuovo mandato limitato al residuo, con gli artefatti già prodotti e i limiti della ricostruzione. Questa procedura vale quando la delega è autorizzata; non autorizza nuovi agenti da sola.

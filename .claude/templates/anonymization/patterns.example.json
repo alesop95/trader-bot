@@ -1,6 +1,8 @@
 {
   "_nota": "ESEMPIO. Questo file dichiara la FORMA attesa dal controllo, non il suo contenuto. Il file vero si chiama .anonymization-patterns.json, vive nel layer privato del progetto (per default _notes/, ignorato da git) e contiene i valori REALI da cercare: e' l'unico posto in cui quei valori possono stare, insieme alla mappa dei segnaposto. Copiare questo file, rinominarlo e sostituire ogni valore. Non tracciarlo mai.",
   "_perche_fuori_dallo_script": "Un indirizzo IP ha una forma riconoscibile, un nome proprio no: e' un nome proprio solo se e' di qualcuno. Ne discende che l'elenco di cio' che va cercato e' specifico del progetto e non puo' vivere nello script, che invece e' tracciato. La separazione fra il controllo, pubblicabile, e cio' che il controllo cerca, privato, e' la proprieta' che rende lo strumento utilizzabile su un repository pubblico.",
+  "servizi_cloud_personali": [],
+  "_servizi_cloud_personali": "Nomi dei servizi personali del proprietario da cercare come avviso non bloccante. I valori reali restano soltanto nel file privato; i percorsi sotto la cartella utente sono segnalati senza configurazione.",
   "reti_documentali_ammesse": [
     "203.0.113.",
     "198.51.100.",

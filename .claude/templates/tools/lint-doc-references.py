@@ -47,6 +47,17 @@ file che il progetto ha solo per una scelta propria, come il registro delle font
 e non ferma la chiusura. Due lezioni di un progetto istanziato l'hanno chiesto, perché il rimedio
 puntuale con il marcatore si riapriva a ogni skill nuova.
 
+Una sesta categoria ritaglia dalla quinta il caso che la quinta nascondeva, dal 2026-11-03: da
+istanziare. Una skill propagata prescrive un comando su `tools/<nome>`, il progetto non ha quella
+copia, e il template gliel'ha già consegnata sotto `.claude/templates/`: lì non c'è niente da
+correggere nel template, perché il testo dice il vero e il file è arrivato; manca il gesto di
+adozione, cioè la copia in `tools/`. Dirlo propagato era dirlo di competenza altrui, e così nessuno
+lo guardava più. Il caso osservato: in un progetto istanziato la skill `riprendi` e il suo
+`verifica-ripresa.py` sono arrivati insieme il 2026-09-28, la skill si è installata da sé perché sta
+sotto `.claude/`, lo strumento no, e per cinque settimane il primo comando della procedura di ripresa
+non ha risolto senza che nessun controllo lo dicesse. La categoria non ferma la chiusura, perché un
+progetto può legittimamente non volere uno strumento, e nomina il comando che la chiude.
+
 La distinzione non si indovina e non va indovinata, perché in un progetto ospite quelle stesse
 segnalazioni sono vere e vanno lette: un documento che nomina `tools/md-unwrap.py` in un progetto
 che non ha istanziato quel pacchetto sta descrivendo uno strumento che là non c'è. L'opzione è
@@ -256,6 +267,32 @@ def propagato(documento, skill):
     return len(parti) > 3 and parti[0] in (".claude", ".agents") and parti[1] == "skills" and parti[2] in skill
 
 
+def da_istanziare(token, radice=None):
+    """Ritorna il percorso di origine se il token è uno strumento consegnato e mai copiato.
+
+    Si applica al solo token nella forma `tools/<nome>`, che è il percorso con cui una skill
+    prescrive un comando, e chiede che il carico del template sotto `.claude/templates/` porti un
+    file con quel nome dentro una cartella `tools`, oppure nella radice di un pacchetto, che sono i
+    due posti da cui l'allineamento riconosce uno strumento. Il filtro sulla forma del token è
+    quello che tiene fuori i file condizionati di un progetto, come il registro delle fonti a monte,
+    che restano propagati.
+    """
+    t = token.replace("\\", "/").split("/")
+    if len(t) != 2 or t[0] != "tools" or not t[1]:
+        return None
+    base = os.path.join(radice or ".", ".claude", "templates")
+    if not os.path.isdir(base):
+        return None
+    for cartella, _c, file in os.walk(base):
+        if t[1] not in file:
+            continue
+        rel = os.path.relpath(cartella, base).replace("\\", "/")
+        if os.path.basename(cartella) == "tools" or rel.count("/") == 0:
+            dentro = "" if rel == "." else rel + "/"
+            return ".claude/templates/" + dentro + t[1]
+    return None
+
+
 def portato_dal_bundle(token, radice=None, prescritti=None):
     """Vero se il bundle porta o prescrive quel file, per nome o come percorso nominato."""
     base = os.path.join(radice or ".", ".claude", "templates")
@@ -277,6 +314,10 @@ def categoria(documento, token=None, bundle=False, radice=None, prescritti=None,
     if any(s in d for s in STORICI):
         return "storico"
     if not bundle and skill is not None and propagato(d, skill):
+        # Il ritaglio vale solo dentro i documenti propagati: un documento del progetto che nomina
+        # uno strumento assente resta da correggere, perché quella frase l'ha scritta il progetto.
+        if token is not None and da_istanziare(token, radice):
+            return "da_istanziare"
         return "propagato"
     if bundle and token is not None:
         if token.replace("\\", "/").startswith(ANATOMIA_OSPITE):
@@ -310,7 +351,8 @@ def analizza(radice=None, bundle=False):
     """Ritorna il dizionario delle tre categorie e la fonte delle radici."""
     cartelle, file_radice, fonte = radici(radice)
     base = radice or "."
-    trovati = {"vivo": [], "storico": [], "modello": [], "bundle": [], "propagato": []}
+    trovati = {"vivo": [], "storico": [], "modello": [], "bundle": [], "propagato": [],
+               "da_istanziare": []}
     prescritti = prescritti_dal_bundle(radice) if bundle else set()
     skill = skill_del_template(radice)
     for documento in documenti_da_leggere(radice):
@@ -414,8 +456,12 @@ def self_test():
         # Fino al 2026-10-20 qui si pretendeva che fossero difetti del progetto. Una regola pero'
         # la scrive l'allineamento: dal 2026-10-20 (lezione L-005) si dichiarano come propagate,
         # visibili e non bloccanti, e la quarta categoria resta comunque spenta.
+        # Dal 2026-11-03 le due citazioni si separano: l'anatomia resta propagata, lo strumento che
+        # il bundle ha consegnato e il progetto non ha copiato passa alla sesta categoria.
         prova("negativo: senza dichiararlo, in un progetto ospite quelle citazioni non sono del bundle",
-              not senza["bundle"] and len([t for _d, _n, t in senza["propagato"]]) >= 2, str(senza))
+              not senza["bundle"]
+              and ".claude/memory/index.md" in [t for _d, _n, t in senza["propagato"]]
+              and "tools/md-unwrap.py" in [t for _d, _n, t in senza["da_istanziare"]], str(senza))
         con, _f, _c = analizza(tmp, bundle=True)
         bundle = [t for _d, _n, t in con["bundle"]]
         prova("in modalita' bundle l'anatomia ospite non e' un riferimento rotto",
@@ -475,6 +521,34 @@ def self_test():
         prova("una skill spedita dal template e una regola nemmeno",
               ".claude/pipeline.json" in propagati and "tools/lint-prosa.py" in propagati, str(propagati))
         prova("una skill del progetto si controlla", ".claude/mio-assente.json" in vivi, str(vivi))
+        prova("uno strumento che il template non porta resta propagato",
+              "tools/lint-prosa.py" in propagati, str(propagati))
+
+        # 2026-11-03: uno strumento consegnato dal template e mai istanziato non e' competenza del
+        # template, e dirlo propagato lo rendeva invisibile per cinque settimane in un progetto.
+        scrivi(".claude/templates/tools/verifica-ripresa.py", "# strumento consegnato\n")
+        scrivi(".claude/templates/anti-slop/tools/lint-prosa.py", "# strumento di pacchetto\n")
+        scrivi(".claude/skills/riprendi/SKILL.md", "Si lancia `tools/verifica-ripresa.py`.\n")
+        trovati, _f, _c = analizza(tmp)
+        vivi = [t for _d, _n, t in trovati["vivo"]]
+        propagati = [t for _d, _n, t in trovati["propagato"]]
+        istanziare = [t for _d, _n, t in trovati["da_istanziare"]]
+        prova("uno strumento consegnato e non copiato si distingue dal propagato",
+              "tools/verifica-ripresa.py" in istanziare
+              and "tools/verifica-ripresa.py" not in propagati
+              and "tools/verifica-ripresa.py" not in vivi, str(trovati))
+        prova("vale anche per uno strumento che sta dentro un pacchetto",
+              "tools/lint-prosa.py" in istanziare, str(istanziare))
+        scrivi("tools/verifica-ripresa.py", "# istanziato\n")
+        trovati, _f, _c = analizza(tmp)
+        prova("istanziato lo strumento, la segnalazione sparisce",
+              not [t for _d, _n, t in trovati["da_istanziare"] if t.endswith("verifica-ripresa.py")],
+              str(trovati["da_istanziare"]))
+        scrivi("CLAUDE.md", "Si lancia `tools/verifica-schede.py`.\n")
+        scrivi(".claude/templates/tools/verifica-schede.py", "# consegnato\n")
+        trovati, _f, _c = analizza(tmp)
+        prova("un documento del progetto che nomina uno strumento assente resta da correggere",
+              "tools/verifica-schede.py" in [t for _d, _n, t in trovati["vivo"]], str(trovati))
         trovati_b, _f, _c = analizza(tmp, bundle=True)
         prova("nel bundle i propagati non si distinguono", not trovati_b["propagato"], str(trovati_b["propagato"]))
     finally:
@@ -513,14 +587,29 @@ def main():
         "modello": "MODELLO (convenzione per progetti nuovi, non un file di questo)",
         "bundle": "BUNDLE (anatomia o strumento che il bundle prescrive a un progetto ospite)",
         "propagato": "PROPAGATO (documento che scrive l'allineamento: lo corregge il template)",
+        "da_istanziare": "DA ISTANZIARE (strumento consegnato dal template e mai copiato in tools/)",
     }
-    for chiave in ("vivo", "storico", "modello", "bundle", "propagato"):
+    for chiave in ("vivo", "storico", "modello", "bundle", "propagato", "da_istanziare"):
         if a.solo_vivi and chiave != "vivo":
             continue
         voci = trovati[chiave]
+        # La sesta categoria si conta per strumento, come la stampa poco sotto: un conteggio per
+        # citazione accanto a un elenco per strumento sono due numeri diversi sulla stessa cosa.
+        quanti = len({t for _d, _n, t in voci}) if chiave == "da_istanziare" else len(voci)
         print("")
-        print("=== %s: %d ===" % (etichette[chiave], len(voci)))
+        print("=== %s: %d ===" % (etichette[chiave], quanti))
         visti = set()
+        if chiave == "da_istanziare":
+            # Una voce per strumento e non per citazione: lo stesso strumento e' nominato da piu'
+            # skill, e un elenco per citazione farebbe sembrare lungo un lavoro di una riga.
+            for _d, _n, token in voci:
+                if token in visti:
+                    continue
+                visti.add(token)
+                print("  %s   <-  %s" % (token, da_istanziare(token, a.radice) or "?"))
+            if voci:
+                print("  si istanziano copiando ciascuno in tools/, poi li aggiorna l'allineamento")
+            continue
         for documento, numero, token in voci:
             firma = (documento, token)
             if firma in visti:

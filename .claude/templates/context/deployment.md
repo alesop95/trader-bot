@@ -40,6 +40,16 @@ Albero autorevole per la memoria: `<percorso assoluto>` (branch `<branch più av
 
 <comandi di build, di rilascio e di rollback, con il contesto in cui si eseguono>
 
+## Accesso dell'agente agli ambienti
+
+<Per ciascun ambiente indicare chi esegue letture e modifiche, quali operazioni sono autorizzate e quale riferimento del progetto governa gli accessi privilegiati. L'esistenza di una chiave o di un alias non concede un permesso al runtime. Se l'agente non può accedere, prepara comandi con macchina, directory, ramo e perimetro espliciti; l'utente li esegue e restituisce l'esito.>
+
+Ogni misura di produzione dichiara se è stata raccolta nel giro corrente oppure ripresa da una verifica precedente, con data e perimetro. Un'autorizzazione permanente dipende da una decisione esplicita del proprietario e da una regola nelle impostazioni dei permessi del client, verificata nel suo ambito; una frase nella scheda non la rende attiva e non supera un rifiuto della modalità di approvazione.
+
 ## Variabili d'ambiente e segreti
 
 <elenco delle variabili richieste e dove sono gestite; i valori non si committano mai>
+
+## Deroghe temporanee e revoca
+
+<Ogni deroga apre nello stesso giro una voce del registro delle pendenze: motivo, effetti che richiedono gestione manuale, responsabile, condizione o scadenza di revoca e verifica che ne dimostri la chiusura. Una modalità provvisoria non diventa una scelta permanente per assenza di un richiamo. Nessuna deroga modifica da sola i permessi del runtime o autorizza un rilascio.>

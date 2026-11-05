@@ -180,7 +180,15 @@ $controlli = @(
     @{ n = "check-eol.py";            a = @(".") },
     @{ n = "misura-istruzioni.py";    a = @() },
     @{ n = "verifica-schede.py";      a = @(); serve = ".claude\context" },
+    # C-185 di un progetto istanziato (2026-11-03): la memoria e le tabelle, che nessuno lanciava.
+    # lint-memoria dove c'e' il work-log; lint-md-tables solo dove il progetto ha scritto
+    # tools\tables-exclude.txt, l'elenco delle copie di terzi, perche' in un progetto con tabelle
+    # storiche fermerebbe ogni commit: creare il file e' la scelta di renderlo automatico.
+    @{ n = "lint-memoria.py";         a = @(); serve = ".claude\memory\progress.md" },
+    @{ n = "lint-md-tables.py";       a = @("."); serve = "tools\tables-exclude.txt" },
+    @{ n = "lint-md-tables.py";       a = @("--self-test"); solobundle = $true },
     @{ n = "lint-didattica.py";       a = @(); serve = ".claude\context\studio-didattico-master.md" },
+    @{ n = "lint-prosa.py";           a = @(".claude/context"); serve = ".claude\context\studio-didattico-master.md" },
     @{ n = "fix-accents.py";          a = @("--check") + $m + @(".") },
     @{ n = "fix-dashes.py";           a = @("--check") + $m + @(".") },
     @{ n = "fix-missing-accents.py";  a = @("--check") + $m + @(".") },
@@ -225,6 +233,7 @@ if (-not $python) {
         if (-not $p) { continue }
         $uscita = & $python $p @($c.a) 2>&1
         if ($LASTEXITCODE -eq 0) {
+            if ($c.n -eq "lint-prosa.py") { $uscita | ForEach-Object { Write-Host "       $_" } }
             Ok $c.n
         } else {
             Ko "$($c.n) (uscita $LASTEXITCODE)"
@@ -312,14 +321,32 @@ if ($cambi.Count -gt 0) {
     Write-Host "   $($cambi.Count) file  ->  `"$Messaggio`""
     Write-Host "   autore: $nome <$email>"
 
+    $perimetro = Trova "verifica-milestone.py"
+    if (-not $perimetro -and (Test-Path ".claude/templates/tools/verifica-milestone.py")) { $perimetro = ".claude/templates/tools/verifica-milestone.py" }
+    if (-not $perimetro -and (Test-Path (Join-Path $PSScriptRoot "verifica-milestone.py"))) { $perimetro = Join-Path $PSScriptRoot "verifica-milestone.py" }
+    if (-not $perimetro -or -not $python) { Write-Host "Manca verifica-milestone.py o Python: aggiornare gli strumenti prima della chiusura."; exit 1 }
+    $snapshot = [System.IO.Path]::GetTempFileName()
+    $inventario = & $python $perimetro --radice $Radice --snapshot $snapshot --json
+    if ($LASTEXITCODE -ne 0) { exit 1 }
+    $anteprima = $inventario | ConvertFrom-Json
+    foreach ($avviso in $anteprima.warnings) { Write-Host "   AVVISO: $avviso" -ForegroundColor Yellow }
+    if ($anteprima.conferma_aree) {
+        $confermaAree = Read-Host "   Il messaggio descrive tutti i file e le aree mostrate? [s/N]"
+        if ($confermaAree -notmatch '^(s|si|y|yes)$') { Write-Host "Annullato: stage invariato."; exit 1 }
+    }
+
     if (-not $Si) {
         $azione = if ($NoPush) { "Committo tutto, senza push," } else { "Committo tutto e pusho" }
         $r = Read-Host "   $azione su '$ramo'? [s/N]"
         if ($r -notmatch '^(s|si|y|yes)$') { Write-Host "Annullato: niente e' stato committato." -ForegroundColor Yellow; exit 1 }
     }
 
-    & git add -A
+    & $python $perimetro --radice $Radice --verifica $snapshot
+    if ($LASTEXITCODE -ne 0) { exit 1 }
+    & git add -A -- @($anteprima.paths)
     if ($LASTEXITCODE -ne 0) { Write-Host "Stage fallito: niente e' stato committato." -ForegroundColor Red; exit 1 }
+    & $python $perimetro --radice $Radice --stage-risoluzioni
+    if ($LASTEXITCODE -ne 0) { Write-Host "Risoluzione incoerente: stage conservato per la revisione."; exit 1 }
     # Dal 2026-10-21: nessun identificativo personale nei file in stage ne' nell'identita' del commit,
     # in qualunque progetto. Se ne trova uno, toglie lo stage e si ferma prima del commit.
     $identita = Trova "test-identita-personali.py"
@@ -334,6 +361,8 @@ if ($cambi.Count -gt 0) {
     & git commit -m $Messaggio
     if ($LASTEXITCODE -ne 0) { Write-Host "Commit rifiutato (hook o errore): correggere e rilanciare." -ForegroundColor Red; exit 1 }
     if (Test-Path $fileMsg) { Remove-Item $fileMsg -Force }
+    if (Test-Path "_notes/COMMIT-SCOPE.json") { Remove-Item -LiteralPath "_notes/COMMIT-SCOPE.json" -Force }
+    Remove-Item -LiteralPath $snapshot -Force
 }
 
 # ---------------------------------------------------------------------------------------------

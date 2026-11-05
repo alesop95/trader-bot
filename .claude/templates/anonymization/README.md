@@ -60,6 +60,8 @@ Non si propone per un repository che documenta soltanto codice proprio: là non 
 
 ## Portabilità
 
+Le voci `nomi_propri` si cercano senza distinzione fra maiuscole e minuscole come token completi: una voce breve non deve corrispondere all'interno di una parola o di un identificatore diverso. Questo evita che parole come «removing» vengano scambiate per nomi. Per valori identificanti da riconoscere anche dentro stringhe più lunghe si usa invece `segreti_letterali`, che mantiene il confronto letterale sensibile alle maiuscole. Le eccezioni di contesto dei nomi restano esplicite nel file privato dei pattern.
+
 Lo strumento è eseguibile da *qualunque cartella* e su Windows come su Linux: risale alla radice del repository dalla posizione del proprio file, cercando `.git` sia come cartella sia come file perché in un worktree o in un sottomodulo è un file che punta altrove. Non dipende dalla cartella corrente, e la ragione è che la cartella corrente dipende da chi invoca: una sessione interattiva, un hook, un'attività pianificata e un altro script sono quattro cartelle diverse per lo stesso comando. La prima versione si rifiutava di partire se non la si lanciava dalla radice, che è precisamente il vincolo che rende uno strumento inutilizzabile dentro un'automazione.
 
 Due parametri coprono i casi in cui la risalita non basti: `--radice` fissa la radice a mano, e `--patterns` punta a un layer privato organizzato diversamente da `_notes/`.

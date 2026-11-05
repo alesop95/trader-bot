@@ -10,6 +10,8 @@ Ne segue una prescrizione operativa semplice. Se una risposta contiene un numero
 
 ## Che cosa non conta come persistenza
 
+Il perimetro della memoria versionata è il progetto. Percorsi personali, cartelle cloud, materiali di studio esterni, altri repository dell'utente e preferenze personali si conservano nel livello privato `CLAUDE.local.md` o `_notes/`; quando una conclusione tecnica serve al progetto, la versione tracciata contiene soltanto quella conclusione e un riferimento generico. La necessità di ricordare non autorizza a trasferire nel work-log materiale esterno al perimetro pubblico.
+
 Non basta che il contenuto sia deducibile da un file: deve esservi scritto. Una misura che sta soltanto nell'output di uno strumento non è persistita, perché nessuno rilancia uno strumento per ricordare un numero; va nel documento che quello strumento genera. Un ragionamento che sta soltanto nel messaggio dell'agente non è persistito nemmeno quando è corretto, e la prova è che la sessione successiva lo rifarebbe da capo con esito magari diverso.
 
 Non conta neppure un aggiornamento differito. La direttiva dice di aggiornare ogni volta, e la ragione è che il debito di scrittura si comporta come il debito di lettura: cresce in silenzio e si paga quando conviene meno. Un giro di lavoro che produce un risultato e non lo scrive lascia il progetto in uno stato in cui la chat e il disco divergono, che è precisamente lo stato che un sistema di memoria esiste per evitare.
@@ -45,6 +47,8 @@ Da quel patto discende un caso che si presenta ogni volta che si verifica dal vi
 Un orario scritto in un registro lo mette la macchina, non chi scrive: lo strumento con cui si scrivono i registri accetta un segnaposto per l'ora e lo sostituisce con l'orologio del sistema al momento della scrittura. Un agente che lavora a lungo stima l'ora corrente, e la stima sbaglia di decine di minuti senza che niente lo segnali (L-015 di un progetto istanziato).
 
 ## Il recap di fine giro
+
+La verifica del fine riga vale anche per lo strumento di modifica dell'agente. Se `git ls-files --eol` indica `i/mixed`, si modifica per byte con un'ancora verificata una volta sola, conservando il terminatore di ogni riga; scegliere il terminatore prevalente o applicare una riscrittura testuale normalizzante perde informazione. Si confronta poi il diff con le sole righe previste. Un file privato da riscrivere si copia prima, perché Git non ne conserva una versione.
 
 Dal 2026-10-05, su direttiva d'uso di un progetto istanziato, ogni giro di lavoro sostanziale si chiude con un recap a campi fissi, sempre gli stessi e sempre nello stesso ordine, e la riga dei file scritti descritta sopra ne diventa l'ultimo campo. La ragione è la stessa del resto di questa regola, vista dal lato di chi legge: il proprietario non deve ricomporre da una risposta lunga che cosa è cambiato, che cosa aspetta lui e che cosa resta aperto, e una forma che si ripete identica si scorre in pochi secondi e fa notare subito il campo che manca. Il caso che l'ha fatta nascere è che quel recap esisteva già, ma solo come istruzione dentro il file di ripresa, che non è versionato: un allineamento o un progetto nuovo non lo avrebbero ereditato.
 

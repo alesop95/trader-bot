@@ -197,7 +197,7 @@ $fileComuni = Join-Path $dirCorsa 'righe-comuni.json'
 
 function Log([string]$riga) { Write-Host $riga; [System.IO.File]::AppendAllText($fileLog, $riga + "`r`n", $utf8) }
 
-$AZIONABILI = 'CONFLITTO', 'SUPERATO', 'MERGE', 'VECCHIO', 'NUOVO', 'SPOSTATO', 'RIMOSSO', 'INNESCO'
+$AZIONABILI = 'CONFLITTO', 'SUPERATO', 'MERGE', 'RISOLTO', 'VECCHIO', 'NUOVO', 'SPOSTATO', 'RIMOSSO', 'INNESCO'
 function Leggi-Json([string]$f) { Get-Content -LiteralPath $f -Raw -Encoding UTF8 | ConvertFrom-Json }
 function Conta($esiti) {
   $c = @{}; foreach ($k in $AZIONABILI + 'ADATTATO', 'LOCALE', 'UGUALE') { $c[$k] = 0 }
@@ -579,6 +579,9 @@ try {
         # Il rapporto si legge una volta sola e si conserva: la passata di scrittura riscrive
         # lo stesso file, quindi dopo non si saprebbe piu' quali strumenti sono stati toccati.
         $esitiPrima = Leggi-Json $json
+        foreach ($statoPac in @($esitiPrima | Where-Object { $_.esito -eq 'PACCHETTI' })) {
+          $o.avvisi += 'istanze dei pacchetti: ' + $statoPac.nota
+        }
         $o.c = Conta $esitiPrima
         $o.stato = if ($o.c.azionabili -eq 0) { 'allineato' } elseif ($o.c.CONFLITTO -gt 0) { 'conflitti' } else { 'da-allineare' }
         $collisi = @()
@@ -681,13 +684,42 @@ try {
       }
     }
     $sintesi = if ($o.c) { ($AZIONABILI + 'ADATTATO' | Where-Object { $o.c[$_] } | ForEach-Object { "$_=$($o.c[$_])" }) -join ' ' } else { '' }
-    Log ('{0,-44} {1,-20} {2}' -f $o.nome, $o.stato, $sintesi)
+    $statoVisibile = switch ($o.stato) { 'allineato' { 'file-allineati' } 'applicato' { 'file-applicati' } default { $o.stato } }
+    Log ('{0,-44} {1,-20} {2}' -f $o.nome, $statoVisibile, $sintesi)
     foreach ($a in $o.avvisi) { Log ('{0,-44} {1}' -f '', "avviso: $a") }
     $registro[$prj] = [ordered]@{
       stato = $o.stato; misurato_il = (Get-Date -Format 's'); template_commit = $tplHead; template_albero_claude = $tplAlbero
       conteggi = $o.c; avvisi = $o.avvisi; rapporto = (Join-Path $dirCorsa "$($o.slug).json")
+      perimetro_stato = 'file gestiti dal template; istanze, configurazione e collaudo sono verifiche distinte'
     }
   }
+
+  # La conformita del sistema di progetto non qualifica runtime e dipendenze.
+  # Si legge solo un rapporto locale: nessun audit di rete o patch nella passata.
+  $guardiaSicurezza = Join-Path $PSScriptRoot 'stato-vulnerabilita.py'
+  Log ''
+  Log 'Sicurezza dei progetti: stato distinto dall allineamento del template'
+  foreach ($o in $progetti) {
+    $sicurezza = [ordered]@{ stato = 'non_verificato'; motivi = @('rapporto_non_letto'); rilievi_aperti = @() }
+    if (Test-Remoto $o.percorso) {
+      $sicurezza.motivi = @('eseguire_il_controllo_sull_host_approvato')
+    } elseif ($o.stato -in @('clone-del-template', 'albero-secondario', 'escluso')) {
+      $sicurezza.motivi = @('fuori_perimetro_di_questa_passata')
+    } elseif (Test-Path -LiteralPath $guardiaSicurezza) {
+      try {
+        $rawSicurezza = & python $guardiaSicurezza --radice $o.percorso --json 2>$null
+        $lettaSicurezza = $rawSicurezza | ConvertFrom-Json -ErrorAction Stop
+        if (-not $lettaSicurezza.stato) { throw 'verdetto assente' }
+        $sicurezza = $lettaSicurezza
+      } catch {
+        $sicurezza.stato = 'non_verificabile'
+        $sicurezza.motivi = @('errore_lettura_del_rapporto')
+      }
+    }
+    $registro[$o.percorso]['sicurezza'] = $sicurezza
+    Log ('  {0}: {1}; rilievi aperti={2}' -f $o.percorso, $sicurezza.stato, @($sicurezza.rilievi_aperti).Count)
+  }
+  Log 'Il codice di uscita della passata riguarda l allineamento; i verdetti di sicurezza sono separati nel registro.'
 
   # --- sintesi ----------------------------------------------------------------
   [System.IO.File]::WriteAllText($fileRegistro, ($registro | ConvertTo-Json -Depth 5), $utf8)

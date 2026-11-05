@@ -93,7 +93,11 @@ lint-doc-references.py|--solo-vivi $b||0
 check-eol.py|.||0
 misura-istruzioni.py|||0
 verifica-schede.py||.claude/context|0
+lint-memoria.py||.claude/memory/progress.md|0
+lint-md-tables.py|.|tools/tables-exclude.txt|0
+lint-md-tables.py|--self-test||1
 lint-didattica.py||.claude/context/studio-didattico-master.md|0
+lint-prosa.py|.claude/context|.claude/context/studio-didattico-master.md|0
 fix-accents.py|--check $m .||0
 fix-dashes.py|--check $m .||0
 fix-missing-accents.py|--check $m .||0
@@ -119,7 +123,9 @@ else
         p="$(trova "$nome")"; [ -n "$p" ] || continue
         # shellcheck disable=SC2086
         uscita="$("$python" "$p" $argomenti 2>&1)"; rc=$?
-        if [ $rc = 0 ]; then ok "$nome"
+        if [ $rc = 0 ]; then
+            [ "$nome" != lint-prosa.py ] || printf '%s\n' "$uscita"
+            ok "$nome"
         else ko "$nome (uscita $rc)"; printf '%s\n' "$uscita" | tail -15 | sed 's/^/       /'; falliti="$falliti $nome"; fi
     done <<EOF
 $controlli
@@ -176,7 +182,24 @@ if [ "$ncambi" != 0 ]; then
         read -r -p "   $azione su '$ramo'? [s/N] " r || { echo "Input non disponibile: niente e' stato committato."; exit 1; }
         case "$r" in s|si|y|yes) ;; *) echo "Annullato: niente e' stato committato."; exit 1 ;; esac
     fi
-    git add -A || { echo "Stage fallito: niente e' stato committato."; exit 1; }
+    perimetro="$(trova verifica-milestone.py)"
+    [ -n "$perimetro" ] || perimetro=".claude/templates/tools/verifica-milestone.py"
+    [ -f "$perimetro" ] || perimetro="$dir_script/verifica-milestone.py"
+    [ -n "$python" ] && [ -f "$perimetro" ] || { echo "Manca verifica-milestone.py o Python: aggiornare gli strumenti."; exit 1; }
+    snapshot="$(mktemp)" || exit 1
+    "$python" "$perimetro" --radice "$radice" --snapshot "$snapshot" || exit 1
+    # La conferma aggiuntiva vale anche con --si: il messaggio copre tutte le aree.
+    molte_aree=$("$python" -c 'import json,sys; print(int(json.load(open(sys.argv[1],encoding="utf-8"))["conferma_aree"]))' "$snapshot")
+    if [ "$molte_aree" = 1 ]; then
+        read -r -p "   Il messaggio descrive tutti i file e le aree mostrate? [s/N] " conferma_aree
+        case "$conferma_aree" in s|si|y|yes) ;; *) echo "Annullato: stage invariato."; exit 1 ;; esac
+    fi
+    "$python" "$perimetro" --radice "$radice" --verifica "$snapshot" || exit 1
+    percorsi=()
+    while IFS= read -r -d '' percorso; do percorsi+=("$percorso"); done < <("$python" "$perimetro" --radice "$radice" --verifica "$snapshot" --paths0)
+    [ ${#percorsi[@]} -gt 0 ] || { echo "Perimetro vuoto: niente e' stato committato."; exit 1; }
+    git add -A -- "${percorsi[@]}" || { echo "Stage fallito: niente e' stato committato."; exit 1; }
+    "$python" "$perimetro" --radice "$radice" --stage-risoluzioni || { echo "Risoluzione incoerente: stage conservato per la revisione."; exit 1; }
     # Dal 2026-10-21: nessun identificativo personale nei file in stage ne' nell'identita' del commit.
     if [ -n "$python" ] && identita="$(trova test-identita-personali.py)"; then
         "$python" "$identita" --stage | sed 's/^/   /'
@@ -188,6 +211,7 @@ if [ "$ncambi" != 0 ]; then
     fi
     git commit -m "$messaggio" || { echo "Commit rifiutato (hook o errore): correggere e rilanciare."; exit 1; }
     rm -f "$filemsg"
+    rm -f "_notes/COMMIT-SCOPE.json" "$snapshot"
 fi
 
 titolo "Push"

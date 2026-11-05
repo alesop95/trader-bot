@@ -25,6 +25,7 @@ try {
   & claude @extra @Resto
 }
 finally {
+  if (Get-Command Congeda-PostaSessioni -ErrorAction SilentlyContinue) { Congeda-PostaSessioni }
   Set-Location -LiteralPath $precedente.Path
   # La pulizia Claude rimane nell'hook SessionEnd installato sulle sue radici.
   Remove-Item Env:PROJECT_AGENT_MAILBOX_ROOT,Env:PROJECT_AGENT_MAILBOX_ID,Env:PROJECT_AGENT_MAILBOX_TOOL,Env:PROJECT_TEMPLATE_ROOT -ErrorAction SilentlyContinue

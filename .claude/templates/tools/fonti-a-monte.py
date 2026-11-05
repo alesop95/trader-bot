@@ -338,7 +338,7 @@ def ruolo_dal_posto(scheda: str) -> str:
 
 
 def motivo_dal_posto(scheda: str) -> str:
-    return "installato nel progetto, in %s" % (scheda or "un posto non registrato")
+    return "citato nel materiale del progetto, in %s; la citazione non prova l'installazione" % (scheda or "un posto non registrato")
 
 
 # --------------------------------------------------------------------------- censimento
@@ -475,6 +475,13 @@ def tra_apici(testo: str, locali: set) -> list:
     nomi = []
     for m in APICI.finditer(testo):
         owner, _, repo = m.group(1).partition("/")
+        token = m.group(1)
+        if re.fullmatch(r"[iw]/(?:lf|crlf|mixed|none|-)", token):
+            continue  # Notazione dichiarata da git ls-files --eol, non un repository citato.
+        contesto = testo[max(0, m.start() - 180):m.end() + 80]
+        if (owner in {"Africa", "America", "Antarctica", "Arctic", "Asia", "Atlantic", "Australia", "Europe", "Indian", "Pacific", "Etc"}
+                and re.search(r"fuso|fusi|timezone|time zone|TZ=", contesto, re.I)):
+            continue  # Identificativo di fuso nel suo contesto; gli URL GitHub restano censiti.
         if owner.lower() in locali or ESTENSIONE.search(repo):
             continue
         nomi.append(pulisci(m.group(1)))
@@ -497,10 +504,35 @@ def importati(testo: str, locali: set) -> list:
     return nomi
 
 
-def pacchetti(testo: str) -> list:
+def binari_npm(radice: Path) -> dict:
+    """Mappa solo i binari dichiarati dai metadati delle dipendenze del progetto."""
+    manifest = radice / "package.json"
+    if not manifest.is_file():
+        return {}
+    data = json.loads(manifest.read_text(encoding="utf-8-sig"))
+    dependencies = set(data.get("dependencies", {})) | set(data.get("devDependencies", {}))
+    lock = radice / "package-lock.json"
+    locked = json.loads(lock.read_text(encoding="utf-8-sig")).get("packages", {}) if lock.is_file() else {}
+    providers = {}
+    for name in dependencies:
+        path = radice / "node_modules" / name / "package.json"
+        metadata = json.loads(path.read_text(encoding="utf-8-sig")) if path.is_file() else locked.get("node_modules/" + name, {})
+        binaries = metadata.get("bin", {})
+        if isinstance(binaries, str):
+            binaries = {name.rsplit("/", 1)[-1]: binaries}
+        for binary in binaries:
+            providers.setdefault(binary, set()).add(name)
+    return {binary: next(iter(names)) for binary, names in providers.items() if len(names) == 1}
+
+
+def pacchetti(testo: str, binari=None) -> list:
     nomi = []
     for tipo, schema in SCHEMI_PACCHETTI:
-        nomi += [pulisci_pacchetto(tipo, m.group(1)) for m in schema.finditer(testo)]
+        for match in schema.finditer(testo):
+            nome = match.group(1)
+            if tipo == "npm" and "npx" in schema.pattern:
+                nome = (binari or {}).get(nome, nome)
+            nomi.append(pulisci_pacchetto(tipo, nome))
     for m in APT.finditer(testo):
         nomi += ["apt:" + n for n in m.group(1).split() if not n.startswith("$")]
     nomi += ["feed:" + m.group(1) for m in FEED.finditer(testo)]
@@ -549,9 +581,10 @@ def censimento(radice: Path, dati: dict) -> dict:
     locali = cartelle_locali(radice) if tpl else None
     moduli = moduli_locali(radice) if tpl else set()
     trovati = {}
+    binari = binari_npm(radice) if not tpl else {}
     for f in file_da_censire(radice):
         testo = f.read_text(encoding="utf-8", errors="replace")
-        nomi = pacchetti(testo) + [pulisci(m.group(1)) for s in SCHEMI_GITHUB for m in s.finditer(testo)]
+        nomi = pacchetti(testo, binari) + [pulisci(m.group(1)) for s in SCHEMI_GITHUB for m in s.finditer(testo)]
         if f.suffix.lower() in TESTO:
             nomi += discussioni(testo)
             if locali is not None:
@@ -594,7 +627,12 @@ def censisci(radice: Path, scrivi: bool) -> tuple:
     falsi_spariti = [v for v in dati["falsi"] if chiave(v["id"]) not in trovati]
     spediti = spediti_dal_template(radice) if nel_template(radice) else dati.get("spediti")
     elenco_vecchio = spediti != dati.get("spediti")
-    if scrivi and (nuovi or orfani or falsi_spariti or elenco_vecchio or "fonti" not in leggi_grezzo(radice)):
+    motivi_vecchi = [v for v in dati["fonti"] if not nel_template(radice) and v.get("motivo") == "installato nel progetto, in %s" % (v.get("scheda") or "un posto non registrato")]
+    for voce in motivi_vecchi:
+        voce["motivo"] = motivo_dal_posto(voce.get("scheda", ""))
+    if motivi_vecchi:
+        print("   *  %d motivi automatici da distinguere dall'installazione%s" % (len(motivi_vecchi), ": corretti" if scrivi else ""))
+    if scrivi and (nuovi or orfani or falsi_spariti or elenco_vecchio or motivi_vecchi or "fonti" not in leggi_grezzo(radice)):
         dati["fonti"] = [v for v in dati["fonti"] if v not in orfani] + [nuova_voce(radice, n, f) for n, f in nuovi]
         dati["falsi"] = [v for v in dati["falsi"] if v not in falsi_spariti]
         if spediti is not None:

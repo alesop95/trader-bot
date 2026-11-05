@@ -47,6 +47,16 @@ nulla, e non richiede di interpretare la prosa. Vale la generalizzazione: quando
 richiede di indovinare l'intenzione di un testo, conviene cercare se lo stesso difetto lasci
 una traccia nella forma, perché la forma si verifica e l'intenzione si congettura.
 
+Le copie di terzi
+-----------------
+Un documento copiato così com'è da una fonte esterna, come la skill di un pacchetto riscritta a
+ogni versione, mantiene la formattazione della fonte, e una correzione sparirebbe alla copia
+successiva. Si dichiara in `tools/tables-exclude.txt`, una riga per percorso con il motivo dopo il
+cancelletto, una cartella intera con la barra finale: la stessa forma degli elenchi di
+`fix-dashes.py` e `fix-accents.py`. Una riga senza motivo ferma la corsa. `chiudi` lancia questo
+controllo solo dove il file esiste, che è il modo in cui un progetto sceglie di renderlo
+automatico (C-185 di un progetto istanziato, 2026-11-03).
+
 Uso
 ---
     python tools/lint-md-tables.py
@@ -65,6 +75,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IGNORATE = (".git", "__pycache__", "node_modules", ".venv", "_notes")
+ESCLUSIONI = os.path.join(RADICE, "tools", "tables-exclude.txt")
 
 SEPARATORE = re.compile(r"^\|?[\s:|-]+\|[\s:|-]*$")
 BORDO = re.compile(r"^\+[-=+]{3,}\+(\s+\+[-=+]{3,}\+)*$")
@@ -189,6 +200,31 @@ def bersagli(percorsi):
     return sorted(set(fuori))
 
 
+def leggi_esclusioni(percorso=ESCLUSIONI):
+    """Le copie di terzi dichiarate, come insieme di percorsi relativi alla radice; una cartella
+    porta la barra finale. Una riga senza motivo è un errore, non una riga da saltare."""
+    esclusi, malformate = set(), []
+    if not os.path.exists(percorso):
+        return esclusi, malformate
+    for riga in io.open(percorso, encoding="utf-8").read().splitlines():
+        riga = riga.strip()
+        if not riga or riga.startswith("##"):
+            continue
+        voce, _, motivo = riga.partition("#")
+        voce, motivo = voce.strip(), motivo.strip()
+        if not voce or not motivo:
+            malformate.append(riga)
+            continue
+        voce = voce.replace("\\", "/")
+        esclusi.add(voce.rstrip("/") + "/" if voce.endswith("/") else voce)
+    return esclusi, malformate
+
+
+def escluso(relativo, esclusi):
+    r = relativo.replace(os.sep, "/")
+    return r in esclusi or any(e.endswith("/") and r.startswith(e) for e in esclusi)
+
+
 def self_test():
     casi = [
         ("tabella sana",
@@ -235,6 +271,12 @@ def self_test():
     else:
         print("  FALLITO un percorso inesistente ferma la corsa")
         fallite += 1
+    # L'elenco delle copie di terzi: un file e una cartella esclusi, un vicino di nome no.
+    esclusi = {"a/SKILL.md", "terzi/"}
+    for rel, atteso in (("a/SKILL.md", True), ("terzi/x/y.md", True), ("terzi-no/y.md", False), ("a/altro.md", False)):
+        esito = escluso(rel, esclusi) == atteso
+        print(("  ok      " if esito else "  FALLITO ") + "esclusione di " + rel)
+        fallite += 0 if esito else 1
     for nome, testo, attesi in casi:
         trovati = len(analizza(testo))
         esito = trovati == attesi
@@ -257,8 +299,20 @@ def main():
         return self_test()
 
     file = bersagli(a.percorsi)
+    esclusi, malformate = leggi_esclusioni()
+    if malformate:
+        for riga in malformate:
+            print("tools/tables-exclude.txt: riga senza percorso o senza motivo: " + riga)
+        return 2
+    saltati = 0
     totale = 0
     for p in file:
+        try:
+            if esclusi and escluso(os.path.relpath(p, RADICE), esclusi):
+                saltati += 1
+                continue
+        except ValueError:
+            pass
         try:
             testo = io.open(p, encoding="utf-8").read()
         except (UnicodeDecodeError, OSError):
@@ -276,7 +330,8 @@ def main():
             print("%s:%d %s: %s" % (rel, numero, tipo, dettaglio))
             totale += 1
     print("")
-    print("%d file esaminati, %d difetti" % (len(file), totale))
+    print("%d file esaminati, %d difetti%s" % (len(file) - saltati, totale,
+          ", %d esclusi da tools/tables-exclude.txt" % saltati if saltati else ""))
     return 1 if totale else 0
 
 

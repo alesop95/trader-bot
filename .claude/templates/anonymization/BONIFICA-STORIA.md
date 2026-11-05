@@ -138,6 +138,14 @@ Thank you.
 
 Se un repository ha pull request aperte agganciate a vecchie teste di ramo, l'assistenza può chiedere di chiuderle prima: conviene verificarlo e dirlo nel biglietto invece di aspettare la domanda.
 
+## 5bis. Se il piano non offre assistenza
+
+Un biglietto chiuso automaticamente per il piano dell'account non dimostra che la bonifica sia completa. Si conserva l'esito nel livello privato e si distingue la storia riscritta dalla rimozione degli oggetti e delle cache sulla piattaforma, che la [procedura ufficiale di GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository) attribuisce all'assistenza.
+
+Per un repository privo di collaborazioni e metadati da conservare si può valutare separatamente, come migrazione distruttiva da approvare, la cancellazione del repository e la creazione di un repository nuovo con lo stesso nome. Prima si inventariano anche release, permessi, protezioni, automazioni e integrazioni; l'assenza di fork, pull request e issue non basta a dire che si perderanno soltanto impostazioni. La [cancellazione](https://docs.github.com/en/repositories/creating-and-managing-repositories/deleting-a-repository) non rimuove i fork pubblici e cancella i permessi dei team.
+
+Questa via non va presentata come garanzia di cancellazione fisica immediata: la piattaforma documenta la possibilità di [ripristinare alcuni repository eliminati entro 90 giorni](https://docs.github.com/en/repositories/creating-and-managing-repositories/restoring-a-deleted-repository). Dopo una migrazione approvata si verificano nuova identità del repository, riferimenti pubblicati, accesso ai vecchi SHA, permessi e automazioni, conservando la prova nel livello privato. La copia con la storia originale resta protetta e separata finché la migrazione e il recupero della storia bonificata non sono stati verificati; la sua eliminazione richiede una decisione esplicita. Nessuna di queste operazioni viene eseguita dall'agente come parte dell'allineamento del template.
+
 ## 6. Il messaggio di commit non racconta la bonifica
 
 Un messaggio di commit è contenuto pubblico quanto il codice. «Rimuove l'indirizzo X dalla documentazione» è un cartello che indica dove scavare nei commit precedenti, e per giunta ripubblica in chiaro, nel messaggio, il dato appena tolto dai file. Si descrive che cosa fa la modifica, non che cosa si stava togliendo.

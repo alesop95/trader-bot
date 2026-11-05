@@ -13,17 +13,20 @@
     "nist-csf",
     "cis-controls",
     "iso42001",
-    "eu-ai-act"
+    "eu-ai-act",
+    "soc2"
   ],
   "ultima_verifica_a_monte": {
-    "iso27001": "2026-10-03",
-    "nis2": "2026-09-05",
-    "gdpr-compliance": "2026-10-03",
-    "iso27701": "2026-10-03",
-    "tprm": "2026-09-14",
-    "nist-csf": "2026-09-05",
-    "cis-controls": "2026-10-03",
-    "iso42001": "2026-10-03",
-    "eu-ai-act": "2026-08-15"
-  }
+    "iso27001": "2026-11-03",
+    "nis2": "2026-11-03",
+    "gdpr-compliance": "2026-11-03",
+    "iso27701": "2026-11-03",
+    "tprm": "2026-11-03",
+    "nist-csf": "2026-11-03",
+    "cis-controls": "2026-11-03",
+    "iso42001": "2026-11-03",
+    "eu-ai-act": "2026-11-03",
+    "soc2": "2026-11-03"
+  },
+  "nota_verifica": "Il 2026-11-03 le nove skill presenti sono state confrontate file per file con i bundle del tag v2.1.0 in un progetto istanziato: identiche, salvo un indirizzo segnaposto sostituito in gdpr-compliance/references/privacy-notice.md per la regola di anonimizzazione. soc2 e' stata aggiunta lo stesso giorno dallo stesso tag, su misura e non per completezza: compare in 17 documenti e presso tre controparti distinte nei questionari ricevuti nell'ultimo anno, mentre DORA, TISAX, Cyber Essentials e CIS Controls non compaiono mai. A monte le skill disponibili sono trentasei: le dieci qui presenti sono una selezione misurata, non un arretrato."
 }

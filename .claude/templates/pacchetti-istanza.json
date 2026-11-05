@@ -1,0 +1,13 @@
+{
+  "versione": 1,
+  "comuni": [],
+  "ricette": {
+    "anonymization": {
+      "file": [
+        {"origine": ".claude/templates/anonymization/tools/Test-Anonymization.py", "destinazione": "tools/Test-Anonymization.py"},
+        {"origine": ".claude/templates/anonymization/rules/anonymization.md", "destinazione": ".claude/rules/anonymization.md"},
+        {"origine": ".claude/templates/anonymization/norme/anonymization.md", "destinazione": ".claude/norme/anonymization.md"}
+      ]
+    }
+  }
+}

@@ -88,6 +88,10 @@ Ne segue una conseguenza operativa per questa skill: il conteggio si tiene attra
 
 ## Passo 6 - Chiudere dichiarando che cosa è cambiato
 
+Ogni scelta si registra anche in `.claude/pacchetti.json`, con `versione: 1` e una mappa `pacchetti`: per ciascun nome si scrivono `stato` (`adottato`, `rifiutato` o `rimandato`), data e motivo. Per un pacchetto adottato si conserva l'elenco `file`, con coppie `origine` relativa al template e `destinazione` relativa al progetto; una destinazione sotto `.claude/templates/` è soltanto un modello e non conta come istanza. Il registro non contiene valori privati, credenziali o percorsi di altre macchine. Le ricette comuni pubblicate in `.claude/templates/pacchetti-istanza.json` evitano di ripetere l'elenco, ma non sostituiscono la decisione del proprietario.
+
+Prima di dichiarare concluso il gate eseguire `python .claude/templates/tools/verifica-pacchetti.py --progetto . --template .`: distingue adozione, presenza dei file, configurazione privata e richiamo ai controlli. Una configurazione presente non equivale a un controllo collaudato. Registri assenti restano scelte non censite; non si trasformano in rifiuti o autorizzazioni dedotte. `allinea` ripristina i file mancanti dei pacchetti dichiarati adottati usando lo stesso confronto e gli stessi conflitti degli altri file, e riporta il lavoro di istanziazione ancora aperto oltre al risultato della propagazione.
+
 Alla fine si consegna un riepilogo in quattro righe: quali settori sono stati attraversati, quali pacchetti sono stati attivati con che cosa hanno istanziato, quali sono stati rifiutati o rimandati, e quali file il gate ha scritto. L'ultima riga è il presidio della regola per cui ciò che si dice in sessione si scrive anche su disco, e se manca vuol dire che il gate è rimasto in chat.
 
 I comandi git restano manuali dell'utente: il gate prepara i file e non committa.

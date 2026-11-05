@@ -47,6 +47,8 @@ Una volta attiva, si aggiorna a ogni refactor o scelta di qualità non ovvia (no
 
 ## Procedura operativa
 
+All'adozione si aggiunge nel `CLAUDE.md`, fra le norme caricate su richiesta, il richiamo: «A ogni refactor o scelta di qualità non ovvia, applicare `.claude/skills/studio-didattico/SKILL.md` e aggiornare il master e il deep-dive». Si istanziano i controlli del pacchetto `documentazione-didattica` e `lint-prosa.py` dal pacchetto `anti-slop`: la prosa del master e delle schede va riletta sui suoi avvisi, senza attivare un blocco automatico sullo stile. `chiudi` esegue il controllo di prosa quando è istanziato e il master esiste. Prima del commit, `verifica-milestone.py` avvisa se cambiano ADR, `tools/`, `deploy/` o `infra/` senza un aggiornamento didattico; è un segnale da valutare e motivare, non la prova che ogni cambiamento meriti una voce.
+
 Quando si chiude un intervento che merita una voce:
 
 1. Se `studio-didattico-master.md` non esiste ancora nel progetto, crearlo con un'intestazione breve che ne dichiara lo scopo (racconto evolutivo, non stato) e la prima voce.

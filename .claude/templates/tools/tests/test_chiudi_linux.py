@@ -24,12 +24,16 @@ class ChiudiLinuxTest(unittest.TestCase):
         fake_git = self.bin / "git"
         fake_git.write_text("""#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "$GIT_LOG"
+[ "$1" != -C ] || shift 2
 case "$1" in
   rev-parse)
     if [ "$2" = --show-toplevel ]; then printf '%s\\n' "$FAKE_ROOT"; else printf '%s\\n' abcdef1234567890; fi ;;
   symbolic-ref) echo main ;;
   remote) [ "${NO_ORIGIN:-0}" = 1 ] || echo origin ;;
-  status) [ "${DIRTY:-0}" = 1 ] && echo ' M file.txt' ;;
+  status)
+    if [ "${DIRTY:-0}" = 1 ]; then
+      if [ "${2:-}" = --porcelain=v1 ]; then printf ' M file.txt\\0'; else echo ' M file.txt'; fi
+    fi ;;
   config) [ "$3" = user.name ] && echo '<NOME>' || echo '<EMAIL>' ;;
   ls-remote) printf '%s\\trefs/heads/main\\n' "${REMOTE_HASH:-abcdef1234567890}" ;;
   push|add|commit|--no-pager) exit 0 ;;

@@ -430,8 +430,98 @@ Il sesto è confondere una scadenza con una risposta. Una chiamata di inventario
 
 Salita il 2026-10-28 da un progetto istanziato (L-023), ed è la forma generale della voce qui sopra sulle prove che falliscono in modo plausibile. Nel caso osservato, ripetendo da una shell POSIX su Windows le verifiche di un sito dopo un riavvio, tutte le pagine risultavano di zero byte e il proxy registrava connessioni chiuse dal client: un quadro credibile di guasto, e nessun indizio che puntasse altrove. La causa era la misura. Avendo disattivato la conversione dei percorsi della shell, il client HTTP nativo non poteva scrivere nel file indicato con un percorso in stile Unix e interrompeva lo scaricamento. Ne discendono due pratiche. Quando un esito negativo compare subito dopo che è cambiato il modo di misurare, si rifà la misura nel modo precedente o in un modo indipendente prima di trattarlo come un guasto, perché l'ordine degli eventi è un'informazione e va usata. E un comando di verifica scrive i propri file in percorsi validi per l'eseguibile che li scrive, non per la shell che lo lancia.
 
+## Sintassi, stato iniziale e valori limite
+
+Il parsing verifica che il programma sia leggibile, non che i suoi rami funzionino. Quando un calcolo dipende da uno stato iniziale, si esercitano separatamente il primo giro, il giro immediatamente successivo e il valore limite del tipo usato. Un intervallo calcolato da una data minima può superare la capacità di un intero anche se ogni espressione è sintatticamente valida: il controllo discriminante deve eseguire il calcolo con quello stato iniziale, non soltanto compilare il file. Si distingue nel rapporto la sintassi verificata dal comportamento esercitato.
+
+## Un presidio deve vedere anche il lavoro che non finisce
+
+Fallimento dichiarato e assenza di un risultato sono stati diversi. Un controllo che avvisa soltanto quando un processo esce con errore non vede un processo bloccato per giorni. Per un lavoro periodico si misura anche l'età dell'ultimo risultato valido e si fissa una soglia coerente con la frequenza attesa; l'avvio o la presenza del processo non valgono come risultato. La prova discriminante simula un lavoro che resta in attesa senza fallire e verifica l'allarme per il risultato troppo vecchio.
+
+Quando si confrontano pianificazioni di macchine diverse, si legge il fuso di ciascuna macchina e dello schedulatore e si confrontano istanti in una base comune. Una macchina nuova non eredita per ipotesi il fuso previsto. Correggere a mano l'ora del lavoro per compensare un fuso errato produce una dipendenza dal cambio d'ora: si corregge la configurazione autorizzata e si verificano gli orari anche sui confini dell'ora legale.
+
+Se lo strumento offre una simulazione, il piano si raccoglie prima dell'esecuzione e si conserva con versione, ingressi e istante della misura. Un aggiornamento richiesto su un solo pacchetto può coinvolgere altri componenti: la lista calcolata delle modifiche decide il perimetro da autorizzare. La stima non sostituisce una simulazione disponibile e una simulazione non prova che l'esecuzione successiva sia riuscita.
+
+Un cambio del contratto osservabile aggiorna nello stesso giro la prova che lo esercita. La scheda di test indica comandi, servizi necessari e casi discriminanti, e la consegna registra quali siano stati eseguiti; una prova vecchia che controlla un effetto eliminato non rimane una verifica valida perché esiste. I controlli di chiusura non eseguono comandi arbitrari estratti dalla prosa: l'integrazione automatica usa i comandi del progetto dichiarati e verificati, mentre una prova non rilanciata resta esplicitamente aperta.
+
+Un errore di importazione si indaga anche misurando quale file il loader abbia risolto. Loader diversi possono scegliere file omonimi diversi: un modulo TypeScript e un JSON con lo stesso basename possono funzionare in un bundler e divergere sotto un esecutore diverso. Si verifica il percorso risolto e l'ordine delle estensioni con la configurazione reale prima di diagnosticare un ciclo o spostare i dati. Le opzioni specifiche del loader restano nella configurazione degli script del progetto.
+
+## Il contratto di un'integrazione precede le misure
+
+Prima di pianificare sui dati di un servizio si verifica, con una lettura minima, che la funzione sia abilitata per il contratto e accessibile alla credenziale in uso. Documentazione del fornitore, voce di menu e permesso assegnato sono tre indizi distinti: nessuno prova che il modulo sia acquistato e interrogabile. Un rifiuto di licenza o di permesso si registra come capacità non disponibile, senza convertirlo in una misura nulla o costruire un filone sulle risposte che si sperava di ottenere.
+
+Se il servizio documenta più schemi di autenticazione per tipi diversi di credenziali, il trasporto prova soltanto quelli ammessi, in ordine esplicito e su una lettura iniziale senza effetti. Adotta e dichiara lo schema accettato per la corsa; un rifiuto di autenticazione può far provare il successivo, un errore di licenza, di rete o applicativo no. Non stampa credenziali, non le invia a destinazioni diverse e non ripete negoziazioni a ogni richiesta. La prova copre primo schema accettato, primo rifiutato e secondo accettato, tutti rifiutati ed errore che non autorizza un tentativo diverso.
+
+Uno strumento di configurazione che ammette una lista chiusa di chiavi deve distinguere assenza e ambiguità. Se il contratto autorizza a creare una chiave ammessa, l'assenza consente di aggiungerla e dichiararlo; un duplicato resta errore e una chiave estranea resta rifiutata. Si provano creazione, aggiornamento, duplicato, chiave non ammessa e seconda esecuzione invariata. I valori segreti restano nel livello privato con i permessi previsti, senza finire nei log o nei file tracciati.
+
 ## Una fixture negata dall’ambiente non è una prova del comportamento
 
 Caso osservato il30/10/2026 in un progetto istanziato: l’autotest di anonimizzazione si interrompeva con PermissionError mentre scriveva prova.md nella directory temporanea della sandbox Windows. Non era ancora arrivato al confronto che misura l’anonimizzazione. Eseguito fuori da quel vincolo, con autorizzazione del runtime, concludeva22 casi e0 errori. Lo stesso tipo di impedimento aveva colpito copie temporanee di prove sull’allineamento.
 
 Si registra quindi l’esito come esecuzione impedita dall’ambiente, senza dichiarare verde la prova e senza dedurre un difetto funzionale da quel solo errore. Si conserva il comando e il punto di arresto, poi si ripete nell’ambiente consentito e si legge il risultato. Una directory temporanea esplicitamente ammessa può essere una soluzione se verificata; non si allargano permessi o esclusioni del controllo a caso. Un esito fuori dalla sandbox non dimostra che quella sandbox sia stata riparata. Le due misure rimangono distinte nel rapporto.
+
+## Una prova sul tempo misura l'orologio della macchina che la fa girare
+
+Salita il 2026-11-02 da un progetto istanziato (lezione L-041). Le date di un evento si costruivano con il costruttore locale, cioè con l'orologio di chi apre la pagina, e le prove facevano lo stesso, leggendo il giorno con i metodi locali. Sul computer di sviluppo, nel fuso del progetto, tutto era verde; sui runner della CI, che girano in UTC, la mezzanotte dell'evento cadeva due ore dopo, e una suite verde in locale non lo poteva mostrare. Spostati gli istanti nel fuso dichiarato, sono cadute in UTC sette prove che leggevano le date *mostrate*: l'errore si era spostato da chi costruisce le date a chi le formatta.
+
+Due prescrizioni. Prima di dichiarare verde un cambio che tocca date o orari, la suite si lancia anche nel fuso dei runner, di norma con `TZ=UTC`; misurato su Windows, Node rispetta `TZ=UTC` e ignora un nome come `America/New_York`, quindi in locale il controllo affidabile è UTC. E le attese delle prove si scrivono come istanti in UTC, o lette nel fuso dichiarato, mai con i metodi che leggono l'orologio della macchina.
+
+## Un lavoro programmato che non parte non lascia errori
+
+Salita il 2026-11-02 da un progetto istanziato (lezione L-037). Una funzione a orario fisso, chiamata da uno schedulatore gestito, per difetto non ritenta: se la piattaforma respinge la chiamata prima di avviare il codice, per esempio per mancanza di un'istanza all'avvio a freddo, quell'esecuzione è persa e nel registro del codice non c'è niente, perché il codice non è partito. Nel caso osservato è successo sei notti su trenta, sempre all'ora tonda, e lo ha mostrato solo una lettura del registro della piattaforma durante una verifica dal vivo.
+
+Ogni lavoro programmato dichiara i tentativi ripetuti con un'attesa fra l'uno e l'altro, e il suo lavoro è idempotente perché un tentativo ripetuto sia sicuro; spostare l'orario fuori dall'ora tonda aiuta, ma non sostituisce i tentativi. Per sapere se ha girato non si cerca l'errore, che può avere forme diverse o mancare: si cerca la riga che il lavoro normale scrive ogni volta, e si contano i giorni in cui manca.
+
+## Corpus, inferenza e citazioni: distinguere i fallimenti dagli insiemi vuoti
+
+Un convertitore di corpus gestisce gli errori di lettura per singolo file, prosegue dove il contratto consente risultati parziali e dichiara elaborati, saltati ed errori. L'orchestratore conserva codice di uscita e stderr: se manca il riepilogo atteso, riporta un fallimento, non zero documenti. Una prova comprende un file illeggibile fra due leggibili e verifica sia la prosecuzione sia il conteggio; un corpus incompleto non viene dichiarato completo.
+
+Prima di un lotto di inferenza si verifica il dispositivo effettivamente usato dal servizio interrogando il motore e si misura il ritmo su pochi elementi rappresentativi. La presenza della GPU o del driver non dimostra che quello specifico endpoint li usi. Il confronto dichiara modello, endpoint, dispositivo e condizioni della misura; non si trasferisce il ritmo misurato su un altro servizio.
+
+Negli schemi di uscita generata si limitano gli elenchi e le stringhe secondo il caso d'uso, verificando quali vincoli il motore applica realmente. Il budget di generazione deve poter contenere la massima struttura ammessa, con un margine verificato sul tokenizer e sull'escaping effettivi: il conteggio dei caratteri non è un conteggio esatto dei token. Una media di campione non garantisce la coda. Davanti a un troncamento si conserva l'uscita grezza e si distingue ripetizione senza fine da uscita valida troppo grande; ridurre il tetto senza cambiare il contratto può perdere proprio i documenti più densi. La prova esercita anche una struttura prossima ai limiti e misura gli elementi scartati.
+
+Una citazione risolta da un identificatore valido dimostra la provenienza del testo, non la sua pertinenza o il sostegno all'affermazione. Si misurano separatamente esistenza, letteralità e pertinenza su un campione reale. Sovrapposizione lessicale e dimensione dell'ancora possono essere segnali diagnostici, non prove semantiche: un riscontro debole viene marcato per revisione. I limiti di lunghezza dell'evidenza si derivano dal contratto delle ancore e si ricontrollano quando questo cambia.
+
+Una risorsa condivisa di macchina, come un tunnel usato da più progetti, dichiara proprietario, avvio idempotente, stato e arresto fuori dalla sessione che l'ha richiesta per prima. L'autenticazione deve appartenere all'identità effettiva con cui gira il servizio; il controllo di stato interroga il servizio finale, perché un socket locale aperto non ne prova la disponibilità. La scelta di renderlo persistente e l'installazione dell'attività restano operazioni esplicite, non conseguenze automatiche della diagnosi.
+
+Un confronto prima/dopo usa la stessa funzione e lo stesso criterio sui due stati identificati: per un file versionato, la versione committata e quella modificata. I due numeri si ricontano, non si ottiene il secondo sottraendo interventi al primo. Il risultato registra i riferimenti confrontati e le esclusioni.
+
+Prima di introdurre font, immagini, iframe o altri asset remoti si registra quale terzo riceverà richieste dal browser o dal lettore email, quali dati vengono trasmessi e se esiste una copia locale. Si preferisce la soluzione locale quando soddisfa il requisito; autorizzazioni e condizioni applicabili si valutano prima dell'attivazione. La CSP aiuta il censimento delle origini browser ma non copre da sola email, richieste del server e tutti i flussi di dati.
+
+## Estrarre il contesto e provare la configurazione che viene consumata
+
+Nelle tabelle di questionari e valutazioni si estrae insieme la domanda, la risposta e il contesto che ne determina il senso. La sola cella interrogativa non è una dichiarazione dell'autore. Uno schema che non può rappresentare la risposta è inadatto a quelle fonti; prima di portare in un registro un'affermazione sull'esistenza di un presidio si verifica la coppia nel documento originale.
+
+Un controllo di configurazione esercita lo stesso criterio del suo consumatore: se le esclusioni sono espressioni regolari, compila gli schemi e li prova contro un percorso da escludere e uno da conservare. Cercare una sottostringa come `site` non prova la copertura di quella cartella quando il riscontro è `site-packages`. La prova include anche un nome che contiene quello cercato ma indica un caso diverso.
+
+Le fixture si ricavano dalle varianti realmente presenti nel corpus e se ne verifica la distribuzione prima di scegliere i casi. Per riconoscere elementi strutturati si preferisce il parser del formato; una regex deve distinguere il nome completo dai nomi che ne condividono il prefisso. Il materiale decorativo si separa dal contenuto significativo solo dove il formato permette di farlo senza perdere informazioni. Un rettangolo sintetico non copre un tracciato osservato nel documento reale.
+
+Quando esiste uno strumento canonico per una trasformazione, si usa quello, estendendolo se manca un caso, invece di ricostruirne una parte con sostituzioni manuali. Per gli accenti vale `fix-accents.py`, anche su un percorso esplicito, rispettandone le protezioni per sorgenti e copie di terzi. I confini delle parole e le forme più lunghe che contengono il frammento cercato fanno parte delle prove.
+
+## Assenze, consegne operative e limiti motivati
+
+Un risultato vuoto non prova da solo l'assenza del dato: prima di persistere una conclusione rilevante si verifica disponibilità, perimetro e tipo di risorsa dello strumento e si confronta una seconda via indipendente, se accessibile. Se non è possibile, l'assenza resta non verificata. Un comando, un percorso di menu o un nome di file ripreso da una fonte ma non esercitato nella versione in uso si consegna con provenienza e limite della verifica dichiarati.
+
+Un limite operativo registra insieme valore, unità, ragione e condizione di revisione o revoca. Non si trasferisce automaticamente su una risorsa diversa. Una voce chiusa si aggiorna nello stesso giro anche nel calendario o nella vista di pianificazione: si rimuove dalla vista delle attese oppure si marca con stato e data quando serve conservarne la storia.
+
+Prima di creare un altro artefatto per rendere visibile un'informazione si cerca il documento già usato dal suo pubblico e si valuta un aggiornamento lì. Un nuovo documento si giustifica con un bisogno o un pubblico distinto, dichiarando dove rimane lo stato canonico.
+
+Per arrestare un'attività si preferisce il comando previsto dal sistema che la gestisce, verificando stato e risultato; un segnale al processo è un passo successivo, motivato dal fallimento o dall'indisponibilità della via ordinata. Non si generalizza dal caso osservato che un segnale trasformi necessariamente lo stato del processo. Una procedura anticipa i messaggi normali che possono sembrare guasti o azioni distruttive, ne spiega effetto e durata attesa e distingue i segnali per cui fermarsi davvero.
+
+## Una prova senza estensioni si fa da un profilo vuoto, e misura il codice
+
+Salita il 2026-11-02 da un progetto istanziato (lezione L-038). Quando una verifica dal vivo dipende da una richiesta verso un servizio di terze parti, come la raccolta degli errori, e il browser la blocca con `ERR_BLOCKED_BY_CLIENT`, ripetere in incognito non basta: l'incognito spegne le estensioni salvo quelle con il permesso di girarci, e un blocco pubblicitario di solito ce l'ha. Il segnale che lo dice in anticipo è un iniziatore in console che il sito non ha. La prova si fa da un profilo ospite o da un profilo nuovo, senza estensioni.
+
+L'esito si scrive con il suo perimetro: dimostra che il codice manda la richiesta giusta, non che la richiesta arrivi dal browser di ogni utente. Quella è una domanda di copertura, che si apre come voce a sé con il suo rimedio, per la raccolta degli errori l'inoltro attraverso il proprio dominio.
+
+## Un processo non visibile non è un lavoro fermo
+
+Un elenco di processi filtrato sulla riga di comando può nascondere processi che la sessione non ha il permesso di leggere: il campo vuoto viene scartato dal filtro e un risultato vuoto diventa una falsa assenza. Si contano e dichiarano anche i campi illeggibili. Prima di raccomandare un rilancio si confronta due volte a breve distanza l'effetto persistente del lavoro, come un contatore, un checkpoint o la data dell'ultimo risultato. Se anche quell'effetto non è accessibile, l'avanzamento resta non verificato; non si avvia un duplicato sulla sola base dell'elenco vuoto.
+
+## Identificatori ammessi nello schema del singolo caso
+
+Quando un modello deve citare una chiave o un'ancora presente nell'input, lo schema dichiara un'enumerazione dei valori effettivamente ammessi in quel caso. Lunghezza massima e istruzioni in prosa ammettono comunque identificatori inesistenti. Lo schema si costruisce per chiamata con una copia profonda della base; se l'insieme è vuoto si tratta esplicitamente quel caso, senza trasformarlo in una stringa libera. La prova usa due input con insiemi diversi e verifica rifiuto degli identificatori estranei, indipendenza fra le chiamate e immutabilità dello schema globale. Se il motore non supporta quel vincolo, si valida anche l'output e si dichiara il limite.
+
+## La copertura distingue gli identificatori dalle voci equivalenti
+
+Un catalogo può contenere voci con identificatori diversi e dati indistinguibili per il verificatore. La copertura dichiara se conta identificatori o classi di equivalenza e conserva la relazione fra le voci gemelle; non elimina duplicati dal denominatore senza dirlo. Prima di produrre ancora una voce apparentemente mancante si confronta il contenuto e l'attribuzione effettiva dello stesso verificatore: una risposta attribuita alla gemella già coperta segnala un'ambiguità da registrare, non una nuova mancanza. La prova comprende due voci indistinguibili e una distinta, verificando sia i conteggi sia le attribuzioni.
