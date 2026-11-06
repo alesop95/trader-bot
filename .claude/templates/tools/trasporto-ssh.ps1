@@ -51,14 +51,78 @@ function Q([string]$s) { return "'" + $s.Replace("'", "'\''") + "'" }
 # dove esiste, e oltre il tempo la macchina risulta non raggiunta invece di bloccare.
 $script:SSH_TEMPO_MASSIMO = 300
 
+# Il tempo massimo remoto non copre pero' il caso in cui il comando remoto non parta
+# affatto. Il 2026-11-06 una passata e' rimasta ferma trentacinque minuti su un ssh
+# verso pwmanager-vm: connessione stabilita e autenticata, nessun processo figlio
+# sulla macchina remota, carico zero di quella macchina e client fermo a zero secondi
+# di CPU. Una guardia che vive dalla parte che deve rispondere non protegge chi
+# aspetta, quindi il tempo si misura anche qui, sul client. Il limite locale sta
+# sopra quello remoto perche' nel caso normale deve scattare prima il remoto, che
+# sa dire che cosa stava facendo.
+$script:SSH_TEMPO_MASSIMO_LOCALE = 420
+$script:UltimoScaduto = $false
+
 function Comando-Ssh([string]$comando) {
   $b64 = [Convert]::ToBase64String((New-Object System.Text.UTF8Encoding $false).GetBytes($comando))
   return "echo $b64 | base64 -d | { if command -v timeout >/dev/null 2>&1; then timeout $($script:SSH_TEMPO_MASSIMO) bash; else bash; fi; }"
 }
 
+# Citazione di un argomento secondo le regole di CommandLineToArgvW: la riga di
+# comando di un processo Windows e' una stringa sola, e senza questa conversione un
+# percorso con uno spazio diventerebbe due argomenti.
+function Cita-Win([string]$a) {
+  if ($a.Contains('"')) { throw "argomento con virgolette doppie, non previsto: $a" }
+  if ($a -eq '') { return '""' }
+  if ($a -notmatch '\s') { return $a }
+  # Un argomento che finisce con delle barre rovesciate le vede raddoppiare davanti
+  # alla virgoletta di chiusura, che altrimenti risulterebbe protetta da quella barra.
+  $b = $a
+  if ($b -match '\\+$') { $b = $b + $Matches[0] }
+  return '"' + $b + '"'
+}
+
+# Esegue un programma con un tempo massimo di parete misurato su questa macchina.
+# Restituisce le righe di standard output come farebbe l'operatore di chiamata, cioe'
+# conservando le righe vuote interne e togliendo solo il fine riga finale; la
+# decodifica usa la codifica della console, la stessa di prima, per non cambiare il
+# testo che il resto della passata confronta. Se il tempo scade, il processo viene
+# terminato, $script:UltimoScaduto resta vero e l'uscita e' vuota con codice 124.
+function Esegui-Con-Limite([string]$programma, [string[]]$argomenti, [int]$secondi = 0) {
+  if ($secondi -le 0) { $secondi = $script:SSH_TEMPO_MASSIMO_LOCALE }
+  $script:UltimoScaduto = $false
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName = $programma
+  $psi.Arguments = (($argomenti | ForEach-Object { Cita-Win $_ }) -join ' ')
+  $psi.UseShellExecute = $false
+  $psi.RedirectStandardOutput = $true
+  $psi.RedirectStandardError = $true
+  $psi.StandardOutputEncoding = [Console]::OutputEncoding
+  $psi.StandardErrorEncoding = [Console]::OutputEncoding
+  $p = [System.Diagnostics.Process]::Start($psi)
+  # I due flussi si leggono in asincrono: un processo che riempie il buffer di uno
+  # dei due resterebbe fermo mentre noi aspettiamo la sua uscita.
+  $fuori = $p.StandardOutput.ReadToEndAsync()
+  $errori = $p.StandardError.ReadToEndAsync()
+  if (-not $p.WaitForExit($secondi * 1000)) {
+    $script:UltimoScaduto = $true
+    try { $p.Kill() } catch { }
+    try { $null = $p.WaitForExit(5000) } catch { }
+    $p.Dispose()
+    $global:LASTEXITCODE = 124
+    return @()
+  }
+  $null = $errori.Result
+  $testo = $fuori.Result -replace "`r`n", "`n"
+  $global:LASTEXITCODE = $p.ExitCode
+  $p.Dispose()
+  if ($testo -eq '') { return @() }
+  if ($testo.EndsWith("`n")) { $testo = $testo.Substring(0, $testo.Length - 1) }
+  if ($testo -eq '') { return @('') }
+  return @($testo -split "`n")
+}
+
 function Esegui-Ssh([string]$alias, [string]$comando) {
-  $out = & ssh @script:SSH_OPZIONI $alias (Comando-Ssh $comando) 2>$null
-  return $out
+  return Esegui-Con-Limite 'ssh' (@($script:SSH_OPZIONI) + @($alias, (Comando-Ssh $comando)))
 }
 
 # Esegue un programma con la cartella del progetto come cartella corrente: in
@@ -142,12 +206,12 @@ function Scrivi-Testo([string]$prj, [string]$rel, [string]$testo) {
 }
 
 function Copia-Su([string]$alias, [string]$locale, [string]$remoto) {
-  & scp -q @script:SSH_OPZIONI $locale "${alias}:$remoto" 2>$null | Out-Null
+  $null = Esegui-Con-Limite 'scp' (@('-q') + @($script:SSH_OPZIONI) + @($locale, "${alias}:$remoto"))
   return ($LASTEXITCODE -eq 0)
 }
 
 function Copia-Giu([string]$alias, [string]$remoto, [string]$locale) {
-  & scp -q @script:SSH_OPZIONI "${alias}:$remoto" $locale 2>$null | Out-Null
+  $null = Esegui-Con-Limite 'scp' (@('-q') + @($script:SSH_OPZIONI) + @("${alias}:$remoto", $locale))
   return ($LASTEXITCODE -eq 0)
 }
 

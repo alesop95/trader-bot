@@ -1057,6 +1057,13 @@
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: enumerazioni per caso, copia profonda e prove di indipendenza dello schema"
   },
   {
+    "progetto": "bae518523f0d",
+    "id": "L-015",
+    "commit": "",
+    "data": "2026-11-06",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione «Un vincolo che toglie le risposte impossibili non insegna a scegliere fra le possibili»"
+  },
+  {
     "progetto": "f00655740f68",
     "id": "L-001",
     "commit": "",

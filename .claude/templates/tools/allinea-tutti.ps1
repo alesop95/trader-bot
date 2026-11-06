@@ -426,8 +426,18 @@ if ($Autotest) {
   Caso 'un percorso con una cartella nascosta e rumore' @($true) (Parziale-Rumore '/home/dev/.vscode/extensions/x' '/home/dev' $progFinti)
   Caso 'una cartella dentro un progetto trovato e del progetto' @($true) (Parziale-Rumore '/opt/app/_notes/MCP-docx' '/home/dev' $progFinti)
   Caso 'una cartella vera con .claude senza PROJECT-SYSTEM resta elencata' @($false) (Parziale-Rumore '/home/dev/Scrivania/nuovo' '/home/dev' $progFinti)
+  # Il tempo massimo locale del trasporto. Una guardia che vive sulla macchina remota non
+  # protegge chi aspetta: il 2026-11-06 una passata e' rimasta ferma trentacinque minuti su
+  # un comando remoto mai partito. Qui si prova il meccanismo generico, senza rete.
+  $psExe = (Get-Process -Id $PID).Path
+  $inizio = Get-Date
+  $scaduto = @(Esegui-Con-Limite $psExe @('-NoProfile', '-Command', 'Start-Sleep -Seconds 30') 2)
+  $durata = ((Get-Date) - $inizio).TotalSeconds
+  Caso 'un comando che non torna viene terminato entro il tempo massimo' @($true, $true, 0) @(($durata -lt 15), $script:UltimoScaduto, $scaduto.Count)
+  Caso 'le righe vuote in mezzo all uscita si conservano' @('a', '', 'b') (Esegui-Con-Limite $psExe @('-NoProfile', '-Command', "'a'; ''; 'b'"))
+  Caso 'un argomento con uno spazio resta un argomento solo' @('"c:\un percorso\x"', 'semplice') @((Cita-Win 'c:\un percorso\x'), (Cita-Win 'semplice'))
   Write-Host ''
-  Write-Host "$(24 - $rossi) casi superati su 24"
+  Write-Host "$(27 - $rossi) casi superati su 27"
   Remove-Item -LiteralPath $blocco -Force -ErrorAction SilentlyContinue
   exit $(if ($rossi) { 1 } else { 0 })
 }
