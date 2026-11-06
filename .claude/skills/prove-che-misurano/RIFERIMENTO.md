@@ -514,6 +514,10 @@ Salita il 2026-11-02 da un progetto istanziato (lezione L-038). Quando una verif
 
 L'esito si scrive con il suo perimetro: dimostra che il codice manda la richiesta giusta, non che la richiesta arrivi dal browser di ogni utente. Quella è una domanda di copertura, che si apre come voce a sé con il suo rimedio, per la raccolta degli errori l'inoltro attraverso il proprio dominio.
 
+## Lo scope del terminale fa parte della prova
+
+In PowerShell un file avviato direttamente con `-File` può rendere globali funzioni che, invocate da un altro script o dal terminale, vivono nello scope dello script. Una closure creata con `GetNewClosure` può perderne la visibilità. La regressione deve riprodurre anche la modalità di invocazione: un runner che richiama lo script distingue i due casi. Una funzione mancante non deve trasformarsi in successo riutilizzando un codice d'uscita precedente. Per un push si confronta il commit effettivo sulle destinazioni dichiarate; il solo codice zero non prova la consegna. La mutazione deve far fallire questa verifica.
+
 ## Un processo non visibile non è un lavoro fermo
 
 Un elenco di processi filtrato sulla riga di comando può nascondere processi che la sessione non ha il permesso di leggere: il campo vuoto viene scartato dal filtro e un risultato vuoto diventa una falsa assenza. Si contano e dichiarano anche i campi illeggibili. Prima di raccomandare un rilancio si confronta due volte a breve distanza l'effetto persistente del lavoro, come un contatore, un checkpoint o la data dell'ultimo risultato. Se anche quell'effetto non è accessibile, l'avanzamento resta non verificato; non si avvia un duplicato sulla sola base dell'elenco vuoto.

@@ -2,17 +2,11 @@
 
 <!-- generato da allinea-dal-template.py -->
 
-Commit a monte: `0ed3c951c05c15e8263962428257ebe950ec6812`. File interessati dalla passata: 8. Commit e push del progetto restano manuali.
+Commit a monte: `03d54987f1cff26388f9bad412324edd60dce3bb`. File interessati dalla passata: 2. Commit e push del progetto restano manuali.
 
 | Esito | File |
 |---|---|
-| VECCHIO | `.claude/norme/token-economy.md` |
 | VECCHIO | `.claude/skills/prove-che-misurano/RIFERIMENTO.md` |
-| VECCHIO | `.claude/skills/riprendi/SKILL.md` |
-| VECCHIO | `.claude/templates/lezioni-recepite.json` |
-| MERGE | `.claude/templates/tools/README.md` |
-| VECCHIO | `.claude/templates/tools/allinea-tutti.ps1` |
-| NUOVO | `.claude/templates/tools/stato-vulnerabilita.py` |
-| NUOVO | `.claude/templates/tools/test_stato_vulnerabilita.py` |
+| VECCHIO | `.claude/templates/tools/chiudi-allineamento.ps1` |
 
 Conflitti ancora da risolvere: 0.

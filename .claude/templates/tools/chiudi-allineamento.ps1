@@ -192,10 +192,10 @@ function Avanti([string]$prj) {
 # Una rete che cade non si corregge ripetendo il comando a mano: la ripetizione e'
 # parte dello strumento, con attese crescenti. L'azione e' iniettabile per potere
 # provare la ripetizione senza una rete.
-function Spingi([string]$prj, [int]$tentativi, $azione, [int[]]$attese = @(5, 15, 30)) {
+function Spingi([string]$prj, [int]$tentativi, $azione, [int[]]$attese = @(5, 15, 30), [string[]]$argomentiAzione = @()) {
   if (-not $azione) { $azione = { param($p) Invoca-Git $p push | Out-Null; return $LASTEXITCODE } }
   for ($i = 1; $i -le $tentativi; $i++) {
-    $codice = & $azione $prj
+    $codice = & $azione $prj @argomentiAzione
     if ($codice -eq 0) { return [pscustomobject]@{ ok = $true; tentativi = $i } }
     if ($i -lt $tentativi) { Start-Sleep -Seconds $attese[[Math]::Min($i - 1, $attese.Count - 1)] }
   }
@@ -222,15 +222,34 @@ function Leggi-PushRemoti([string]$file) {
 
 # Spinge il ramo corrente su un remoto che non e' l'upstream, solo se quel remoto e'
 # indietro, e mai con forza: un ramo divergente resta un push fallito da guardare.
-function Spingi-Altro([string]$prj, [string]$remoto, [bool]$applica, [int]$tentativi) {
+# Verifica tutti gli URL di push, non la sola copia locale del riferimento remoto.
+# Un callback riuscito o un fetch precedente non provano che la destinazione contenga HEAD.
+function Remoto-Allineato([string]$prj, [string]$remoto, [string]$branch) {
+  $testa = Invoca-Git $prj rev-parse HEAD
+  if ($LASTEXITCODE -ne 0 -or -not $testa) { return $false }
+  $destinazioni = @(Invoca-Git $prj remote get-url --push --all $remoto)
+  if ($LASTEXITCODE -ne 0 -or $destinazioni.Count -eq 0) { return $false }
+  foreach ($destinazione in $destinazioni) {
+    $righe = @(Invoca-Git $prj ls-remote --exit-code $destinazione "refs/heads/$branch")
+    if ($LASTEXITCODE -ne 0 -or $righe.Count -ne 1) { return $false }
+    $hash = ($righe[0] -split '\s+')[0]
+    if ($hash -ne $testa) { return $false }
+  }
+  return $true
+}
+
+function Spingi-Altro([string]$prj, [string]$remoto, [bool]$applica, [int]$tentativi, $azionePush = $null) {
   $branch = Invoca-Git $prj rev-parse --abbrev-ref HEAD
-  $null = Invoca-Git $prj fetch -q $remoto $branch
-  $dietro = Invoca-Git $prj rev-list --count "$remoto/${branch}..HEAD"
-  if ($LASTEXITCODE -eq 0 -and [int]$dietro -eq 0) { return "$remoto allineato" }
+  if (Remoto-Allineato $prj $remoto $branch) { return "$remoto allineato" }
   if (-not $applica) { return "$remoto da spingere" }
-  $azione = { param($p) Invoca-Git $p push $remoto "HEAD:refs/heads/$branch" | Out-Null; return $LASTEXITCODE }.GetNewClosure()
-  $e = Spingi $prj $tentativi $azione
-  if ($e.ok) { return "$remoto spinto" }
+  # GetNewClosure crea un modulo che perde le funzioni del trasporto nello scope script.
+  # L'azione e sincrona: destinazione e ramo entrano come parametri espliciti.
+  $azione = $azionePush
+  if (-not $azione) {
+    $azione = { param($p, $destinazione, $ramo) Invoca-Git $p push $destinazione "HEAD:refs/heads/$ramo" | Out-Null; return $LASTEXITCODE }
+  }
+  $e = Spingi $prj $tentativi $azione -argomentiAzione @($remoto, $branch)
+  if ($e.ok -and (Remoto-Allineato $prj $remoto $branch)) { return "$remoto spinto" }
   return "$remoto push fallito"
 }
 
@@ -308,6 +327,7 @@ function Esegui-Autotest {
       & git -C $p config user.name 'prova' | Out-Null
       & git -C $p config user.email 'prova@esempio.invalid' | Out-Null
       & git -C $p config commit.gpgsign false | Out-Null
+      & git -C $p config core.hooksPath (Join-Path $p '.hooks-vuoto') | Out-Null
       return $p
     }
     function Scrivi([string]$p, [string]$rel, [string]$testo) {
@@ -525,11 +545,49 @@ function Esegui-Autotest {
     $g = Join-Path $radice 'divergente'
     & git clone -q $altro $g 2>&1 | Out-Null
     & git -C $g config user.name prova | Out-Null; & git -C $g config user.email prova@esempio.invalid | Out-Null
+    & git -C $g config core.hooksPath (Join-Path $g '.hooks-vuoto') | Out-Null
     Scrivi $g 'altrui.md' "altrove`n"; & git -C $g add -A | Out-Null; & git -C $g commit -q -m 'altrove' | Out-Null; & git -C $g push -q 2>&1 | Out-Null
     $diAltro = & git -C $altro rev-parse main
     Scrivi $f 'mio.md' "ancora`n"
     $rG = Chiudi-Progetto $f $rapA $MSG $true 1 $false $false $null @('altro')
     Prova "un secondo remoto divergente non si sovrascrive e il push risulta fallito" ((& git -C $altro rev-parse main) -eq $diAltro -and $rG.push -match 'altro push fallito')
+
+    # La chiamata diretta delle prove precedenti vedeva Invoca-Git nello scope
+    # dell'autotest. La CLI reale non lo vedeva nel modulo di GetNewClosure.
+    $upCli = Nudo 'cli-up.git'; $altroCli = Nudo 'cli-altro.git'
+    $prjCli = Nuovo-Repo 'cli-push'
+    & git -C $prjCli switch -q -c feat/prova-scope | Out-Null
+    Scrivi $prjCli 'mio.md' "prima`n"
+    & git -C $prjCli add -A | Out-Null; & git -C $prjCli commit -q -m 'base' | Out-Null
+    & git -C $prjCli remote add origin $upCli | Out-Null; & git -C $prjCli remote add altro $altroCli | Out-Null
+    & git -C $prjCli push -q -u origin HEAD 2>&1 | Out-Null; & git -C $prjCli push -q altro HEAD 2>&1 | Out-Null
+    Scrivi $prjCli 'mio.md' "secondo`n"
+    & git -C $prjCli add -A | Out-Null; & git -C $prjCli commit -q -m 'secondo' | Out-Null
+    $testaCli = & git -C $prjCli rev-parse HEAD
+    $tplCli = Join-Path $radice 'template-cli-push'
+    Scrivi $tplCli '.claude/PROJECT-SYSTEM.md' "prova`n"
+    $rapCli = Join-Path $tplCli '_notes/allineamento/corse/20200101-000000/prj.json'
+    Scrivi $tplCli '_notes/allineamento/corse/20200101-000000/prj.json' "[]`n"
+    $registroCli = @{}
+    $registroCli[$prjCli] = @{stato='applicato';rapporto=$rapCli;template_commit='abc1234';misurato_il=(Get-Date).ToString('s')}
+    [IO.File]::WriteAllText((Join-Path $tplCli '_notes/allineamento/registro.json'),(ConvertTo-Json $registroCli -Depth 6),$utf8)
+    [IO.File]::WriteAllText((Join-Path $tplCli '_notes/allineamento/push-remoti.txt'),($prjCli + " altro`n"),$utf8)
+    # Un -File diretto carica le funzioni nello scope globale del processo figlio
+    # e maschera il difetto. Il runner invoca lo script come fa il terminale utente.
+    $runnerCli = Join-Path $radice 'invoca-cli.ps1'
+    [IO.File]::WriteAllText($runnerCli,('param([string]$comando, [string]$tpl)' + "`n" + '& $comando -Template $tpl -SoloPush -Applica -Tentativi 1' + "`n" + 'exit $LASTEXITCODE' + "`n"),$utf8)
+    $uscitaCli = (& powershell -NoProfile -ExecutionPolicy Bypass -File $runnerCli -comando $PSCommandPath -tpl $tplCli 2>&1 | Out-String)
+    $codiceCli = $LASTEXITCODE
+    Prova "la CLI reale spinge il remoto aggiuntivo con un ramo contenente una barra" ((& git -C $altroCli rev-parse refs/heads/feat/prova-scope) -eq $testaCli)
+    Prova "la CLI reale conserva anche il push all'upstream" ((& git -C $upCli rev-parse refs/heads/feat/prova-scope) -eq $testaCli)
+    Prova "la CLI non dichiara successo con una funzione di trasporto assente" ($codiceCli -eq 0 -and $uscitaCli -match 'spinto, altro spinto' -and $uscitaCli -notmatch 'CommandNotFoundException|ObjectNotFound|Invoca-Git')
+
+    Scrivi $prjCli 'mio.md' "terzo`n"
+    & git -C $prjCli add -A | Out-Null; & git -C $prjCli commit -q -m 'terzo' | Out-Null
+    $nonSpinge = { param($p, $destinazione, $ramo) return 0 }
+    $falsoSuccesso = Spingi-Altro $prjCli 'altro' $true 1 $nonSpinge
+    Prova "un codice zero senza consegna effettiva resta push fallito" ($falsoSuccesso -eq 'altro push fallito' -and (& git -C $altroCli rev-parse refs/heads/feat/prova-scope) -eq $testaCli)
+    Prova "un remoto inesistente non risulta allineato" (-not (Remoto-Allineato $prjCli 'assente' 'feat/prova-scope'))
 
     # 10. il messaggio rispetta il presidio dell'hook commit-msg
     $m = Messaggio-Predefinito 'abc1234567890'
