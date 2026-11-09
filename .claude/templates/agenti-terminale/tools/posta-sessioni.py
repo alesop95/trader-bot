@@ -26,6 +26,7 @@ una sessione non si registra, nessun elenco la vede, e questo file non puo' farc
 from pathlib import Path
 import argparse
 import datetime as dt
+import importlib.util
 import json
 import os
 import re
@@ -103,6 +104,61 @@ def elenco(root, tutti=False):
     return fuori
 
 
+# Indirizzi che non dicono niente di nessuno: non sono dati di qualcuno e non vanno fermati.
+RETI_INNOCUE = ("127.", "0.0.0.0", "255.255.255.255", "169.254.", "192.0.2.", "198.51.100.", "203.0.113.")
+
+
+def rilevatore():
+    """Carica i rilevatori del guard-rail sui dati di cliente, se stanno nell'albero.
+
+    La cassetta e' condivisa fra progetti aziendali e personali, quindi il controllo
+    sul contenuto non puo' dipendere dall'attenzione di chi scrive il messaggio: sta
+    qui dentro, al momento del deposito. Gli schemi sono gli stessi del guard-rail,
+    perche' due elenchi di schemi divergono e quello meno usato invecchia.
+    """
+    qui = Path(__file__).resolve()
+    candidati = [
+        qui.parents[2] / "anonymization" / "tools" / "Test-Anonymization.py",
+        qui.parents[4] / ".claude" / "templates" / "anonymization" / "tools" / "Test-Anonymization.py",
+    ]
+    for candidato in candidati:
+        if candidato.is_file():
+            spec = importlib.util.spec_from_file_location("anonimizzazione_posta", candidato)
+            modulo = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(modulo)
+            return modulo
+    return None
+
+
+def contenuto_vietato(testo, modulo=None):
+    """Categorie di dato reale trovate nel testo, senza i valori.
+
+    I valori non si restituiscono e non si stampano: finirebbero nel terminale e
+    nella trascrizione della sessione, cioe' proprio fuori dal perimetro che questo
+    controllo esiste per difendere.
+    """
+    modulo = modulo or rilevatore()
+    if modulo is None:
+        raise ValueError(
+            "manca il rilevatore degli schemi (anonymization/tools/Test-Anonymization.py): "
+            "senza, il deposito non si puo' controllare e non si esegue"
+        )
+    trovate = {}
+
+    def segna(categoria, quante=1):
+        if quante:
+            trovate[categoria] = trovate.get(categoria, 0) + quante
+
+    segna("EMAIL", len(modulo.EMAIL.findall(testo)))
+    segna("MAC", len(modulo.MAC.findall(testo)))
+    segna("IMPORTO", len(modulo.MONEY.findall(testo)))
+    segna("TELEFONO", len(modulo.PHONE_FALLBACK.findall(testo)))
+    segna("IP", sum(1 for v in modulo.IPV4.findall(testo) if not v.startswith(RETI_INNOCUE)))
+    segna("IBAN", sum(1 for v in modulo.IBAN_CANDIDATO.findall(testo) if modulo.iban_valido(v)))
+    segna("CARTA", sum(1 for v in modulo.CARTA_CANDIDATA.findall(testo) if modulo.carta_valida(v)))
+    return sorted(trovate.items())
+
+
 def invia(root, sender, recipient, subject, body):
     sender, recipient = nome(sender), nome(recipient)
     root = Path(root)
@@ -115,6 +171,17 @@ def invia(root, sender, recipient, subject, body):
             raise ValueError("partecipante congedato, non ricevera' il messaggio: " + identifier)
     if len(body.encode("utf-8")) > 131072:
         raise ValueError("messaggio oltre128KiB")
+    # Il controllo sul contenuto non ha una via di scavalcamento, per costruzione: la
+    # lezione da cui nasce e' che un agente che dichiara una via di fuga la usa lo stesso
+    # (L-019 di un progetto istanziato, 2026-11-09). Un messaggio che deve nominare un
+    # dato reale si riscrive, oppure il dato resta nel progetto che lo possiede.
+    categorie = contenuto_vietato(subject + "\n" + body)
+    if categorie:
+        raise ValueError(
+            "il messaggio contiene dati reali e non viene depositato: "
+            + ", ".join("%s x%d" % (c, n) for c, n in categorie)
+            + ". La cassetta e' condivisa fra progetti: si riscrive il messaggio senza quei valori."
+        )
     message = {
         "id": uuid.uuid4().hex,
         "da": sender,
@@ -205,6 +272,33 @@ def autotest():
         n = len(congeda(d, None, 0))
         prova("la scopa per eta' chiude i vivi piu' vecchi del limite", n == 1, n)
         prova("dopo la scopa non resta nessun vivo", elenco(d) == [], elenco(d))
+        # Il controllo sul contenuto al deposito: la cassetta e' condivisa fra progetti
+        # aziendali e personali, e un messaggio con dati reali la fa uscire dal perimetro.
+        registra(d, "mittente", "claude", d)
+        rotti = [
+            ("un IBAN valido", "IBAN", "il conto e' GB82 WEST 12345698765432"),
+            ("un indirizzo di posta", "EMAIL", "scrivi a prova@example.invalid"),
+            ("un indirizzo di rete della macchina", "IP", "la macchina risponde su 192.168.20.25"),
+            ("un importo in euro", "IMPORTO", "la fattura e' di 12,34 euro"),
+        ]
+        for descrizione, categoria, testo in rotti:
+            try:
+                invia(d, "mittente", "mittente", "oggetto", testo)
+                prova("il deposito rifiuta " + descrizione, False)
+            except ValueError as e:
+                prova(
+                    "il deposito rifiuta " + descrizione + " nominando la categoria",
+                    categoria in str(e) and testo.split()[-1] not in str(e),
+                    str(e),
+                )
+        prima = len(leggi(d, "mittente"))
+        invia(d, "mittente", "mittente", "allineamento", "la passata ha scritto 7 file su 45 progetti, zero conflitti")
+        prova("un messaggio tecnico senza dati reali passa", len(leggi(d, "mittente")) == prima + 1)
+        prova(
+            "un indirizzo di loopback non e' un dato di nessuno",
+            contenuto_vietato("il servizio ascolta su 127.0.0.1 porta 8000") == [],
+            contenuto_vietato("il servizio ascolta su 127.0.0.1 porta 8000"),
+        )
 
     print("\n%d prove, %d fallite." % (len(esiti), esiti.count(False)))
     return 0 if all(esiti) else 1

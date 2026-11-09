@@ -854,14 +854,32 @@ def main():
     stato_template = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(stato_template)
     effettivi = [e for e in esiti if e["esito"] != "RIMOSSO" or a.rimuovi]
-    consegna = stato_template.ricevuta(effettivi, stato_template.git(tpl, "rev-parse", "HEAD"))
+    # Le attese dei filoni viaggiano nella ricevuta perche' il registro resta a monte:
+    # un progetto che non le legge ripropone una decisione gia' presa (L-018, 2026-11-09).
+    attesi = stato_template.attese(tpl, prj)
+    consegna = stato_template.ricevuta(effettivi, stato_template.git(tpl, "rev-parse", "HEAD"), attesi)
+    # Se questa corsa non ha consegnato niente, la ricevuta non si rigenera: si aggiorna
+    # la sola sezione delle attese dentro quella esistente, perche' il resto e' il verbale
+    # dell'ultima consegna vera e rigenerarlo lo cancellerebbe.
+    scritti = [e for e in effettivi if e["esito"] not in ("CONFLITTO", "PACCHETTI", "ADATTATO", "LOCALE", "UGUALE")]
+    ricevuta_esistente = prj / ".claude/ultimo-allineamento.md"
+    if consegna and not scritti and ricevuta_esistente.is_file():
+        consegna = stato_template.innesta_attese(
+            ricevuta_esistente.read_text(encoding="utf-8-sig"), attesi
+        )
     if consegna:
         relativo = ".claude/ultimo-allineamento.md"
         dest = prj / relativo
         if dest.is_file() and "<!-- generato da allinea-dal-template.py -->" not in dest.read_text(encoding="utf-8-sig"):
             esiti.append({"file": relativo, "esito": "CONFLITTO", "nota": "ricevuta locale non generata: non sovrascritta"})
         else:
-            esiti.append({"file": relativo, "esito": "VECCHIO" if dest.is_file() else "NUOVO", "_dati": consegna.encode("utf-8")})
+            atteso = consegna.encode("utf-8")
+            # Una ricevuta gia' identica non si riscrive, altrimenti la seconda misura
+            # della passata trova sempre un file da trattare e il progetto resta
+            # "incompleto" per sempre: misurato il 2026-11-09 su un progetto con
+            # un'attesa aperta, dove la ricevuta esiste anche senza file consegnati.
+            if not (dest.is_file() and lf(dest.read_bytes()) == lf(atteso)):
+                esiti.append({"file": relativo, "esito": "VECCHIO" if dest.is_file() else "NUOVO", "_dati": atteso})
 
     # applicazione
     if a.applica:

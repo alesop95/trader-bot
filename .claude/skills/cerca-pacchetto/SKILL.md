@@ -9,8 +9,10 @@ description: >
   progetto comincia a fare qualcosa che all'inizio non faceva, come raccogliere fonti,
   produrre documenti, impaginare, trascrivere o distribuire un'applicazione; e quando si
   sta per chiedere all'utente come procedere su una pratica che il template potrebbe già
-  prescrivere. Non installa nulla senza una risposta esplicita e non esegue mai git add,
-  commit o push.
+  prescrivere. Cerca in due registri, il catalogo dei pacchetti per ciò che è pronto e
+  l'indice dei filoni per ciò che è già deciso e non lo è ancora, perché una decisione
+  appena presa sta solo nel secondo. Non installa nulla senza una risposta esplicita e
+  non esegue mai git add, commit o push.
 ---
 
 # cerca-pacchetto
@@ -32,6 +34,12 @@ Lo strumento confronta le parole con la colonna «Quando offrirlo» di ogni voce
 Per ogni voce candidata si legge la riga intera del catalogo, non il solo estratto, e si decide se risponde davvero. Se risponde, si propone all'utente con le tre frasi del gate, cioè che cosa fa, perché a questo progetto serve adesso e che cosa costa, compresi le dipendenze esterne e i token che un server MCP occupa a ogni turno, e si chiede. Un sì si istanzia come dice la colonna «Cosa istanzia» e si registra dove il progetto registra le scelte del gate; un no si registra allo stesso modo, così che la prossima tornata sappia che era stato escluso e non dimenticato.
 
 Se la voce dice che il pacchetto è già istanziato, non lo si propone: lo si usa, leggendone la skill o il README. L'etichetta «non rilevato» non prova il contrario, perché lo strumento riconosce skill e strumenti ma non le schede o le regole che alcuni pacchetti istanziano.
+
+## Il secondo registro: deciso e non ancora pronto
+
+Il catalogo elenca ciò che è pronto. Ciò che è stato deciso e non è ancora pronto sta altrove, nell'indice dei filoni `docs/FILONI.md` del template, e quella differenza non è formale: una decisione appena presa, per definizione, sta solo nel secondo registro. Cercare nel solo catalogo lascia quindi invisibile proprio il lavoro deciso ieri, ed è il caso misurato il 2026-11-09 in un progetto istanziato, lezione L-018: la decisione di unificare un motore duplicato fra tre progetti era stata registrata a monte lo stesso giorno, con il filone aperto e il documento che dichiarava quale pezzo mancasse e a chi toccasse, e l'agente di quel progetto l'ha riproposta al proprietario come propria, insieme a una formulazione che il documento dichiarava già sbagliata.
+
+Lo strumento interroga da sé entrambi i registri e stampa le voci dei filoni sotto quelle del catalogo, con lo stato e il documento a monte. Resta però una differenza di luogo che va conosciuta: l'indice dei filoni vive nel template e non viene consegnato ai progetti, quindi dentro un progetto istanziato non c'è niente da interrogare. Là ciò che un filone aspetta da quel progetto arriva nella ricevuta dell'allineamento, `.claude/ultimo-allineamento.md`, sotto la sezione «Il template aspetta da questo progetto», che la passata scrive dal registro `docs/attese-dai-filoni.json`; lo strumento vi rimanda da sé quando l'indice non c'è. Una voce aperta in quella sezione è una pendenza di quel progetto e si legge come si legge il registro delle pendenze locale, cioè all'apertura della sessione: finché è aperta, la capacità che descrive è già decisa e non si ripropone come nuova.
 
 ## Che cosa non è
 

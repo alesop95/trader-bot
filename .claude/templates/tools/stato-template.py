@@ -174,14 +174,108 @@ def rimuovi(elenco, progetto):
     }
 
 
-def ricevuta(esiti, commit):
+def cella(valore):
+    """Una cella di tabella sta su una riga sola e non contiene barre verticali."""
+    testo = "" if valore is None else str(valore)
+    return testo.replace("|", "/").replace("\r", " ").replace("\n", " ").strip()
+
+
+ATTESE = "docs/attese-dai-filoni.json"
+
+
+def attese(template, progetto):
+    """Cio' che un filone del template aspetta da questo progetto.
+
+    Il registro dei filoni vive nel template e non viene consegnato ai progetti,
+    quindi una decisione gia' presa a monte resta invisibile da valle e il
+    progetto la ripropone come propria: e' la lezione L-018 di un progetto
+    istanziato, del 2026-11-09. La ricevuta e' il posto che il progetto legge da
+    se', e questa funzione sceglie le sole voci che riguardano lui.
+    """
+    if not template:
+        return []
+    percorso = Path(template) / ATTESE
+    if not percorso.is_file():
+        return []
+    try:
+        voci = json.loads(percorso.read_text(encoding="utf-8-sig"))
+    except ValueError:
+        return []
+    if not isinstance(voci, list):
+        return []
+    nome = Path(progetto).name.strip().lower()
+    scelte = []
+    for voce in voci:
+        if not isinstance(voce, dict):
+            continue
+        if str(voce.get("progetto", "")).strip().lower() != nome:
+            continue
+        if str(voce.get("stato", "aperta")).strip().lower() != "aperta":
+            continue
+        # Il documento sta nel template e non nel progetto: si cita con il nome della
+        # cartella del template davanti, altrimenti il controllo dei link del progetto
+        # lo legge come un percorso locale inesistente e lo riscrive, facendo divergere
+        # la ricevuta dal generatore a ogni passata (misurato il 2026-11-09).
+        voce = dict(voce)
+        documento = str(voce.get("documento", "")).strip().lstrip("/")
+        if documento and not documento.startswith(Path(template).name + "/"):
+            voce["documento"] = Path(template).resolve().name + "/" + documento
+        scelte.append(voce)
+    return scelte
+
+
+TITOLO_ATTESE = "## Il template aspetta da questo progetto"
+
+
+def sezione_attese(attesi):
+    """La sezione che porta al progetto cio' che un filone aspetta da lui."""
+    attesi = list(attesi or [])
+    if not attesi:
+        return ""
+    testo = "\n" + TITOLO_ATTESE + "\n\n"
+    testo += (
+        # Accenti veri e non apostrofi: la ricevuta e' un documento generato, e il
+        # correttore degli accenti di un progetto lo riscriverebbe a ogni chiusura,
+        # facendo divergere per sempre la copia dal generatore (misurato il 2026-11-09).
+        "Voci aperte nell'indice dei filoni del template, che resta a monte e non arriva qui. "
+        "Finché una voce è aperta, la capacità che descrive è già decisa: non si ripropone "
+        "come nuova e non si costruisce a mano una seconda volta.\n\n"
+    )
+    testo += "| Filone | Che cosa aspetta da qui | Documento a monte | Aperta il |\n|---|---|---|---|\n"
+    for voce in attesi:
+        testo += "| %s | %s | `%s` | %s |\n" % (
+            cella(voce.get("filone")),
+            cella(voce.get("attesa")),
+            cella(voce.get("documento")),
+            cella(voce.get("aperta")),
+        )
+    return testo
+
+
+def innesta_attese(testo, attesi):
+    """Aggiorna la sola sezione delle attese dentro una ricevuta gia' scritta.
+
+    Serve quando la passata non consegna nessun file: rigenerare la ricevuta
+    cancellerebbe il verbale dell'ultima consegna, e riscriverla identica a ogni
+    corsa lascerebbe il progetto "incompleto" per sempre, come misurato il
+    2026-11-09 sul primo progetto con un'attesa aperta.
+    """
+    corpo = testo.split(TITOLO_ATTESE)[0].rstrip("\n")
+    sezione = sezione_attese(attesi)
+    if not sezione:
+        return corpo + "\n"
+    return corpo + "\n" + sezione
+
+
+def ricevuta(esiti, commit, attesi=None):
     written = [
         e
         for e in esiti
         if e["esito"]
         in ("NUOVO", "VECCHIO", "SUPERATO", "MERGE", "RISOLTO", "INNESCO", "SPOSTATO", "RIMOSSO")
     ]
-    if not written:
+    attesi = list(attesi or [])
+    if not written and not attesi:
         return None
     conflicts = [e["file"] for e in esiti if e["esito"] == "CONFLITTO"]
     text = (
@@ -193,6 +287,7 @@ def ricevuta(esiti, commit):
     text += "\nConflitti ancora da risolvere: %d.\n" % len(conflicts)
     if conflicts:
         text += "\n" + "\n".join("`%s`" % p for p in conflicts) + "\n"
+    text += sezione_attese(attesi)
     return text
 
 

@@ -104,6 +104,75 @@ def punteggio(voce: Voce, domanda: list[str]) -> int:
     return p
 
 
+@dataclass
+class Filone:
+    """Una riga dell'indice dei filoni: deciso, non ancora pronto."""
+
+    tema: str
+    filone: str
+    stato: str
+    documento: str
+    riga: int
+
+
+def leggi_filoni(percorso: Path) -> list[Filone]:
+    """L'indice dei filoni e' il secondo registro di cio' che un progetto puo'
+    ereditare: il catalogo elenca cio' che e' pronto, questo cio' che e' deciso e
+    non lo e' ancora. Cercare solo nel primo fa riproporre da capo una decisione
+    gia' presa (L-018 di un progetto istanziato, 2026-11-09)."""
+    voci: list[Filone] = []
+    if not percorso.is_file():
+        return voci
+    for n, riga in enumerate(percorso.read_text(encoding="utf-8").splitlines(), start=1):
+        if not riga.startswith("|"):
+            continue
+        celle = [c.strip() for c in SEPARATORE.split(riga)[1:-1]]
+        if len(celle) < 5:
+            continue
+        if celle[0] == "Tema" or set(celle[0]) <= set("-: "):
+            continue
+        voci.append(Filone(celle[0], celle[1], celle[2], celle[4], n))
+    return voci
+
+
+def punteggio_filone(voce: Filone, domanda: list[str]) -> int:
+    tema = set(radici(voce.tema))
+    filone = set(radici(voce.filone))
+    p = 0
+    for d in set(domanda):
+        if d in filone:
+            p += 2
+        elif d in tema:
+            p += 1
+    return p
+
+
+def trova_filoni(catalogo: Path) -> Path:
+    """L'indice vive nel template, accanto al catalogo ma fuori da `.claude`."""
+    radici_possibili = []
+    if len(catalogo.resolve().parents) > 2:
+        radici_possibili.append(catalogo.resolve().parents[2])
+    radici_possibili += [Path.cwd(), *Path.cwd().parents]
+    for base in radici_possibili:
+        candidato = base / "docs" / "FILONI.md"
+        if candidato.is_file():
+            return candidato
+    return Path("docs/FILONI.md")
+
+
+def attese_nella_ricevuta(progetto: Path | None) -> Path | None:
+    """In un progetto istanziato l'indice dei filoni non arriva: cio' che un filone
+    aspetta da quel progetto sta nella ricevuta dell'ultimo allineamento."""
+    if progetto is None:
+        return None
+    ricevuta = progetto / ".claude" / "ultimo-allineamento.md"
+    if ricevuta.is_file() and "Il template aspetta da questo progetto" in ricevuta.read_text(
+        encoding="utf-8-sig"
+    ):
+        return ricevuta
+    return None
+
+
 def adottato(voce: Voce, progetto: Path, template_dir: Path) -> bool:
     if (progetto / ".claude" / "skills" / voce.nome).is_dir():
         return True
@@ -169,8 +238,56 @@ def autotest() -> int:
         prj = base / "progetto"
         (prj / ".claude" / "skills" / "craft-apps").mkdir(parents=True)
         caso("una skill omonima segna il pacchetto come adottato", adottato(voci[0], prj, base) and not adottato(voci[1], prj, base))
+        # Il secondo registro: deciso e non ancora pronto. Senza questi casi la ricerca
+        # resterebbe cieca su cio' che il template ha gia' deciso (L-018, 2026-11-09).
+        indice = base / "docs" / "FILONI.md"
+        indice.parent.mkdir(parents=True, exist_ok=True)
+        indice.write_text(
+            "## Indice per tema\n\n"
+            "| Tema | Filone | Stato | Settore | Documento |\n|---|---|---|---|---|\n"
+            "| Lettura ancorata | Un motore unico di lettura ancorata come pacchetto | Deciso il 2026-11-09 | Documenti | `docs/proposta.md` |\n"
+            "| Sicurezza | Strumenti di assessment in proprio | Aperto | Sicurezza | `docs/cyber.md` |\n",
+            encoding="utf-8",
+        )
+        filoni = leggi_filoni(indice)
+        caso("l intestazione e il separatore non diventano filoni", len(filoni) == 2)
+        caso("il documento a monte si legge dalla quinta colonna", filoni[0].documento == "`docs/proposta.md`")
+        ordinati = sorted(filoni, key=lambda f: -punteggio_filone(f, radici("motore di lettura ancorata")))
+        caso("le parole del lavoro portano in testa il filone gia deciso", ordinati[0].tema == "Lettura ancorata")
+        caso("una domanda estranea non trova filoni", all(punteggio_filone(f, radici("contabilita fiscale")) == 0 for f in filoni))
+        caso("senza ricevuta non si rimanda a niente", attese_nella_ricevuta(prj) is None)
+        ricevuta = prj / ".claude" / "ultimo-allineamento.md"
+        ricevuta.write_text("# Ricevuta\n\nNessuna attesa qui.\n", encoding="utf-8")
+        caso("una ricevuta senza la sezione non e un rimando", attese_nella_ricevuta(prj) is None)
+        ricevuta.write_text("# Ricevuta\n\n## Il template aspetta da questo progetto\n", encoding="utf-8")
+        caso("la ricevuta con la sezione delle attese si trova", attese_nella_ricevuta(prj) == ricevuta)
     print(f"\n{casi - rossi} casi superati su {casi}")
     return 1 if rossi else 0
+
+
+def mostra_filoni(catalogo: Path, progetto: Path | None, domanda: list[str], massimo: int) -> None:
+    """Stampa le voci dell'indice dei filoni pertinenti alla domanda, oppure, in un
+    progetto dove l'indice non arriva, il rimando alla ricevuta che lo riassume."""
+    indice = trova_filoni(catalogo)
+    voci = leggi_filoni(indice)
+    if voci:
+        trovate = sorted(
+            ((punteggio_filone(v, domanda), v) for v in voci), key=lambda x: (-x[0], x[1].riga)
+        )
+        trovate = [(p, v) for p, v in trovate if p > 0][:massimo]
+        if trovate:
+            print("\nDeciso ma non ancora pronto, dall'indice dei filoni: non si ripropone come nuovo.")
+            for p, v in trovate:
+                print(f"  {v.filone}  punteggio {p}  tema: {v.tema}")
+                print(f"  stato: {tronca(v.stato, 200)}")
+                print(f"  voce intera: {indice}:{v.riga}  documento: {v.documento}")
+        return
+    ricevuta = attese_nella_ricevuta(progetto)
+    if ricevuta is not None:
+        print(
+            f"\nL'indice dei filoni non arriva qui: cio' che il template aspetta da questo "
+            f"progetto sta in {ricevuta}"
+        )
 
 
 def main() -> int:
@@ -220,12 +337,14 @@ def main() -> int:
     trovate = [(p, v) for p, v in trovate if p > 0][: a.max]
     if not trovate:
         print(f"nessuna voce del catalogo risponde a: {' '.join(a.parole)}  ({len(voci)} voci in {catalogo})")
+        mostra_filoni(catalogo, progetto, domanda, a.max)
         return 1
     for p, v in trovate:
         print(f"{v.nome}{' (' + v.tipo + ')' if v.tipo else ''}  punteggio {p}  settore: {v.settore}{segno(v)}")
         print(f"  quando: {tronca(v.quando, 300)}")
         print(f"  voce intera: {catalogo}:{v.riga}")
     print(f"\n{len(trovate)} voci su {len(voci)}. Prima di proporne una si legge la voce intera, e si propone con le tre frasi del gate: che cosa fa, perché qui, che cosa costa.")
+    mostra_filoni(catalogo, progetto, domanda, a.max)
     return 0
 
 

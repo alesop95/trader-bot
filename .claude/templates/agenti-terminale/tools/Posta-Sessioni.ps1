@@ -2,7 +2,18 @@
 function Prepara-PostaSessioni([string]$Agente, [int]$Account, [string]$Progetto, [string]$Posta) {
   $tool = Join-Path $PSScriptRoot 'posta-sessioni.py'
   if (-not (Test-Path -LiteralPath $tool)) { throw "Manca la cassetta comune: $tool" }
-  if (-not $Posta) { $Posta = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..\..\_notes\posta-sessioni')) }
+  # La cassetta vive in territorio del sistema operativo, fuori da entrambi i dischi di
+  # progetto: una cassetta condivisa fra progetti aziendali e personali non puo' stare sul
+  # disco di uno dei due lati. Decisione del proprietario del 2026-11-09, dopo che la guardia
+  # di perimetro di un progetto aziendale ha trovato la cassetta fuori perimetro (L-019).
+  # ProgramData non e' guardato da nessuno script di pulizia di fine sessione, vale per tutta
+  # la macchina e concede a un utente standard di creare e possedere la propria sottocartella.
+  # Il percorso non e' scritto a mano in un file tracciato: viene dalla variabile d'ambiente.
+  if (-not $Posta) {
+    $radiceSistema = $env:ProgramData
+    if (-not $radiceSistema) { $radiceSistema = [Environment]::GetFolderPath('CommonApplicationData') }
+    $Posta = Join-Path $radiceSistema 'agenti-posta'
+  }
   $Posta = [IO.Path]::GetFullPath($Posta)
   $nome = '{0}-account{1}-{2}' -f $Agente, $Account, ([guid]::NewGuid().ToString('N'))
   # Scopa le registrazioni che nessuno ha congedato, cioe' quelle delle sessioni cadute: senza

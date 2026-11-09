@@ -151,6 +151,172 @@ def test_alignment_receipt_is_managed_and_does_not_claim_conflicts_resolved(
     assert "Conflitti ancora da risolvere: 1" in text
 
 
+def test_filone_expectation_reaches_only_the_project_it_names(history, tmp_path):
+    """La ricevuta porta al progetto le sole attese che lo nominano e ancora aperte.
+
+    Il registro dei filoni resta a monte e non viene consegnato: senza questa resa
+    un progetto ripropone una decisione gia' presa (L-018 di un progetto istanziato).
+    """
+    template, project = history
+    (template / "docs").mkdir(exist_ok=True)
+    (template / "docs/attese-dai-filoni.json").write_text(
+        json.dumps(
+            [
+                {
+                    "progetto": project.name,
+                    "filone": "Lettura ancorata",
+                    "attesa": "la specifica | con la barra",
+                    "documento": "docs/proposta.md",
+                    "aperta": "2026-11-09",
+                },
+                {
+                    "progetto": "progetto-di-qualcun-altro",
+                    "filone": "Filone estraneo",
+                    "attesa": "niente che riguardi questo progetto",
+                    "documento": "docs/altro.md",
+                    "aperta": "2026-11-09",
+                },
+                {
+                    "progetto": project.name,
+                    "filone": "Filone gia chiuso",
+                    "attesa": "consegnata il mese scorso",
+                    "documento": "docs/chiuso.md",
+                    "aperta": "2026-10-01",
+                    "stato": "chiusa",
+                },
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    report = tmp_path / "report-attese.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(TOOLS / "allinea-dal-template.py"),
+            "--template",
+            str(template),
+            "--progetto",
+            str(project),
+            "--json",
+            str(report),
+            "--applica",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    testo = (project / ".claude/ultimo-allineamento.md").read_text(encoding="utf-8")
+    assert "Il template aspetta da questo progetto" in testo
+    assert "Lettura ancorata" in testo
+    assert "la specifica / con la barra" in testo
+    assert "Filone estraneo" not in testo
+    assert "Filone gia chiuso" not in testo
+
+
+def test_expectation_document_is_cited_from_the_template_folder(tmp_path):
+    """Il documento a monte si cita con la cartella del template davanti.
+
+    Senza il prefisso il controllo dei link del progetto legge un percorso locale
+    inesistente e lo riscrive, e la ricevuta diverge dal generatore a ogni passata.
+    """
+    helper = module("state", TOOLS / "stato-template.py")
+    template = tmp_path / "template-finto"
+    (template / "docs").mkdir(parents=True)
+    (template / "docs/attese-dai-filoni.json").write_text(
+        json.dumps(
+            [
+                {
+                    "progetto": "progetto",
+                    "filone": "F",
+                    "attesa": "A",
+                    "documento": "docs/proposta.md",
+                    "aperta": "2026-11-09",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    voci = helper.attese(template, tmp_path / "progetto")
+    assert [v["documento"] for v in voci] == ["template-finto/docs/proposta.md"]
+
+
+def test_second_pass_does_not_rewrite_an_identical_receipt(history, tmp_path):
+    """La seconda misura di una passata non deve trovare la ricevuta da riscrivere.
+
+    Con un'attesa aperta la ricevuta esiste anche senza file consegnati, e senza
+    questo confronto il progetto risulterebbe «incompleto» a ogni corsa: misurato
+    il 2026-11-09 su un progetto reale.
+    """
+    template, project = history
+    (template / "docs").mkdir(exist_ok=True)
+    (template / "docs/attese-dai-filoni.json").write_text(
+        json.dumps(
+            [
+                {
+                    "progetto": project.name,
+                    "filone": "Lettura ancorata",
+                    "attesa": "la specifica",
+                    "documento": "docs/proposta.md",
+                    "aperta": "2026-11-09",
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    def passata(nome):
+        report = tmp_path / nome
+        esito = subprocess.run(
+            [
+                sys.executable,
+                str(TOOLS / "allinea-dal-template.py"),
+                "--template",
+                str(template),
+                "--progetto",
+                str(project),
+                "--json",
+                str(report),
+                "--applica",
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        assert esito.returncode == 0, esito.stdout + esito.stderr
+        return json.loads(report.read_text(encoding="utf-8"))
+
+    prima = passata("prima.json")
+    assert any(
+        e["file"] == ".claude/ultimo-allineamento.md" and e["esito"] == "NUOVO" for e in prima
+    )
+    dopo = passata("dopo.json")
+    assert not [
+        e
+        for e in dopo
+        if e["file"] == ".claude/ultimo-allineamento.md"
+        and e["esito"] in ("NUOVO", "VECCHIO")
+    ]
+    assert "Il template aspetta da questo progetto" in (
+        project / ".claude/ultimo-allineamento.md"
+    ).read_text(encoding="utf-8")
+
+
+def test_receipt_exists_for_an_expectation_even_without_delivered_files():
+    """Un'attesa raggiunge il progetto anche quando la passata non scrive nulla."""
+    helper = module("state", TOOLS / "stato-template.py")
+    assert helper.ricevuta([], "0" * 40) is None
+    testo = helper.ricevuta(
+        [],
+        "0" * 40,
+        [{"filone": "F", "attesa": "A", "documento": "d.md", "aperta": "2026-11-09"}],
+    )
+    assert "Il template aspetta da questo progetto" in testo
+    assert "| F | A | `d.md` | 2026-11-09 |" in testo
+
+
 def test_grc_reinstall_repairs_missing_codex_exclusions_without_rewriting_skill(
     tmp_path,
 ):

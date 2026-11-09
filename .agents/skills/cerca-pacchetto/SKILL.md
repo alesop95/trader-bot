@@ -9,7 +9,10 @@ description: >
   comincia a fare qualcosa che all'inizio non faceva, come raccogliere fonti, produrre
   documenti, impaginare, trascrivere o distribuire un'applicazione; e quando si sta per
   chiedere all'utente come procedere su una pratica che il template potrebbe già prescrivere.
-  Non installa nulla senza una risposta esplicita e non esegue mai git add, commit o push.
+  Cerca in due registri, il catalogo dei pacchetti per ciò che è pronto e l'indice dei filoni
+  per ciò che è già deciso e non lo è ancora, perché una decisione appena presa sta solo nel
+  secondo. Non installa nulla senza una risposta esplicita e non esegue mai git add, commit o
+  push.
 ---
 
 <!-- generato da sync-codex-skills.py; non modificare -->
