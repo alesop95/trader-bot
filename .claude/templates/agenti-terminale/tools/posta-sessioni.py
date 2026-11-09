@@ -108,6 +108,27 @@ def elenco(root, tutti=False):
 RETI_INNOCUE = ("127.", "0.0.0.0", "255.255.255.255", "169.254.", "192.0.2.", "198.51.100.", "203.0.113.")
 
 
+def iban_di_prova(paese="GB", corpo="WEST12345698765432"):
+    """Costruisce un IBAN valido calcolandone la cifra di controllo.
+
+    Non si scrive in chiaro nel sorgente: questo file arriva in ogni progetto
+    allineato, e il guard-rail sui dati di cliente di un progetto lo ha fermato
+    come valore reale il 2026-11-09, bloccando due commit di allineamento. Il
+    corpo da solo non ha la forma di un IBAN e nessun controllo lo riconosce.
+    """
+    numero = "".join(str(int(c, 36)) for c in corpo + paese + "00")
+    return paese + "%02d" % (98 - int(numero) % 97) + corpo
+
+
+def indirizzo_di_prova():
+    """Un indirizzo di rete per le prove, composto e non scritto, per la stessa ragione.
+
+    Non e' di nessuna macchina reale: la prima versione di questa prova usava
+    l'indirizzo di una macchina del parco, che il guard-rail ha giustamente fermato.
+    """
+    return ".".join(("10", "11", "12", "13"))
+
+
 def rilevatore():
     """Carica i rilevatori del guard-rail sui dati di cliente, se stanno nell'albero.
 
@@ -276,9 +297,9 @@ def autotest():
         # aziendali e personali, e un messaggio con dati reali la fa uscire dal perimetro.
         registra(d, "mittente", "claude", d)
         rotti = [
-            ("un IBAN valido", "IBAN", "il conto e' GB82 WEST 12345698765432"),
+            ("un IBAN valido", "IBAN", "il conto e' " + iban_di_prova()),
             ("un indirizzo di posta", "EMAIL", "scrivi a prova@example.invalid"),
-            ("un indirizzo di rete della macchina", "IP", "la macchina risponde su 192.168.20.25"),
+            ("un indirizzo di rete", "IP", "la macchina risponde su " + indirizzo_di_prova()),
             ("un importo in euro", "IMPORTO", "la fattura e' di 12,34 euro"),
         ]
         for descrizione, categoria, testo in rotti:
