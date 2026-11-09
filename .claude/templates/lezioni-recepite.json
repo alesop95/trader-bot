@@ -35,6 +35,13 @@
     "dove": ".claude/norme/token-economy.md: ripresa dello stesso contesto dopo la quota se supportata, altrimenti mandato sul residuo; nessuna autorizzazione implicita a delegare"
   },
   {
+    "progetto": "51462580c4f1",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-11-09",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
     "progetto": "71947b5a11ed",
     "id": "L-001",
     "commit": "",
@@ -1062,6 +1069,13 @@
     "commit": "",
     "data": "2026-11-06",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione «Un vincolo che toglie le risposte impossibili non insegna a scegliere fra le possibili»"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-016",
+    "commit": "",
+    "data": "2026-11-09",
+    "dove": ".claude/rules/chat-non-e-memoria.md, .claude/norme/chat-non-e-memoria.md"
   },
   {
     "progetto": "f00655740f68",

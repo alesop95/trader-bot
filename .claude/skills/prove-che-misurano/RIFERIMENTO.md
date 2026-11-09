@@ -541,3 +541,9 @@ Ne discendono due prescrizioni. Prima di spendere tempo di macchina per rifare u
 ## La copertura distingue gli identificatori dalle voci equivalenti
 
 Un catalogo può contenere voci con identificatori diversi e dati indistinguibili per il verificatore. La copertura dichiara se conta identificatori o classi di equivalenza e conserva la relazione fra le voci gemelle; non elimina duplicati dal denominatore senza dirlo. Prima di produrre ancora una voce apparentemente mancante si confronta il contenuto e l'attribuzione effettiva dello stesso verificatore: una risposta attribuita alla gemella già coperta segnala un'ambiguità da registrare, non una nuova mancanza. La prova comprende due voci indistinguibili e una distinta, verificando sia i conteggi sia le attribuzioni.
+
+## Conforme non vuol dire richiesto
+
+Salita il 2026-11-07 da un progetto istanziato (lezione L-006). Un generatore che accetta il primo risultato giudicato valido dal proprio verificatore può consegnare un oggetto valido e diverso da quello chiesto, perché la conformità misura la legalità e non l'identità: nel caso osservato la libreria costruiva, al posto dell'elemento richiesto, un suo antenato legittimo della stessa famiglia, e il giudizio restava conforme. Ne segue che ogni produzione confronta l'identità chiesta con quella del prodotto, in uno strumento indipendente dal generatore, prima di dichiarare fatto il lotto.
+
+Quel confronto è anche il solo modo in cui si scopre una richiesta impossibile. Davanti a una combinazione irrealizzabile un generatore non fallisce: ripiega su qualcosa che si può fare, e il verificatore lo approva. La prova parte quindi da un caso in cui il ripiego è legale e verifica che il lotto venga rifiutato, non soltanto che il verificatore sia soddisfatto.

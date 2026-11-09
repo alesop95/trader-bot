@@ -22,6 +22,12 @@ Un registro di stato rimanda quasi sempre a un documento di dettaglio per il per
 
 Ne discendono due prescrizioni. Quando si scrive una decisione, una misura o una chiusura dentro un documento di dettaglio si aggiorna nello stesso giro l'indice che la elenca, perché quello è l'unico momento in cui si sa che l'indice esiste e che cosa diceva. E un registro di stato non delega mai a un altro documento la domanda se una voce sia ancora aperta: delega il dettaglio del perché e tiene per sé lo stato.
 
+## Una decisione presa fuori dalla sessione non entra da sé
+
+La memoria del progetto registra ciò che accade dentro la sessione, e una decisione presa altrove non vi entra da sola: una riunione o uno scambio di messaggi fuori dal repository decidono l'impianto di un lavoro, il lavoro comincia, e nessun controllo si accorge che il perché non è scritto. Il caso con le misure, del 2026-11-06 in un progetto istanziato (lezione L-016), sta nella norma insieme al suo esito, cioè un lavoro proseguito a intuito nella direzione contraria a quella decisa.
+
+Ne discendono tre prescrizioni. Una decisione che arriva da un canale esterno si scrive nel registro delle decisioni nel giro in cui arriva, con la sola sostanza tecnica, senza nomi di persona e senza estratti della conversazione, perché quel canale non è consultabile da chi riprende. Il sintomo si cerca invece di attenderlo, perché nessun controllo automatico lo segnala: un commit che annuncia il primo pezzo di qualcosa che nessun documento del progetto definisce indica una decisione presa fuori e mai persistita. E quando il disegno di un lavoro non si trova in memoria non si prosegue a intuito e non lo si ricostruisce da sé: si dichiara che manca e lo si chiede.
+
 ## La memoria si aggiorna da sola, il versionamento resta umano
 
 L'aggiornamento di `memory/` e `context/` è automatico e avviene a ogni giro di chat sostanziale, senza che l'utente debba chiederlo: work log, snapshot `memory/index.md`, registro delle decisioni, registro delle pendenze e schede toccate dal lavoro si scrivono nel medesimo giro in cui il contenuto nasce, esattamente come i documenti di conoscenza. Una versione precedente di questa regola chiedeva all'agente di proporre il delta e di applicarlo solo su richiesta; la direttiva d'uso del 2026-09-24 l'ha superata, perché in pratica la richiesta non arrivava a ogni giro e la memoria restava indietro rispetto alla chat, cioè nello stato che questa regola esiste per impedire.

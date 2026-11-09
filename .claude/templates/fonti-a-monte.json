@@ -86,9 +86,9 @@
       "via": "github:github/github-mcp-server",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "v2.0.3",
+      "verificato": "v2.1.0",
       "licenza": "MIT",
-      "data": "2026-10-27"
+      "data": "2026-11-07"
     },
     {
       "id": "docker:lfoppiano/grobid",
@@ -160,9 +160,9 @@
       "scheda": ".claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "v0.15.1",
+      "verificato": "v0.15.2",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-11-07"
     },
     {
       "id": "github:AB498/code-context-provider-mcp",
@@ -433,9 +433,9 @@
       "scheda": "README.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "c463746147ee894635ba5f67bab4bddff53abee2",
+      "verificato": "b71b898632759b30c6c309aa663f0b8f53bbe13a",
       "licenza": "NOASSERTION",
-      "data": "2026-10-27"
+      "data": "2026-11-07"
     },
     {
       "id": "github:cocoindex-io/cocoindex-code",
@@ -621,9 +621,9 @@
       "scheda": ".claude/templates/doc-ingest/README.md",
       "ruolo": "librerie",
       "controllo": "release",
-      "verificato": "v2.143.1",
+      "verificato": "v2.148.0",
       "licenza": "MIT",
-      "data": "2026-10-28"
+      "data": "2026-11-07"
     },
     {
       "id": "github:dougwyu/claude-zotero-skills",
@@ -1076,8 +1076,8 @@
       "scheda": ".claude/templates/scientific-skills/MAPPA-SKILL-SCIENTIFICHE.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "39b27ddaafe636f06776a2044b5df05d07648dc4",
-      "data": "2026-10-27"
+      "verificato": "96af84551809a5ec567cbde43e0a7832d03e40a5",
+      "data": "2026-11-07"
     },
     {
       "id": "github:mattpocock/skills",
@@ -1120,9 +1120,9 @@
       "scheda": ".claude/templates/PACKAGES.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "v0.0.83",
+      "verificato": "v0.0.84",
       "licenza": "Apache-2.0",
-      "data": "2026-10-21"
+      "data": "2026-11-07"
     },
     {
       "id": "github:miqdadbadjuber/anti-slop",
@@ -1263,9 +1263,9 @@
       "scheda": "README.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "v7.7.1",
+      "verificato": "v7.9.0",
       "licenza": "MIT",
-      "data": "2026-10-27"
+      "data": "2026-11-07"
     },
     {
       "id": "github:openags/paper-search-mcp",
@@ -1344,9 +1344,9 @@
       "scheda": ".claude/templates/scientific-skills/MAPPA-SKILL-SCIENTIFICHE.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "528ba79ed4268ebf6fc4f3b8f9dff33749cdb11f",
+      "verificato": "cba7ffdeae4acd1f8d6bf2a84f51fd82c3ffb6b8",
       "licenza": "MIT",
-      "data": "2026-10-28"
+      "data": "2026-11-07"
     },
     {
       "id": "github:prettier/prettier",
@@ -1521,9 +1521,9 @@
       "scheda": ".claude/templates/scientific-skills/MAPPA-SKILL-SCIENTIFICHE.md",
       "ruolo": "librerie",
       "controllo": "commit",
-      "verificato": "5b861e4c4a06d56bac4b3f1398985416ae6ec6c7",
+      "verificato": "c508f90ea0b0c33169eb11ca2e1705ca2233e996",
       "licenza": "NOASSERTION",
-      "data": "2026-10-28"
+      "data": "2026-11-07"
     },
     {
       "id": "github:systemd/systemd",
@@ -1576,9 +1576,9 @@
       "scheda": ".claude/templates/codebase-learning/reference/codebase-learning-handoff.md",
       "ruolo": "server-mcp",
       "controllo": "release",
-      "verificato": "@upstash/context7-sdk@0.6.0",
+      "verificato": "@upstash/context7-mcp@4.5.1",
       "licenza": "MIT",
-      "data": "2026-10-27"
+      "data": "2026-11-07"
     },
     {
       "id": "github:virgiliojr94/book-to-skill",
@@ -1787,9 +1787,9 @@
       "motivo": "Server MCP di documentazione per versione di libreria, configurato con versione fissata nel documento di handoff di codebase-learning.",
       "ruolo": "server-mcp",
       "controllo": "versione",
-      "verificato": "4.4.4",
+      "verificato": "4.5.1",
       "licenza": "MIT",
-      "data": "2026-10-21"
+      "data": "2026-11-07"
     },
     {
       "id": "npm:ccusage",
@@ -1884,8 +1884,8 @@
       "motivo": "Motore di conversione opzionale di doc-ingest con il flag --engine docling.",
       "ruolo": "librerie",
       "controllo": "versione",
-      "verificato": "2.143.1",
-      "data": "2026-10-28"
+      "verificato": "2.148.0",
+      "data": "2026-11-07"
     },
     {
       "id": "pypi:graphifyy",
