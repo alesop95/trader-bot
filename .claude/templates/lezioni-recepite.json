@@ -42,6 +42,13 @@
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
   },
   {
+    "progetto": "51462580c4f1",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-11-09",
+    "dove": ".claude/templates/tools/check-eol.py: cerca i caratteri di controllo e fallisce; .claude/rules/chat-non-e-memoria.md e la sua norma: barre in avanti nei testi scritti da script"
+  },
+  {
     "progetto": "71947b5a11ed",
     "id": "L-001",
     "commit": "",
@@ -1097,6 +1104,20 @@
     "commit": "",
     "data": "2026-11-09",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: la guardia conta le destinazioni; .claude/templates/agenti-terminale/tools/posta-sessioni.py: controllo del contenuto al deposito senza scavalcamento; Posta-Sessioni.ps1: cassetta sotto ProgramData; docs/allineamento-e-posta-sessioni.md e README del pacchetto"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-020",
+    "commit": "",
+    "data": "2026-11-09",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: confronto per concetto; .claude/skills/cerca-pacchetto/SKILL.md: la capacita copiata conserva i nomi o porta la tabella di corrispondenza"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-021",
+    "commit": "",
+    "data": "2026-11-09",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: un segnale indiretto misura esattamente un'altra cosa"
   },
   {
     "progetto": "f00655740f68",

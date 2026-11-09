@@ -51,6 +51,33 @@ def conta(percorso: Path) -> tuple[int, int]:
     return crlf, lf
 
 
+# Caratteri di controllo che in un file di testo non ci devono stare: tutti i C0 tranne
+# tabulazione, ritorno a capo e avanzamento riga, il DEL, e i C1 nella forma in cui li
+# scrive UTF-8. Nascono da una scrittura per script in cui una barra rovesciata e' stata
+# letta come sequenza di escape: lo strumento non segnala niente, il diff mostra una riga
+# cambiata come le altre, e il difetto resta finche' qualcuno non legge quei byte.
+# Lezione L-007 di un progetto istanziato, 2026-11-09, tre volte su tre file in una sessione.
+CONTROLLO = set(range(0, 32)) - {9, 10, 13} | {127}
+
+
+def controlli(percorso: Path) -> list:
+    """Posizioni dei caratteri di controllo trovati, con il loro codice."""
+    # Non si passa da splitlines(): quella spezza anche su tabulazione verticale,
+    # avanzamento modulo e separatori Unicode, cioe' proprio su alcuni dei caratteri
+    # da trovare, che sparirebbero dal conteggio diventando interruzioni di riga.
+    testo = percorso.read_text(encoding="utf-8", errors="replace")
+    trovati = []
+    riga = 1
+    for c in testo:
+        if c == "\n":
+            riga += 1
+            continue
+        codice = ord(c)
+        if codice in CONTROLLO or 0x80 <= codice <= 0x9F:
+            trovati.append((riga, codice))
+    return trovati
+
+
 def candidati(radice: Path):
     if radice.is_file():
         yield radice
@@ -87,6 +114,7 @@ def main() -> int:
         return 2
 
     misti: list[tuple[Path, int, int]] = []
+    sporchi: list[tuple[Path, int, int]] = []
     esaminati = 0
     formati = {"CRLF": 0, "LF": 0, "senza interruzioni": 0}
 
@@ -97,6 +125,11 @@ def main() -> int:
         except OSError as e:
             print(f"  illeggibile {p}: {e}")
             continue
+        try:
+            for riga, codice in controlli(p):
+                sporchi.append((p, riga, codice))
+        except OSError:
+            pass
         if crlf and lf:
             misti.append((p, crlf, lf))
         elif crlf:
@@ -120,10 +153,14 @@ def main() -> int:
         f"{formati['CRLF']} CRLF, {formati['LF']} LF, "
         f"{formati['senza interruzioni']} senza interruzioni"
     )
+    for percorso, riga, codice in sporchi:
+        print(f"  CONTROLLO {percorso}:{riga}: carattere U+{codice:04X} in un file di testo")
+        print("        nasce da una barra rovesciata letta come escape in una scrittura per script;")
+        print("        nei testi scritti da script i percorsi si scrivono con le barre in avanti")
     if misti:
         print("Le fini riga miste entrano nella storia di git: core.autocrlf e' false e")
         print("non esiste .gitattributes, quindi git registra cio' che trova sul disco.")
-    return 1 if misti else 0
+    return 1 if misti or sporchi else 0
 
 
 if __name__ == "__main__":
