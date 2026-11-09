@@ -2,15 +2,13 @@
 
 <!-- generato da allinea-dal-template.py -->
 
-Commit a monte: `2797242e02504c148a7322f69bb5fb72c949f4e6`. File interessati dalla passata: 6. Commit e push del progetto restano manuali.
+Commit a monte: `179f9d0a6a64705332cc498992a527c22a9db5ba`. File interessati dalla passata: 4. Commit e push del progetto restano manuali.
 
 | Esito | File |
 |---|---|
 | VECCHIO | `.claude/norme/chat-non-e-memoria.md` |
 | VECCHIO | `.claude/rules/chat-non-e-memoria.md` |
 | VECCHIO | `.claude/skills/prove-che-misurano/RIFERIMENTO.md` |
-| VECCHIO | `.claude/templates/fonti-a-monte.json` |
-| VECCHIO | `.claude/templates/fonti-a-monte.md` |
 | VECCHIO | `.claude/templates/lezioni-recepite.json` |
 
 Conflitti ancora da risolvere: 0.

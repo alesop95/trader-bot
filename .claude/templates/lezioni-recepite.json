@@ -1078,6 +1078,13 @@
     "dove": ".claude/rules/chat-non-e-memoria.md, .claude/norme/chat-non-e-memoria.md"
   },
   {
+    "progetto": "bae518523f0d",
+    "id": "L-017",
+    "commit": "",
+    "data": "2026-11-09",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md; nessuno strumento del template stampa un tempo istantaneo per elemento, offload-lotto.py stampa gia la media corrente"
+  },
+  {
     "progetto": "f00655740f68",
     "id": "L-001",
     "commit": "",
