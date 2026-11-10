@@ -48,6 +48,19 @@ Si legge lo stato interno **prima** di cambiarlo, e in particolare il registro d
 
 Si chiude poi la via parallela, si restringe il filtro, e si riavvia. Il riavvio serve ad attivare i nuclei installati, ma serve soprattutto come **prova** che la configurazione appena scritta sopravvive all'inizializzazione automatica dell'istanza, e si fa mentre la macchina non serve ancora a nessuno.
 
+## L'annullamento a tempo, armato prima di toccare l'accesso
+
+Nasce il 2026-11-10 dalla lezione L-001 di un progetto istanziato, e corregge il punto in cui questo pacchetto era ancora una raccomandazione. Un comando che cambia la configurazione dell'accesso remoto, cioè il servizio SSH, le chiavi autorizzate o il filtro, può chiudere fuori chi lo sta lanciando, e se ne accorge quando la connessione successiva non entra. Nel caso osservato un segnaposto rimasto letterale ha lasciato le chiavi autorizzate dell'amministratore senza nessuna chiave valida: il recupero è stato possibile solo perché le password funzionavano ancora, e dieci minuti dopo sarebbero state disattivate, lasciando come unica via la console dell'hypervisor.
+
+La protezione non è la prudenza di chi digita, è una macchina che disfa da sé. Prima di qualunque modifica, `--applica` copia la configurazione del servizio e programma con `systemd-run --on-active` il suo ripristino dopo dieci minuti, con il riavvio del servizio e la riapertura della porta: se nessuno interviene, la macchina torna raggiungibile da sola. Il disarmo è un comando a parte, che si dà soltanto dopo aver verificato l'accesso con una connessione nuova mentre quella esistente resta aperta, perché la connessione esistente sopravvive a una configurazione che non lascerebbe più entrare nessuno ed è quindi la peggiore delle prove.
+
+```bash
+ssh -t <alias> 'bash /tmp/baseline-vps.sh --applica --ammessi <indirizzo>'
+ssh -t <alias> 'sudo systemctl stop baseline-vps-annulla.timer'
+```
+
+I minuti si cambiano con `--annulla-fra`, e lo zero da solo non basta a toglierlo: va dichiarato con `--senza-annullamento`, perché una protezione che si disattiva per silenzio non è una scelta. Se la macchina non sa programmare l'annullamento, lo strumento non applica niente invece di procedere senza rete, che è la stessa regola per cui uno stato non letto si dichiara non verificabile e mai buono.
+
 ## I tre esiti dello strumento
 
 Lo strumento restituisce conforme, non conforme e **non verificabile**, e il terzo pesa sull'esito complessivo come il secondo. La ragione sta in un difetto che lo strumento stesso ha avuto nella prima stesura: i comandi che richiedono elevazione fallivano in silenzio quando l'elevazione non c'era, e il loro ripiego coincideva con il valore che segnala l'assenza del problema. La prima esecuzione riportò tre voci in regola e quattro fuori regola, e tutte e sette erano fittizie. La disponibilità dei permessi si accerta perciò una volta sola all'inizio e decide che cosa lo strumento ha il diritto di affermare.

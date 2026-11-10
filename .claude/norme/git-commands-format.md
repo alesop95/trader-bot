@@ -117,3 +117,13 @@ Un wrapper PowerShell consegnato a mano passava sempre una coppia opzione/valore
 
 Quando il contratto del programma prevede un valore predefinito, costruire l'array degli argomenti e aggiungere la coppia opzionale solo quando il valore è presente. Se invece il valore vuoto ha un significato distinto, non ometterlo senza definire un trasporto che lo preservi. Provare il wrapper tramite la stessa versione di PowerShell usata dall'operatore, con runner sintetico: opzione assente, valore presente e percorsi con spazi e Unicode. Riprodurre il difetto con la versione precedente e controllare ciò che il parser riceve; help e sola analisi sintattica non provano quel confine. Un errore precedente alla creazione della ricevuta non va presentato come se una ricevuta esistesse già.
 
+
+## Cinque controlli su dodici sono una proposta di commit che fallisce
+
+Caso osservato il 2026-10-05 in un progetto istanziato, ed è la ragione per cui la regola chiede di eseguire `chiudi -SoloControlli` invece di scegliere i controlli a mano. L'agente ne aveva eseguiti cinque sui dodici, tutti verdi, e `chiudi` si è fermato sul correttore degli accenti per sedici forme in quattro file. Due di quei file erano note generate, e l'errore stava nel testo scritto dentro lo strumento che le genera, che lo riportava nelle note a ogni rigenerazione; le altre erano parole fra apici semplici in annotazioni appena scritte, che il correttore legge come accenti scritti con l'apostrofo. Al proprietario una proposta di commit che fallisce costa un giro intero, e chi lavora a blocchi lo vive come un commit perso.
+
+## La conferma di un commit lanciata mentre l'agente scrive ancora si ferma
+
+Salito il 2026-11-09 da un progetto istanziato (lezione L-009). Lo strumento di chiusura mostra l'anteprima dei file e del messaggio, poi chiede conferma da tastiera; se fra i due momenti l'albero di lavoro cambia, si ferma senza committare. Il proprietario ha lanciato la chiusura mentre l'agente stava ancora scrivendo i file del giro: l'anteprima portava il messaggio vecchio e la conferma è stata rifiutata, cioè un commit perso e un giro in più per entrambi.
+
+La guardia ha fatto esattamente il suo lavoro, e la lezione è dell'agente e non dello strumento. Una proposta di chiusura è un invito ad agire sull'albero così com'è, quindi si fa nell'ultima risposta del giro, dopo l'ultima scrittura, e quella risposta dichiara che da lì in avanti l'agente non scrive più finché la chiusura non è fatta. Ne segue anche che una proposta di chiusura non si mette in mezzo a un giro che prosegue, nemmeno come anticipazione utile: finché resta qualcosa da scrivere, il comando non si consegna.

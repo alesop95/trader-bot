@@ -159,6 +159,8 @@ Dice, alla riapertura di una sessione, se fra l'ultima e questa si e perso qualc
 
 Il danno che intercetta non è la perdita del lavoro, che sta su disco e in git, ma il fatto che una sessione nuova prenda un file di ripresa vecchio per lo stato corrente: un file di ripresa non aggiornato ha esattamente lo stesso aspetto di uno aggiornato. La skill `riprendi` e la procedura che ne interpreta l'esito.
 
+Dal 2026-11-10 guarda anche se un documento di stato è rimasto lo scheletro da cui nasce, cioè il file di ripresa, lo snapshot di memoria e la scheda della feature attiva. Un segnaposto conta solo se è lo stesso che il modello di quel documento porta in `.claude/templates/`, e non conta dentro un blocco recintato o fra apici inversi: cercare tutte le parentesi angolari segnalerebbe i valori generici che un appunto scrive di proposito, cioè il rosso permanente che si impara a ignorare. Viene dalla lezione L-003 di un progetto istanziato, dove snapshot, feature attiva e file di ripresa sono rimasti con `<branch>`, `<hash>` e `<YYYY-MM-DD>` per una giornata intera di lavoro con ogni altro controllo verde.
+
 Da riga di comando e in CI esce con un codice diverso da zero quando trova una divergenza. Un hook invece lo chiama con `--hook`, che stampa la stessa riga di `--breve` ed esce sempre con zero, oppure attraverso i wrapper di `hooks-starter`, che fanno lo stesso: Claude Code tratta come errore un'uscita diversa da zero, scarta lo standard output e mostra una riga di fallimento vuota, quindi l'avviso sparirebbe proprio quando c'è. È la lezione L-002 di un progetto istanziato, recepita il 2026-10-21 con il codice che quel progetto aveva scritto.
 
 ```
@@ -363,6 +365,8 @@ Dice se il `.claude` del template è cambiato dall'ultima passata di `allinea-tu
 ```powershell
 python .claude/templates/tools/passata-in-sospeso.py
 ```
+
+Dal 2026-11-09 distingue tre esiti invece di due, e la distinzione nasce da un difetto suo: il registro viene riscritto anche da una passata a vuoto, quindi confrontare il solo albero misurato faceva dichiarare «passata già fatta» un template che nessuno aveva propagato. Ora guarda anche lo stato di ciascun progetto: tutti `applicato` vuol dire in pari; qualcuno `da-allineare` o `conflitti` sullo stesso albero vuol dire misurato e non scritto, e il verdetto dice quanti progetti hanno file da ricevere e quanti sono in conflitto; un albero diverso vuol dire che non si sa ancora, perché la misura manca. Con `--misura`, e solo quando la propagazione è dovuta, avvia in sottofondo la passata senza `-Applica`, che non scrive niente nei progetti, e torna subito; l'hook di avvio lo chiama così. Tre guardie: non parte dove PowerShell non c'è, non parte se il lucchetto `_notes/allineamento/.in-corso` esiste, e scrive la propria uscita in `_notes/allineamento/ultima-misura.txt` invece che sul terminale del proprietario. La logica del verdetto è separata dall'accesso al disco in due funzioni pure, `seleziona` e `verdetto`, perché il filtro che esclude le prove nelle cartelle temporanee rendeva altrimenti non provabile il verdetto stesso. Prove in `tests/test_session_alignment.py`, tre casi nuovi; verifica di non vacuità del 2026-11-09 con tre mutazioni, cioè stato ignorato, filtro delle cartelle temporanee tolto e lucchetto ignorato, ciascuna con un caso rosso e la fonte ripristinata a impronta identica.
 
 ## cerca-pacchetto.py
 

@@ -317,6 +317,65 @@ def test_receipt_exists_for_an_expectation_even_without_delivered_files():
     assert "| F | A | `d.md` | 2026-11-09 |" in testo
 
 
+def test_a_dry_measure_is_not_a_propagation():
+    """Una misura non è una propagazione: il registro lo dice con lo stato, non con l'albero.
+
+    Il registro viene riscritto anche da una passata a vuoto, quindi confrontare il solo
+    albero misurato faceva dichiarare «passata gia' fatta» un template che nessuno aveva
+    propagato. Misurato il 2026-11-09, mentre si costruiva la misura in sottofondo.
+    """
+    helper = module("sospeso", TOOLS / "passata-in-sospeso.py")
+    albero = "a" * 40
+
+    def voci(*stati):
+        return [{"stato": s, "misurato_il": "2026-11-09T15:55:39",
+                 "template_albero_claude": albero} for s in stati]
+
+    codice, righe = helper.verdetto(voci("applicato", "applicato"), albero, "CMD")
+    assert codice == 0 and "passata gia fatta" in righe[0]
+    codice, righe = helper.verdetto(
+        voci("applicato", "da-allineare", "conflitti"), albero, "CMD")
+    assert codice == 1, righe
+    testo = "\n".join(righe)
+    assert "misura gia' fatta" in testo
+    assert "2 progetti hanno file da ricevere" in testo
+    assert "di cui 1 in conflitto" in testo
+    vecchie = [{"stato": "applicato", "misurato_il": "2026-11-01T10:00:00",
+                "template_albero_claude": "b" * 40}]
+    codice, righe = helper.verdetto(vecchie, albero, "CMD")
+    assert codice == 1 and "e cambiato dall'ultima passata" in righe[0]
+    assert helper.verdetto([], albero, "CMD")[0] == 1
+
+
+def test_registry_entries_in_temp_folders_are_not_counted(tmp_path):
+    """Le prove in cartelle temporanee non rimisurate direbbero propagazione dovuta per sempre."""
+    helper = module("sospeso", TOOLS / "passata-in-sospeso.py")
+    vero = tmp_path / "progetto-vero"
+    vero.mkdir()
+    voci = {str(vero): {"stato": "applicato", "template_albero_claude": "a" * 40},
+            str(tmp_path / "assente"): {"stato": "applicato", "template_albero_claude": "a" * 40},
+            "C:/Users/x/AppData/Local/Temp/prova": {"stato": "applicato",
+                                                    "template_albero_claude": "a" * 40}}
+    scelti = helper.seleziona(voci)
+    assert len(scelti) == (1 if "temp" not in str(vero).lower() else 0)
+
+
+def test_background_measure_does_not_start_while_a_pass_holds_the_lock(history):
+    """Due passate insieme si contenderebbero i file dei progetti: la seconda non parte."""
+    template, _ = history
+    (template / ".claude/templates/PACKAGES.md").write_text("# Catalogo\n", encoding="utf-8")
+    base = template / "_notes/allineamento"
+    base.mkdir(parents=True, exist_ok=True)
+    (base / ".in-corso").write_text("1234", encoding="utf-8")
+    esito = subprocess.run(
+        [sys.executable, str(TOOLS / "passata-in-sospeso.py"), "--misura"],
+        capture_output=True, text=True, encoding="utf-8", cwd=str(template),
+    )
+    assert esito.returncode == 1, esito.stdout + esito.stderr
+    assert "gia' in corso" in esito.stdout or "solo in PowerShell" in esito.stdout
+    assert not (base / "ultima-misura.txt").exists()
+
+
 def test_grc_reinstall_repairs_missing_codex_exclusions_without_rewriting_skill(
     tmp_path,
 ):

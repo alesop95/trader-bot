@@ -107,6 +107,14 @@ La stessa lezione ha un secondo grado, e lo ha insegnato lo stesso progetto il 2
 
 Una richiesta di materiale va sempre accompagnata dalla domanda a cui serve rispondere. Chiedere una discussione intera senza dire cosa si cerca produce lavoro inutile per chi la procura e lettura inutile per chi la riceve.
 
+## Una pagina che non si carica non è una fonte irraggiungibile: spesso c'è l'API
+
+Esiste un caso che somiglia a un blocco e non lo è, e va distinto perché la via d'uscita costa una sola chiamata. La pagina risponde, l'accesso non è negato, ma il contenuto che serve non viene reso: la vista di confronto fra due commit su GitHub risponde 200 e al posto del diff mostra che il confronto è troppo lungo da generare. Misurato il 2026-11-09 su tre elenchi curati sorvegliati per commit: tutte e tre le viste di confronto hanno risposto 200 senza mai mostrare i file, e un ritentativo avrebbe dato lo stesso esito, perché il messaggio viene dal sito e non da un errore di rete.
+
+La stessa differenza si legge dall'API dello stesso servizio, che non ha quel limite di rendering: `gh api repos/<proprietario>/<repo>/compare/<base>...<testa>` restituisce il numero di commit, l'elenco dei file e le porzioni modificate, e con `--jq` se ne estrae la sola parte che serve. Nei tre casi ha risposto subito e ha cambiato la conclusione: il primo elenco aveva 98 commit su tre soli file, tutti risorse automatiche di un contatore, quindi nessuna voce toccata; il secondo 99 commit su 300 file, in gran parte dentro la cartella dei plugin; il terzo 30 commit, con una riga sola cambiata nel documento sorvegliato. Senza l'API avrei annotato tre fonti come non lette.
+
+Ne segue una prescrizione che precede tutte le vie di questo riferimento: prima di dichiarare non letta una fonte ospitata da un servizio che ha un'API pubblica, si prova l'API, perché è la stessa fonte vista da un'altra porta e non una fonte di terzi. E ne segue il suo limite: l'API restituisce al massimo trecento file per confronto, quindi su un cambiamento più ampio il conteggio dei file è un minimo e va dichiarato come tale.
+
 ## Come si annota una fonte non letta
 
 Nel registro delle fonti la voce resta, perché sapere che esiste ha valore. Cambia la descrizione, che deve dire che non è stata letta e perché. La formula da usare è indicare il dominio come luogo dove cercare e non come fonte verificata, e questa distinzione va ripetuta nella sezione che separa le fonti consultate da quelle catalogate.

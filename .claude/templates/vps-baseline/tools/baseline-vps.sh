@@ -27,6 +27,11 @@ set -uo pipefail
 MODO="verifica"
 AMMESSI=""
 PORTE_WEB="80,443"
+# Minuti dopo i quali la macchina disfa da se' le modifiche all'accesso, se nessuno
+# le conferma: vedi la sezione "L'annullamento a tempo" del README. Zero lo disarma,
+# e per disarmarlo bisogna dirlo, perche' il silenzio non e' una scelta consapevole.
+ANNULLA_FRA=10
+SENZA_ANNULLAMENTO=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -34,6 +39,8 @@ while [ $# -gt 0 ]; do
     --verifica) MODO="verifica" ;;
     --ammessi) AMMESSI="${2:-}"; shift ;;
     --porte-web) PORTE_WEB="${2:-}"; shift ;;
+    --annulla-fra) ANNULLA_FRA="${2:-}"; shift ;;
+    --senza-annullamento) SENZA_ANNULLAMENTO=1 ;;
     *) echo "argomento non riconosciuto: $1" >&2; exit 2 ;;
   esac
   shift
@@ -41,6 +48,23 @@ done
 
 OPERATIVO="$(id -un)"
 ESITO=0
+
+# Un intervento che puo' chiudere fuori dall'accesso remoto si arma con un
+# annullamento a tempo, prima di cominciare: la macchina stessa programma il
+# ripristino, e lo si disarma solo dopo aver verificato l'accesso con una
+# connessione nuova, tenendo aperta quella esistente. Lezione L-001 di un
+# progetto istanziato, del 2026-11-10: un comando con un segnaposto letterale
+# aveva lasciato le chiavi di root senza nessuna chiave valida, e il recupero e'
+# stato possibile solo perche' le password funzionavano ancora.
+case "$ANNULLA_FRA" in
+  ''|*[!0-9]*) echo "--annulla-fra vuole minuti interi, ricevuto: $ANNULLA_FRA" >&2; exit 2 ;;
+esac
+if [ "$MODO" = "applica" ] && [ "$ANNULLA_FRA" -eq 0 ] && [ "$SENZA_ANNULLAMENTO" -eq 0 ]; then
+  echo "Con --annulla-fra 0 la macchina non disfa niente da se': se l'accesso si" >&2
+  echo "rompe resta solo la console dell'hypervisor. Dichiaralo con" >&2
+  echo "--senza-annullamento, oppure lascia i minuti predefiniti." >&2
+  exit 2
+fi
 sez() { printf '\n== %s\n' "$1"; }
 ok() { printf '   ok   %s\n' "$1"; }
 no() { printf '   DA FARE  %s\n' "$1"; ESITO=1; }
@@ -65,6 +89,32 @@ fi
   && [ "$ELEV" -eq 0 ] && echo "        non riporteranno un esito. Rilancia con ssh -t."
 if [ "$ELEV" -eq 0 ] && [ "$MODO" = "applica" ]; then
   echo "Senza elevazione non si applica niente." >&2; exit 2
+fi
+
+# L'annullamento a tempo si arma PRIMA di toccare qualunque cosa, e copre le due
+# modifiche da cui dipende la raggiungibilita': la configurazione del servizio SSH
+# e il filtro. Se la macchina non sa programmarlo, non si applica: uno stato che
+# non si e' potuto predisporre si dichiara, non si assume.
+UNITA="baseline-vps-annulla"
+if [ "$MODO" = "applica" ] && [ "$ANNULLA_FRA" -gt 0 ]; then
+  SALVA="/var/backups/baseline-vps"
+  sudo mkdir -p "$SALVA" 2>/dev/null
+  if ! sudo cp -a /etc/ssh/sshd_config "$SALVA/sshd_config.prima" 2>/dev/null; then
+    echo "Copia preventiva di sshd_config non riuscita: non si applica niente." >&2; exit 2
+  fi
+  RIPRISTINO="cp -a $SALVA/sshd_config.prima /etc/ssh/sshd_config"
+  RIPRISTINO="$RIPRISTINO; systemctl restart ssh 2>/dev/null || systemctl restart sshd"
+  RIPRISTINO="$RIPRISTINO; command -v ufw >/dev/null 2>&1 && ufw allow 22/tcp"
+  if sudo systemd-run --on-active="${ANNULLA_FRA}m" --unit="$UNITA"        --description="ripristino dell accesso remoto armato da baseline-vps"        /bin/sh -c "$RIPRISTINO" >/dev/null 2>&1; then
+    echo "   annullamento armato: fra $ANNULLA_FRA minuti la macchina rimette la"
+    echo "   configurazione SSH di adesso e riapre la porta, se nessuno lo disarma."
+    echo "   Dopo aver verificato l accesso con una connessione NUOVA, tenendo aperta"
+    echo "   questa, disarmalo con:  sudo systemctl stop $UNITA.timer"
+  else
+    echo "systemd-run non disponibile: l annullamento a tempo non si puo' armare." >&2
+    echo "Rilancia con --senza-annullamento solo se hai la console dell hypervisor." >&2
+    exit 2
+  fi
 fi
 
 sez "Identita' della macchina"

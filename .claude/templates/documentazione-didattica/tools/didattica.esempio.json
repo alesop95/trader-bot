@@ -1,0 +1,8 @@
+{
+  "worklog": ".claude/memory/progress.md",
+  "racconto": "docs/didattica/RACCONTO.md",
+  "schede": "docs/didattica",
+  "prefisso": "studio-",
+  "pendenti": ".claude/context/registro-dei-pendenti.md",
+  "da-quando": "2026-11-10"
+}

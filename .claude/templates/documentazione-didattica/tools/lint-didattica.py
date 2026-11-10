@@ -63,13 +63,21 @@ nato.
 ## Uso
 
     python tools/lint-didattica.py
+    python tools/lint-didattica.py --racconto docs/didattica/RACCONTO.md --schede docs/didattica
     python tools/lint-didattica.py --self-test
 
 Esce con codice diverso da zero se c'è un divario, un rimando rotto o una promessa aperta, così si
 può mettere in una verifica automatica.
+
+Dove questo progetto tiene il racconto, le schede, il work-log e il registro dei pendenti, con
+quale prefisso nomina le schede e da quale data pretende la didattica dichiarata, si scrive in
+`tools/didattica.json` accanto allo strumento, e ogni chiave si può sovrascrivere con l'argomento
+omonimo. Nel sorgente non si tocca niente, perché la passata di allineamento riporta gli strumenti
+del pacchetto come stanno nel template e una modifica al codice tornerebbe indietro.
 """
 import glob
 import io
+import json
 import os
 import re
 import subprocess
@@ -80,8 +88,67 @@ if hasattr(sys.stdout, "reconfigure"):
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-WORKLOG = ".claude/memory/progress.md"
-MASTER = ".claude/context/studio-didattico-master.md"
+CONFIG = os.path.join("tools", "didattica.json")
+
+PREDEFINITI = {
+    "worklog": ".claude/memory/progress.md",
+    "racconto": ".claude/context/studio-didattico-master.md",
+    "schede": ".claude/context",
+    "prefisso": "refactor-",
+    "pendenti": ".claude/context/registro-dei-pendenti.md",
+    "da-quando": "2026-09-08",
+}
+
+
+def configurazione(radice=".", argv=None, predefiniti=None):
+    """Dove questo progetto tiene la didattica: predefiniti, file di configurazione, argomenti.
+
+    I tre valori stavano scritti nel sorgente, e un progetto che tiene il racconto o le schede
+    altrove doveva modificare il codice dello strumento; la modifica pero' torna indietro alla
+    prima passata di allineamento, che riporta gli strumenti del pacchetto come stanno nel
+    template (lezione L-002 di un progetto istanziato, del 2026-11-10). La configurazione vive
+    quindi accanto allo strumento, come `tools/roadmap-items.yml` per roadmap.py, e un argomento
+    della riga di comando ha l'ultima parola sul file.
+
+    Una chiave che lo strumento non conosce ferma la corsa invece di essere ignorata: una chiave
+    scritta male lascerebbe il valore predefinito, cioe' un controllo che gira su percorsi che
+    nessuno ha chiesto e che non segnala niente.
+    """
+    valori = dict(PREDEFINITI if predefiniti is None else predefiniti)
+    argv = list(sys.argv[1:] if argv is None else argv)
+    percorso = os.path.join(radice, CONFIG)
+    for i, voce in enumerate(argv):
+        if voce == "--config" and i + 1 < len(argv):
+            percorso = argv[i + 1]
+    if os.path.isfile(percorso):
+        try:
+            letto = json.loads(io.open(percorso, encoding="utf-8-sig").read())
+        except ValueError as exc:
+            raise ValueError("configurazione illeggibile in %s: %s" % (percorso, exc))
+        if not isinstance(letto, dict):
+            raise ValueError("configurazione non valida in %s: attesa una mappa" % percorso)
+        ignote = sorted(set(letto) - set(valori))
+        if ignote:
+            raise ValueError("chiavi non riconosciute in %s: %s" % (percorso, ", ".join(ignote)))
+        valori.update(dict((chiave, str(valore)) for chiave, valore in letto.items()))
+    for chiave in list(valori):
+        bandiera = "--" + chiave
+        for i, voce in enumerate(argv):
+            if voce == bandiera and i + 1 < len(argv):
+                valori[chiave] = argv[i + 1]
+    return valori
+
+
+try:
+    _CONF = configurazione()
+except ValueError as _exc:
+    raise SystemExit(str(_exc))
+
+WORKLOG = _CONF["worklog"]
+MASTER = _CONF["racconto"]
+SCHEDE = _CONF["schede"]
+PREFISSO = _CONF["prefisso"]
+PENDENTI = _CONF["pendenti"]
 
 problemi = []
 
@@ -171,8 +238,9 @@ def commit_arretrati():
 # Il work-log ha centinaia di voci scritte prima che questa convenzione esistesse, e pretenderle
 # tutte marcate renderebbe il controllo inutilizzabile dal primo giorno. Si applica alle voci dal
 # 2026-09-08 in avanti, cioè dal giorno dopo la sua introduzione: l'arretrato è un lavoro a sé, e
-# un controllo che nasce con centinaia di segnalazioni non lo si guarda mai.
-DA_QUANDO = "2026-09-08"
+# un controllo che nasce con centinaia di segnalazioni non lo si guarda mai. La data è quella del
+# progetto di origine e vale finché un altro progetto non scrive la propria in `tools/didattica.json`.
+DA_QUANDO = _CONF["da-quando"]
 
 
 def voci_worklog_senza_didattica():
@@ -258,6 +326,34 @@ def self_test():
     aperte = promesse_aperte(log, ["<!-- promessa-mantenuta: 2026-10-01 (3) -->"])
     prova("il numero della voce conta", len(aperte) == 2, str(aperte))
 
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        prova("senza file di configurazione valgono i predefiniti",
+              configurazione(tmp, argv=[]) == PREDEFINITI, "")
+        os.makedirs(os.path.join(tmp, "tools"))
+        conf = os.path.join(tmp, CONFIG)
+        io.open(conf, "w", encoding="utf-8").write(
+            '{"racconto": "docs/didattica/RACCONTO.md", "schede": "docs/didattica",'
+            ' "da-quando": "2026-11-10"}')
+        letta = configurazione(tmp, argv=[])
+        prova("il file di configurazione sposta racconto e schede",
+              letta["racconto"] == "docs/didattica/RACCONTO.md" and letta["schede"] == "docs/didattica",
+              str(letta))
+        prova("cio' che il file non dice resta predefinito",
+              letta["worklog"] == PREDEFINITI["worklog"] and letta["prefisso"] == PREDEFINITI["prefisso"],
+              str(letta))
+        prova("la data da cui vale la regola si legge dal file",
+              letta["da-quando"] == "2026-11-10", str(letta))
+        con_argomenti = configurazione(tmp, argv=["--racconto", "altro.md"])
+        prova("un argomento ha l'ultima parola sul file",
+              con_argomenti["racconto"] == "altro.md", str(con_argomenti))
+        io.open(conf, "w", encoding="utf-8").write('{"raconto": "docs/x.md"}')
+        try:
+            configurazione(tmp, argv=[])
+            prova("una chiave sconosciuta ferma la corsa", False, "nessun errore sollevato")
+        except ValueError as exc:
+            prova("una chiave sconosciuta ferma la corsa", "raconto" in str(exc), str(exc))
+
     falliti = sum(0 if ok else 1 for _, ok, _ in casi)
     for nome, ok, dettaglio in casi:
         print(f"  {nome.ljust(58)}  {'ok' if ok else 'FALLITO'}{('  ' + dettaglio[:120]) if not ok else ''}")
@@ -269,7 +365,7 @@ if "--self-test" in sys.argv[1:]:
     raise SystemExit(self_test())
 
 _testi_chiusura = [io.open(p, encoding="utf-8").read() for p in
-                   glob.glob(".claude/context/refactor-*.md") + [MASTER, ".claude/context/registro-dei-pendenti.md"]
+                   glob.glob(os.path.join(SCHEDE, PREFISSO + "*.md")) + [MASTER, PENDENTI]
                    if os.path.exists(p)]
 aperte = promesse_aperte(io.open(WORKLOG, encoding="utf-8").read(), _testi_chiusura)
 print(f"promesse di schede non mantenute né registrate: {len(aperte)}")
@@ -307,8 +403,8 @@ if senza_didattica:
 # **di un controllo che riconosce i propri bersagli dal nome**: basta che nasca un file con un
 # nome compatibile perche' il controllo produca un difetto che non esiste.
 schede = sorted(
-    os.path.basename(p) for p in glob.glob(".claude/context/refactor-*.md")
-    if re.match(r"refactor-\d+-", os.path.basename(p))
+    os.path.basename(p) for p in glob.glob(os.path.join(SCHEDE, PREFISSO + "*.md"))
+    if re.match(re.escape(PREFISSO) + r"\d+-", os.path.basename(p))
 )
 # Il racconto puo' non esistere ancora: in un progetto appena adottato la prima voce nasce con
 # la prima scelta non ovvia. Senza il file il controllo non e' giudicabile e lo dichiara, invece
@@ -320,8 +416,8 @@ if not os.path.exists(MASTER):
 testo_master = io.open(MASTER, encoding="utf-8").read()
 
 orfane = [s for s in schede if s not in testo_master]
-citate = set(re.findall(r"(refactor-\d+[a-z0-9-]*\.md)", testo_master))
-rotte = sorted(c for c in citate if not os.path.exists(os.path.join(".claude/context", c)))
+citate = set(re.findall(r"(" + re.escape(PREFISSO) + r"\d+[a-z0-9-]*\.md)", testo_master))
+rotte = sorted(c for c in citate if not os.path.exists(os.path.join(SCHEDE, c)))
 
 print(f"schede refactor sul disco:     {len(schede)}")
 print(f"schede citate dal racconto:    {len(citate)}")

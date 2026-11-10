@@ -38,6 +38,12 @@ La ragione è la sezione 19 del sistema: lo stato lo scrive l'agente che deve su
 
 Se il lavoro è assegnare molti elementi piccoli a un insieme chiuso di etichette, l'artefatto è uno per lotto: una mappa JSON scritta dall'agente su disco, con una voce per ogni chiave dell'ingresso. All'agente va solo il residuo delle regole deterministiche, con il modello economico, e il mandato vieta di sostituire il giudizio con uno script. Prima di usare l'esito si esegue `tools/valida-etichette.py`, che misura voci mancanti, chiavi estranee, etichette inventate e voci vuote, e boccia il lotto oltre la soglia di vuote. Il resoconto testuale dell'agente non conta come misura. Il caso misurato e il mandato da copiare sono nel README del pacchetto.
 
+## L'interruttore del canale
+
+Un ciclo che chiama un servizio esterno per molti elementi tratta ogni fallimento come un fallimento di quell'elemento, e quasi sempre ha ragione. Esiste però una classe di fallimenti che non appartiene all'elemento ma al canale, cioè il servizio spento, il tunnel caduto, la macchina riavviata, e per quella classe ogni tentativo successivo è garantito fallire. Senza la distinzione il ciclo prosegue fino in fondo e produce tre danni che crescono con la lunghezza della coda: spende tempo a non fare niente, marca come difettosi elementi che non lo sono, e mescola nello stesso stato i fallimenti di trasporto e quelli veri, così che un rilancio mirato sugli errori non sappia più distinguerli.
+
+Ogni ciclo che chiama un servizio esterno porta quindi un interruttore. Dopo un numero piccolo e dichiarato di fallimenti consecutivi riconducibili al canale il ciclo si ferma, lascia nello stato di partenza gli elementi che non ha tentato invece di marcarli in errore, e dichiara perché si è fermato. La soglia si conta sui fallimenti consecutivi e non sul totale, perché un corpus difficile produce legittimamente molti errori sparsi senza che il canale abbia niente che non va. E le due classi si distinguono sul tipo dell'errore e non sul suo testo, perché un messaggio di sistema cambia con la lingua della macchina.
+
 ## Prima di cominciare, tre domande
 
 Quanti elementi, e quanto costa uno **misurato** e non assunto.

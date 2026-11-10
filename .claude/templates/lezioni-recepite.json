@@ -49,6 +49,20 @@
     "dove": ".claude/templates/tools/check-eol.py: cerca i caratteri di controllo e fallisce; .claude/rules/chat-non-e-memoria.md e la sua norma: barre in avanti nei testi scritti da script"
   },
   {
+    "progetto": "51462580c4f1",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "51462580c4f1",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/rules/git-commands-format.md e .claude/norme/git-commands-format.md"
+  },
+  {
     "progetto": "71947b5a11ed",
     "id": "L-001",
     "commit": "",
@@ -966,6 +980,27 @@
     "dove": "templates/tools/lint-doc-references.py: categoria propagato, i documenti scritti dall'allineamento non fermano la chiusura di un progetto"
   },
   {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/templates/vps-baseline/tools/baseline-vps.sh e README.md del pacchetto"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/templates/documentazione-didattica/tools/lint-didattica.py, tools/didattica.esempio.json"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/templates/tools/verifica-ripresa.py"
+  },
+  {
     "progetto": "b3f9f458b450",
     "id": "L-001",
     "commit": "",
@@ -1118,6 +1153,20 @@
     "commit": "",
     "data": "2026-11-09",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: un segnale indiretto misura esattamente un'altra cosa"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-022",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-023",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/templates/lavoro-a-lotti/rules/lavoro-a-lotti.md e README.md del pacchetto"
   },
   {
     "progetto": "f00655740f68",

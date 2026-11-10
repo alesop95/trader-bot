@@ -100,6 +100,65 @@ SORVEGLIATI = [
 NON_SPOSTANO_ANCORA = (".claude/memory/", ".claude/skills/", "tools/", "_notes/")
 
 
+# I documenti di stato nascono da un modello che porta segnaposti fra parentesi angolari, e un
+# impianto appena fatto li lascia dove sono: in un progetto istanziato lo snapshot, la feature
+# attiva e il file di ripresa sono rimasti con <branch>, <hash> e <YYYY-MM-DD> per una giornata
+# intera di lavoro sostanziale, con ogni altro controllo verde, e il proprietario se ne e' accorto
+# solo preparando la chiusura (lezione L-003, del 2026-11-10). Il controllo che manca non e' sulla
+# qualita' del contenuto ma sulla sua esistenza: un documento ancora scheletro dice a chi riprende
+# cose che nessuno ha mai scritto.
+# Ogni voce porta il documento, il modello da cui nasce e il ruolo che la segnalazione cita.
+STATO_CON_SEGNAPOSTI = [
+    (INDICE, os.path.join(".claude", "templates", "memory", "index.md"),
+     "lo snapshot che la procedura di ripresa legge per primo"),
+    (os.path.join(CONTESTO, "current-work.md"),
+     os.path.join(".claude", "templates", "context", "current-work.md"),
+     "la scheda della feature attiva"),
+]
+
+# Le parentesi angolari in un Markdown non sono quasi mai un segnaposto: marcano un tag HTML, un
+# collegamento automatico, e nella prosa di un appunto un valore generico come <percorso> o <prj>
+# che chi scrive mette di proposito. Cercarle tutte produce un controllo rosso su documenti sani,
+# cioe' il rosso permanente che si impara a ignorare. Conta quindi un segnaposto solo se e' lo
+# stesso che il modello di quel documento porta: allora il documento e' ancora lo scheletro da cui
+# e' nato, che e' la cosa da vedere, e non c'e' niente da indovinare.
+RE_ANGOLARI = re.compile(r"<([^<>\n]{1,60})>")
+
+
+def _prosa(testo):
+    """Il testo senza i blocchi recintati, i commenti HTML e i frammenti fra apici inversi."""
+    righe = []
+    recinto = None
+    for riga in testo.split("\n"):
+        spoglia = riga.strip()
+        if recinto:
+            if spoglia.startswith(recinto):
+                recinto = None
+            continue
+        if spoglia.startswith("```") or spoglia.startswith("~~~"):
+            recinto = spoglia[:3]
+            continue
+        if riga.startswith("    ") or riga.startswith("\t"):
+            continue
+        righe.append(riga)
+    testo = "\n".join(righe)
+    testo = re.sub(r"<!--.*?-->", " ", testo, flags=re.DOTALL)
+    testo = re.sub(r"`[^`\n]*`", " ", testo)
+    return testo
+
+
+def segnaposti(testo, modello):
+    """I segnaposti del modello che il documento porta ancora nella propria prosa."""
+    dal_modello = set(RE_ANGOLARI.findall(modello or ""))
+    if not dal_modello:
+        return []
+    trovati = []
+    for grezzo in RE_ANGOLARI.findall(_prosa(testo)):
+        if grezzo in dal_modello and "<" + grezzo + ">" not in trovati:
+            trovati.append("<" + grezzo + ">")
+    return trovati
+
+
 class Errore(Exception):
     """Un guasto che l'utente deve leggere."""
 
@@ -428,6 +487,23 @@ def confronta(radice=None):
                 + adesso["commit"][:9] + ": " + ruolo + ", quindi lo stato che la sessione nuova "
                 "legge per primo è più vecchio del codice.")
 
+    # I documenti di stato rimasti allo stato di scheletro, con la ragione in STATO_CON_SEGNAPOSTI.
+    sorvegliati_scheletro = [(ripresa, os.path.join(".claude", "templates", "_notes", "RESUME-PROMPT.md"),
+                              "il file da cui riparte la sessione nuova")]
+    sorvegliati_scheletro += STATO_CON_SEGNAPOSTI
+    for documento, modello, ruolo in sorvegliati_scheletro:
+        p = os.path.join(radice or ".", documento)
+        m = os.path.join(radice or ".", modello)
+        if not os.path.isfile(p) or not os.path.isfile(m):
+            continue
+        rimasti = segnaposti(io.open(p, encoding="utf-8", errors="replace").read(),
+                             io.open(m, encoding="utf-8", errors="replace").read())
+        if rimasti:
+            divergenze.append(
+                documento + " porta ancora " + str(len(rimasti)) + " segnaposti del modello ("
+                + ", ".join(rimasti[:5]) + "): " + ruolo + ", quindi chi riprende legge uno "
+                "scheletro al posto dello stato.")
+
     for nome, h in schede_indietro(radice=radice):
         divergenze.append(
             "la scheda context/" + nome + " è ancorata al commit " + h + ", che in questo "
@@ -483,6 +559,23 @@ def self_test():
         git("add", "-A", radice=d)
         git("commit", "-q", "-m", "primo", radice=d)
         return d
+
+    # I segnaposti del modello rimasti in un documento di stato (lezione L-003).
+    modello = ("- Data: <YYYY-MM-DD>\n- Branch / commit: <branch> / <hash>\n"
+               "- Dove siamo: <una o due frasi sul punto raggiunto>\n")
+    scheletro = "- Data: <YYYY-MM-DD>\n- Branch / commit: <branch> / <hash>\n"
+    prova("uno stato rimasto scheletro si vede", segnaposti(scheletro, modello) ==
+          ["<YYYY-MM-DD>", "<branch>", "<hash>"], str(segnaposti(scheletro, modello)))
+    scritto = "- Data: 2026-11-10\n- Branch / commit: main / 9eaff2b\n- Dove siamo: fatto.\n"
+    prova("uno stato scritto non segnala niente", segnaposti(scritto, modello) == [],
+          str(segnaposti(scritto, modello)))
+    prova("un valore generico che il modello non porta non e' un segnaposto",
+          segnaposti("si lancia con --risolto <percorso> su <prj>.\n", modello) == [], "")
+    prova("un esempio dentro un blocco recintato non conta",
+          segnaposti("testo\n\n```\nData: <YYYY-MM-DD>\n```\n", modello) == [], "")
+    prova("un esempio fra apici inversi non conta",
+          segnaposti("si scrive `Data: <YYYY-MM-DD>` nel modello.\n", modello) == [], "")
+    prova("senza modello non si segnala niente", segnaposti(scheletro, "") == [], "")
 
     tmp = None
     try:

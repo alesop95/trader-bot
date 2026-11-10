@@ -25,6 +25,9 @@ Gli esiti sono un JSONL che conserva l'elemento e la risposta grezza, non una de
 
 ## Perché colibri e perché misurare
 
+Letto a monte il 2026-11-09, versione 2.1.0 del 31 ottobre: `coli import` accetta ora direttamente un file GGUF e lo fa girare senza conversione, c'è un'interfaccia di chat `coli ui`, e le cache KV sono passate a float16 su più motori, con `Q36_KV=f32` per restare in float32 dove serve. L'ultima è un cambiamento di comportamento predefinito che tocca proprio ciò che i banchi misurano, cioè memoria massima e byte letti dal disco: le misure registrate qui sono anteriori e vanno rifatte prima di citarle su questa versione. La licenza non è dichiarata nelle note di rilascio e resta quella già registrata.
+
+
 colibri tiene su disco la parte a esperti di un modello e la legge quando serve, quindi un modello enorme parte anche con poca RAM. Ne segue che la RAM non decide se il modello gira ma quanto spesso il motore torna al disco, cioè la velocità, e questo si vede solo misurando sulla macchina vera. Il banco prende lo stesso modello con due tetti di RAM diversi e registra, per ciascuno, le parole al secondo in decodifica, la memoria massima e i byte letti dal disco.
 
 La scelta dei modelli con cui si misura dipende dalla domanda. Per decidere fra due tagli di RAM si prende un modello piccolo, che dice se il taglio basso regge il lavoro quotidiano, e un modello grande misurato dall'autore proprio a quei tagli, che dice che cosa si guadagna salendo. La spiegazione estesa, con i due modelli scelti per il collaudo su questa macchina, sta in `C:/colibri-models/LEGGIMI.md` sulla macchina di sviluppo e nel filone.
