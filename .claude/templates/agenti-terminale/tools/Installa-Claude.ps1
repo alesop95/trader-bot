@@ -49,7 +49,7 @@
 .EXAMPLE
   .\scripts\Installa-Claude.ps1 -Prefissi 'D--','E--'
 .EXAMPLE
-  .\scripts\Installa-Claude.ps1 -Forza -Template 'E:\template-claude-developing'
+  .\scripts\Installa-Claude.ps1 -Forza -Template '<percorso-del-template>'
 
 .NOTES
   Riferimento: docs\10_CODEX_CLI_E_WORKSPACE_OPENAI.md (simmetria fra i due

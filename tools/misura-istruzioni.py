@@ -168,6 +168,56 @@ def stampa(titolo, voci, radice, tetto=None):
     return totale
 
 
+def crescita(voci, radice, giorni):
+    """Quanto e' cresciuta ogni regola sempre attiva negli ultimi `giorni`, letta da git.
+
+    Dal 2026-11-12 (L-050 di un progetto istanziato): il tetto per file non vede l'accumulo
+    distribuito su dieci regole, che e' il modo in cui il budget si esaurisce davvero; li'
+    il carico era arrivato a 99.999 caratteri su 100.000 senza che una sola regola sforasse.
+    Restituisce (righe, totale, revisione), oppure None dove git non risponde o la storia e'
+    piu' corta della finestra: la misura e' un'informazione, non ferma niente, e un'assenza
+    si dichiara invece di passare per una crescita nulla."""
+    import subprocess
+
+    def git(*argomenti):
+        p = subprocess.run(['git', '-C', radice] + list(argomenti), capture_output=True)
+        return p.returncode, p.stdout
+
+    codice, uscita = git('rev-list', '-1', '--before=%d days ago' % giorni, 'HEAD')
+    rev = uscita.decode('ascii', 'replace').strip()
+    if codice != 0 or not rev:
+        return None
+    righe, totale = [], 0
+    for path, n, nota in voci:
+        if nota != 'regola sempre attiva':
+            continue
+        rel = os.path.relpath(path, radice).replace(os.sep, '/')
+        codice, blob = git('show', '%s:%s' % (rev, rel))
+        if codice != 0:
+            righe.append((rel, n, None))
+            totale += n
+            continue
+        prima = len(blob.decode('utf-8', 'replace').replace('\r\n', '\n'))
+        righe.append((rel, n, n - prima))
+        totale += n - prima
+    righe.sort(key=lambda r: -(r[2] if r[2] is not None else r[1]))
+    return righe, totale, rev[:7]
+
+
+def stampa_crescita(esito, giorni):
+    if esito is None:
+        print('crescita delle regole: non misurabile (git assente o storia piu corta di %d giorni)' % giorni)
+        return
+    righe, totale, rev = esito
+    print('Crescita delle regole sempre attive in %d giorni, rispetto a %s:' % (giorni, rev))
+    for rel, _n, delta in righe:
+        if delta is None:
+            print('  %9s  %s' % ('nuova', rel))
+        elif delta:
+            print('  %9s  %s' % (('+' if delta > 0 else '-') + fmt(abs(delta)), rel))
+    print('  %9s  in tutto' % (('+' if totale >= 0 else '-') + fmt(abs(totale))))
+
+
 def oltre_il_tetto(voci, tetto):
     """(regole, indici) che sforano il tetto per file, separati perche' la prima lista
     fallisce e la seconda avvisa soltanto.
@@ -246,6 +296,19 @@ def autotest():
     prepara(1000, [('a.md', 9000, False), ('b.md', 9000, False)])
     caso('sotto la soglia complessiva e sotto il tetto non fallisce niente', 0, None)
 
+    # La crescita si legge da git: una regola committata a 1.000 caratteri sessanta giorni fa
+    # e portata a 1.500 deve risultare cresciuta di 500, e senza storia lo si deve dire.
+    prepara(1000, [('cresce.md', 1000, False)])
+    caso('senza git la crescita si dichiara non misurabile', 0, 'non misurabile')
+    ambiente = dict(os.environ, GIT_AUTHOR_DATE='2020-01-01T00:00:00', GIT_COMMITTER_DATE='2020-01-01T00:00:00')
+    for comando in (['init', '-q'], ['add', '-A'],
+                    ['-c', 'user.name=prova', '-c', 'user.email=prova@example.invalid', '-c', 'commit.gpgsign=false',
+                     'commit', '-q', '--no-verify', '-m', 'prima']):
+        subprocess.run(['git', '-C', base] + comando, capture_output=True, env=ambiente)
+    with io.open(os.path.join(base, '.claude', 'rules', 'cresce.md'), 'w', encoding='utf-8', newline='') as fh:
+        fh.write('y' * 1500)
+    caso('una regola cresciuta di 500 caratteri dal commit di riferimento lo mostra', 0, '+500  .claude/rules/cresce.md')
+
     shutil.rmtree(base, ignore_errors=True)
     rossi = [e for e in esiti if not e[0]]
     print('')
@@ -259,6 +322,7 @@ def main():
     ap.add_argument('--soglia', type=int, default=SOGLIA_PROGETTO, help='guardia sulla parte di progetto')
     ap.add_argument('--limite', type=int, default=LIMITE_PIATTAFORMA, help='limite complessivo della piattaforma')
     ap.add_argument('--tetto-file', type=int, default=TETTO_FILE, help='quanto puo pesare una sola regola sempre attiva')
+    ap.add_argument('--giorni', type=int, default=30, help='finestra su cui misurare la crescita delle regole')
     ap.add_argument('--autotest', action='store_true', help='esegue le prove interne e non misura niente')
     args = ap.parse_args()
 
@@ -275,6 +339,8 @@ def main():
     print('progetto %s caratteri, soglia di guardia %s' % (fmt(tot_p), fmt(args.soglia)))
     print('di cui regole sempre attive %s, tetto per file %s' % (fmt(regole), fmt(args.tetto_file)))
     print('totale con la parte utente %s, limite della piattaforma %s' % (fmt(tot_p + tot_u), fmt(args.limite)))
+    print('')
+    stampa_crescita(crescita(voci, radice, args.giorni), args.giorni)
 
     grosse, indici = oltre_il_tetto(voci, args.tetto_file)
     if indici:

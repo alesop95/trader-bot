@@ -56,7 +56,7 @@ riprendere o da guardare a mano, 2 se una guardia iniziale non passa.
 .EXAMPLE
 .\chiudi-allineamento.ps1 -SoloPush -Applica
 .EXAMPLE
-.\chiudi-allineamento.ps1 -Solo crosswords,totocalcio -Applica
+.\chiudi-allineamento.ps1 -Solo progetto-a,progetto-b -Applica
 #>
 param(
   [string]$Template = '',

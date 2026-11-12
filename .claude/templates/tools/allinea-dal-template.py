@@ -77,7 +77,7 @@ loro allineamento resta un lavoro di lettura. CLAUDE.md lo tocca soltanto con
 --innesco, e soltanto per aggiungere righe.
 
 Uso:
-  python allinea-dal-template.py --template E:/template-claude-developing --progetto .
+  python allinea-dal-template.py --template <percorso-del-template> --progetto .
   python allinea-dal-template.py ... --applica            # scrive NUOVO, VECCHIO, MERGE, SPOSTATO
   python allinea-dal-template.py ... --applica --rimuovi  # anche le origini di SPOSTATO e i RIMOSSO
   python allinea-dal-template.py ... --json rapporto.json
@@ -262,7 +262,7 @@ def sostituite_localmente(base: bytes, locale: bytes, storiche: set[str]) -> col
     o un nome proprio: la riga della testa manca dal merge perché il merge ha
     tenuto, correttamente, la variante locale. Senza questa distinzione la
     verifica la conta come persa e il file resta CONFLITTO a ogni corsa, anche
-    quando non c'è niente da decidere; su retrogame-mod-pok-dev, il 2026-09-29,
+    quando non c'è niente da decidere; su un progetto, il 2026-09-29,
     lo erano undici file su undici.
 
     La distinzione va tenuta stretta, perché e proprio la forma che assume la
@@ -416,7 +416,7 @@ def innesco(template: Path, prj: Path, skill: list[str]) -> tuple[bytes | None, 
     apprendimenti recenti o dei vincoli di team, che il modello mette subito
     dopo l'indice, altrimenti in coda."""
     # Claude Code legge il CLAUDE.md di progetto sia in radice sia sotto .claude/, e
-    # blog-alessio lo tiene nel secondo posto: cercarlo solo in radice lo dava per assente
+    # un progetto lo tiene nel secondo posto: cercarlo solo in radice lo dava per assente
     f = next((c for c in (prj / "CLAUDE.md", prj / ".claude" / "CLAUDE.md") if c.is_file()), None)
     if f is None:
         return None, [], "CLAUDE.md assente"

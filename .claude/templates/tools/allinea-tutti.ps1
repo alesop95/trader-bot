@@ -86,7 +86,7 @@ soli -Ssh indicati; -SoloLocali li salta tutti) e cerca .claude/PROJECT-SYSTEM.m
 sotto -RadiciRemote fino a -ProfonditaRemota livelli. Un progetto remoto si scrive
 ssh://<alias>/<percorso> e passa per le stesse guardie, la stessa misura e la
 stessa scrittura di uno locale, attraverso trasporto-ssh.ps1; il template gli
-arriva come git bundle in ~/.cache/template-claude-developing della macchina.
+arriva come git bundle sotto ~/.cache della macchina, in una cartella col nome di quella del template.
 Un progetto remoto si tratta solo se il proprietario lo ha approvato in
 _notes/allineamento/remoti-approvati.txt: uno nuovo resta da-confermare, si
 elenca e non si tocca, perche' una macchina nuova con progetti di sviluppo e' una

@@ -36,6 +36,16 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# Il messaggio si valida prima dello stage, dal 2026-11-12 (L-010 di un progetto istanziato):
+# stesse due condizioni dell'hook .githooks/commit-msg. Stampa il difetto, o niente.
+difetto_messaggio() {
+    if printf '%s\n' "$1" | grep -qiE '^[[:space:]]*co-authored-by:|generated with .*claude|generated with .*codex|noreply@anthropic\.com|noreply@openai\.com'; then
+        echo "il messaggio contiene un'attribuzione a un agente, che la regola git-commands-format.md vieta"; return
+    fi
+    lung="$(printf '%s' "$1" | LC_ALL=C.UTF-8 wc -m 2>/dev/null | tr -d ' ')"
+    if [ -n "$lung" ] && [ "$lung" -gt 72 ]; then echo "l'oggetto e' di $lung caratteri, la regola ne ammette al massimo 72"; fi
+}
+
 titolo() { printf '\n== %s\n' "$1"; }
 ok() { printf '   ok  %s\n' "$1"; }
 avvisi=0
@@ -130,6 +140,20 @@ else
     done <<EOF
 $controlli
 EOF
+    # I controlli propri del progetto, dal 2026-11-11 (L-011 di un progetto istanziato): uno per
+    # riga in tools/controlli-progetto.txt, nome dello strumento in tools/ e argomenti; righe vuote
+    # e commenti si saltano, uno strumento dichiarato e assente ferma il commit.
+    if [ -f tools/controlli-progetto.txt ]; then
+        titolo "Controlli propri del progetto (tools/controlli-progetto.txt)"
+        while read -r nome argomenti; do
+            case "$nome" in ''|'#'*) continue ;; esac
+            if [ ! -f "tools/$nome" ]; then ko "$nome dichiarato in tools/controlli-progetto.txt e assente"; falliti="$falliti $nome"; continue; fi
+            # shellcheck disable=SC2086
+            uscita="$("$python" "tools/$nome" $argomenti 2>&1)"; rc=$?
+            if [ $rc = 0 ]; then ok "$nome${argomenti:+ $argomenti}"
+            else ko "$nome${argomenti:+ $argomenti} (uscita $rc)"; printf '%s\n' "$uscita" | tail -15 | sed 's/^/       /'; falliti="$falliti $nome"; fi
+        done < <(tr -d '\r' < tools/controlli-progetto.txt)
+    fi
 fi
 # Le lezioni verso il template, dal 2026-10-19: avvisano e non fermano il commit. Nel progetto
 # si vede che cosa il progetto deve al template; nel template, il debito di tutti i progetti.
@@ -158,6 +182,17 @@ if [ -n "$python" ] && [ -f .claude/templates/tools/lint-cultura.py ]; then
     if [ -n "$cul" ]; then titolo "Cultura nelle conversioni"; printf '%s\n' "$cul" | sed 's/^/   /'; fi
     if [ "$cc" != 0 ]; then falliti="$falliti lint-cultura.py"; fi
 fi
+# Le voci parcheggiate fuori dal registro (L-006, 2026-11-12): avvisa e non ferma.
+for pendente in _notes/PENDENTE-*; do
+    [ -f "$pendente" ] || continue
+    [ -n "${titolo_pendenti:-}" ] || { titolo "Voci parcheggiate fuori dal registro"; titolo_pendenti=1; }
+    nota "$pendente: da incollare nel registro a cui appartiene, poi cancellare"
+done
+# Il messaggio preparato dall'agente si controlla insieme agli altri controlli (L-010).
+if [ -f "_notes/COMMIT-MSG.txt" ]; then
+    difetto="$(difetto_messaggio "$(grep -m1 -v '^[[:space:]]*$' "_notes/COMMIT-MSG.txt")")"
+    if [ -n "$difetto" ]; then titolo "Messaggio di commit"; nota "_notes/COMMIT-MSG.txt: $difetto"; falliti="$falliti messaggio-di-commit"; fi
+fi
 if [ -n "$falliti" ]; then printf '\nControlli falliti:%s. Mi fermo prima del commit.\n' "$falliti"; exit 1; fi
 [ $solo = 1 ] && { printf '\nControlli verdi.\n'; exit 0; }
 
@@ -172,6 +207,8 @@ if [ "$ncambi" != 0 ]; then
         read -r -p "   Messaggio di commit: " messaggio || { echo "Input non disponibile: mi fermo."; exit 1; }
     fi
     [ -n "$messaggio" ] || { echo "Messaggio vuoto: mi fermo."; exit 1; }
+    difetto="$(difetto_messaggio "$messaggio")"
+    [ -z "$difetto" ] || { echo "Messaggio non ammesso: $difetto. Niente e' stato messo in stage."; exit 1; }
     # skill identita-git: si firma solo con l'identita' locale del repository.
     nome="$(git config --local user.name)"; email="$(git config --local user.email)"
     [ -n "$nome" ] && [ -n "$email" ] || { echo "Identita' git locale non impostata: impostare user.name e user.email del repository e rilanciare."; exit 1; }
@@ -209,7 +246,8 @@ if [ "$ncambi" != 0 ]; then
             exit 1
         fi
     fi
-    git commit -m "$messaggio" || { echo "Commit rifiutato (hook o errore): correggere e rilanciare."; exit 1; }
+    # Lo stage era vuoto prima di questa chiusura: toglierlo riporta l'indice com'era (L-010).
+    git commit -m "$messaggio" || { git reset -q; echo "Commit rifiutato (hook o errore): stage tolto, i file restano modificati. Correggere e rilanciare."; exit 1; }
     rm -f "$filemsg"
     rm -f "_notes/COMMIT-SCOPE.json" "$snapshot"
 fi

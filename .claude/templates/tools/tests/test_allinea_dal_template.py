@@ -4,8 +4,8 @@
 Ogni prova costruisce un repository git finto come template, con la storia che
 riproduce un meccanismo osservato nella propagazione del 2026-09-28, e una
 cartella come progetto. Le storie non sono inventate: le due forme del difetto
-sono state misurate sui file veri di holiday-template a 50fa52b e di
-rodrainaudio-reverse-eng a f656c53, e da li vengono le proporzioni fra i blocchi,
+sono state misurate sui file veri di un progetto a 50fa52b e di
+un altro a f656c53, e da li vengono le proporzioni fra i blocchi,
 che sono cio che decide quale base la somiglianza sceglie.
 """
 
@@ -78,7 +78,7 @@ class ParagrafoDuplicato(BaseDelMerge):
     contenuto e allora la copia vecchia, che il paragrafo non lo contiene: la
     differenza base->testa dice "aggiungi il paragrafo", il merge la applica a chi
     ce l'ha già e ne escono due copie senza un conflitto. E il caso di
-    holiday-template e local-audio-transcriptor, dove la base scelta era il blob
+    due progetti, dove la base scelta era il blob
     del 2026-07-01 e il paragrafo era quello di studio-didattico. Qui nessuna base
     evita il difetto, ed è la ragione per cui la sola scelta della base non basta:
     prenderne una che il paragrafo ce l'ha fa perdere il materiale che il progetto
@@ -118,7 +118,7 @@ class CorrezionePersa(BaseDelMerge):
     """La base scelta per somiglianza contiene già una correzione di una riga che
     il file locale non ha: quella correzione non entra nella differenza
     base->testa e non arriva a nessuno, mentre il blocco grande arriva. E il caso
-    di rodrainaudio-reverse-eng, dove fix-accents.py ha ricevuto le righe nuove
+    di un progetto, dove fix-accents.py ha ricevuto le righe nuove
     ma non la guardia RESIDUO_DOPPIA_CORREZIONE del 2026-09-09."""
 
     GUARDIA = "RESIDUO_DOPPIA_CORREZIONE = compila(guardia)"
@@ -209,7 +209,7 @@ class RigaAdattata(BaseDelMerge):
     """Il progetto ha adattato una riga del template, un percorso, e il template
     ha poi aggiunto materiale altrove. Il merge tiene la variante locale e porta
     l'aggiunta: e il caso di lint-md-tables.py e test-tipografia.py su
-    retrogame-mod-pok-dev, classificati CONFLITTO fino al 2026-09-29 perché la
+    un progetto, classificati CONFLITTO fino al 2026-09-29 perché la
     riga della testa sostituita contava come persa."""
 
     ORIGINALE = '    cartella = os.path.join(ROOT, "_notes", "tmp")'
@@ -310,7 +310,7 @@ class Innesco(BaseDelMerge):
         self.assertEqual(self.corri(), [], "la seconda corsa non deve riscrivere")
 
     def test_claude_md_sotto_la_cartella_claude(self):
-        """blog-alessio tiene il CLAUDE.md in .claude/: la prima corsa del 2026-09-29 lo
+        """un progetto tiene il CLAUDE.md in .claude/: la prima corsa del 2026-09-29 lo
         dava per assente e lasciava il progetto senza innesco."""
         f = self.prj / ".claude/CLAUDE.md"
         f.parent.mkdir(parents=True, exist_ok=True)

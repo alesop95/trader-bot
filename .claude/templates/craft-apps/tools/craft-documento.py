@@ -49,6 +49,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from craft_apps_comune import sistema, trova_cli  # noqa: E402
@@ -56,6 +57,7 @@ from craft_apps_comune import sistema, trova_cli  # noqa: E402
 STILI_TITOLO = ["Title", "Heading 1", "Heading 2", "Heading 3"]
 FORMATI_DOC = {".docx", ".pdf", ".odt", ".rtf", ".html", ".tex", ".txt", ".md"}
 FORMATI_SLIDE = {".pptx", ".pdf", ".deckcraft"}
+W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
 
 class Errore(Exception):
@@ -135,6 +137,67 @@ def stili_presenti(docx: Path) -> set[str]:
     with zipfile.ZipFile(docx) as z:
         xml = z.read("word/styles.xml").decode("utf-8", "replace")
     return {n.lower() for n in re.findall(r'<w:name w:val="([^"]+)"', xml)}
+
+
+def spazio_dopo_tabelle(docx: Path, punti: int | float) -> int:
+    """Aggiunge spazio prima della prosa che segue una tabella nel DOCX generato.
+
+    WordCraft produce tabelle e paragrafi adiacenti; la spaziatura del corpo non
+    crea da sola un distacco dal bordo inferiore. I titoli conservano la propria
+    spaziatura di stile. Il pacchetto DOCX rimane un file WordCraft: si modifica
+    solo `word/document.xml`, senza dipendere da python-docx.
+    """
+    if isinstance(punti, bool) or not isinstance(punti, (int, float)) or not 0 <= punti <= 72:
+        raise Errore("spazio_dopo_tabelle_pt deve essere un numero fra 0 e 72")
+    if punti == 0:
+        return 0
+    before = str(round(punti * 20))
+    with zipfile.ZipFile(docx) as source:
+        original = source.read("word/document.xml")
+        # Mantiene i prefissi WordCraft, compresi quelli non usati dall'elemento
+        # modificato. ET senza registrazione rinominerebbe w: in ns0:.
+        from io import BytesIO
+        for _, (prefix, uri) in ET.iterparse(BytesIO(original), events=("start-ns",)):
+            if prefix not in {"xml", "xmlns"}:
+                ET.register_namespace(prefix or "", uri)
+        root = ET.fromstring(original)
+        body = root.find(W + "body")
+        if body is None:
+            raise Errore("DOCX senza word/body")
+        children = list(body)
+        changed = 0
+        for index, node in enumerate(children[:-1]):
+            following = children[index + 1]
+            if node.tag != W + "tbl" or following.tag != W + "p":
+                continue
+            props = following.find(W + "pPr")
+            style = props.find(W + "pStyle") if props is not None else None
+            if style is not None and style.get(W + "val", "").lower().startswith(("heading", "title")):
+                continue
+            if props is None:
+                props = ET.Element(W + "pPr")
+                following.insert(0, props)
+            spacing = props.find(W + "spacing")
+            if spacing is None:
+                spacing = ET.Element(W + "spacing")
+                props.append(spacing)
+            previous = spacing.get(W + "before")
+            if previous is None or int(previous) < int(before):
+                spacing.set(W + "before", before)
+                changed += 1
+        if not changed:
+            return 0
+        updated = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+        temp = docx.with_name(docx.name + ".spazio.tmp")
+        try:
+            with zipfile.ZipFile(temp, "w") as target:
+                for item in source.infolist():
+                    target.writestr(item, updated if item.filename == "word/document.xml" else source.read(item))
+        except Exception:
+            temp.unlink(missing_ok=True)
+            raise
+    temp.replace(docx)
+    return changed
 
 
 def comandi_stile_documento(stile: dict, presenti: set[str] | None = None) -> list[str]:
@@ -217,6 +280,8 @@ def documento(sorgente: Path, uscita: Path, stile: dict, riferimento: Path | Non
             esegui(w, "run", "--file", str(intermedio), *cmd, "--save", str(stilato))
         else:
             stilato = intermedio
+        if "spazio_dopo_tabelle_pt" in stile:
+            spazio_dopo_tabelle(stilato, stile["spazio_dopo_tabelle_pt"])
         uscita.parent.mkdir(parents=True, exist_ok=True)
         if uscita.suffix.lower() == ".docx":
             uscita.write_bytes(stilato.read_bytes())
@@ -287,10 +352,11 @@ def autotest() -> int:
 def collaudo() -> int:
     """Prova vera sulle app installate: produce e poi verifica sui byte, non sull'uscita dei comandi."""
     ok = True
-    stile = {"font_titoli": "Georgia", "font_testo": "Verdana", "colore_titoli": "C8102E", "dimensioni": {"Heading 1": 24}}
+    stile = {"font_titoli": "Georgia", "font_testo": "Verdana", "colore_titoli": "C8102E",
+             "dimensioni": {"Heading 1": 24}, "spazio_dopo_tabelle_pt": 12}
     with tempfile.TemporaryDirectory() as d:
         md = Path(d) / "prova.md"
-        md.write_text("# Prova\n\nTesto con *corsivo*.\n\n- uno\n- due\n\n# Seconda\n\n- tre\n", encoding="utf-8")
+        md.write_text("# Prova\n\nTesto con *corsivo*.\n\n| Campo | Valore |\n|---|---|\n| A | B |\n\nProsa dopo tabella.\n\n# Seconda\n\n- tre\n", encoding="utf-8")
         try:
             docx = documento(md, Path(d) / "prova.docx", stile, None)
             with zipfile.ZipFile(docx) as z:
@@ -299,6 +365,17 @@ def collaudo() -> int:
                 presente = atteso in stili
                 ok &= presente
                 print(("ok   " if presente else "ROSSO ") + "documento: " + atteso + " in word/styles.xml")
+            with zipfile.ZipFile(docx) as z:
+                body = ET.fromstring(z.read("word/document.xml")).find(W + "body")
+            children = list(body) if body is not None else []
+            gaps = []
+            for index, node in enumerate(children[:-1]):
+                if node.tag == W + "tbl" and children[index + 1].tag == W + "p":
+                    spacing = children[index + 1].find(W + "pPr/" + W + "spacing")
+                    gaps.append(int(spacing.get(W + "before", "0")) if spacing is not None else 0)
+            spazio = bool(gaps) and min(gaps) >= 240
+            ok &= spazio
+            print(("ok   " if spazio else "ROSSO ") + "documento: prosa dopo tabella distanziata di 12 pt")
             pdf = documento(md, Path(d) / "prova.pdf", stile, None)
             buono = pdf.read_bytes()[:5] == b"%PDF-"
             ok &= buono

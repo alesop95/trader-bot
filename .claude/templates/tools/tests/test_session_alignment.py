@@ -35,7 +35,7 @@ def git(path, *args):
 
 @pytest.fixture
 def history(tmp_path):
-    template = tmp_path / "template-claude-developing"
+    template = tmp_path / "template-di-prova"
     template.mkdir()
     git(template, "init", "-q", "-b", "main")
     git(template, "config", "user.name", "Fixture")

@@ -32,9 +32,14 @@ import tempfile
 
 path = Path(sys.argv[1]).expanduser()
 modo = sys.argv[2]
-inizio = b"# >>> chiudi (template-claude-developing) >>>"
-fine = b"# <<< chiudi (template-claude-developing) <<<"
-blocco = b"""# >>> chiudi (template-claude-developing) >>>
+import re
+# Dal 2026-11-12 (L-009 di un progetto istanziato) il marcatore non porta piu' il nome della
+# cartella del template, perche' questo file arriva in ogni progetto. Un blocco installato da
+# una versione precedente si riconosce dalla forma, qualunque nome porti fra parentesi, e viene
+# sostituito: senza questo il profilo si ritroverebbe con due blocchi.
+RE_INIZIO = re.compile(rb"# >>> chiudi \([^)\r\n]*\) >>>")
+RE_FINE = re.compile(rb"# <<< chiudi \([^)\r\n]*\) <<<")
+blocco = b"""# >>> chiudi (sistema di progetto) >>>
 chiudi() {
     local radice script
     radice="$(git rev-parse --show-toplevel 2>/dev/null)" || { printf '%s\\n' "chiudi: la cartella corrente non e' dentro un repository git." >&2; return 2; }
@@ -44,17 +49,18 @@ chiudi() {
     printf '%s\\n' "chiudi: chiudi-sessione.sh non e' istanziato in $radice." >&2
     return 2
 }
-# <<< chiudi (template-claude-developing) <<<
+# <<< chiudi (sistema di progetto) <<<
 """
 vecchio = path.read_bytes() if path.exists() else b""
-if (vecchio.count(inizio) != vecchio.count(fine) or vecchio.count(inizio) > 1
-        or (inizio in vecchio and vecchio.index(fine) < vecchio.index(inizio))):
+inizi = list(RE_INIZIO.finditer(vecchio))
+fini = list(RE_FINE.finditer(vecchio))
+if len(inizi) != len(fini) or len(inizi) > 1 or (inizi and fini[0].start() < inizi[0].start()):
     raise SystemExit(f"Marcatori chiudi incompleti o duplicati in {path}; nessuna modifica.")
 newline = b"\r\n" if b"\r\n" in vecchio and b"\n" not in vecchio.replace(b"\r\n", b"") else b"\n"
 blocco = blocco.replace(b"\n", newline)
-if inizio in vecchio:
-    a = vecchio.index(inizio)
-    b = vecchio.index(fine, a) + len(fine)
+if inizi:
+    a = inizi[0].start()
+    b = fini[0].end()
     if vecchio[b:b + len(newline)] == newline:
         b += len(newline)
     nuovo = vecchio[:a] + blocco + vecchio[b:]
@@ -62,8 +68,8 @@ else:
     separatore = b"" if not vecchio or vecchio.endswith(newline) else newline
     nuovo = vecchio + separatore + (newline if vecchio else b"") + blocco
 if modo == "verifica":
-    print(f"{path}: {'installato e aggiornato' if vecchio == nuovo and inizio in vecchio else 'da installare o aggiornare'}")
-    raise SystemExit(0 if vecchio == nuovo and inizio in vecchio else 1)
+    print(f"{path}: {'installato e aggiornato' if vecchio == nuovo and inizi else 'da installare o aggiornare'}")
+    raise SystemExit(0 if vecchio == nuovo and inizi else 1)
 if vecchio == nuovo:
     print(f"{path}: comando chiudi gia' aggiornato.")
     raise SystemExit(0)

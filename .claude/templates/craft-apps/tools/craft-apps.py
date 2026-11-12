@@ -46,7 +46,7 @@ API = "https://api.github.com/repos/{org}/{repo}/releases/latest"
 
 def _apri(url: str, binario: bool = False):
     req = urllib.request.Request(url, headers={
-        "User-Agent": "craft-apps/1 (template-claude-developing)",
+        "User-Agent": "craft-apps/1 (sistema-di-progetto)",
         "Accept": "application/octet-stream" if binario else "application/vnd.github+json",
     })
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")

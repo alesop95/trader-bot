@@ -860,7 +860,7 @@ def contesto_tls():
 
 
 def scarica(url: str, github: bool = False):
-    req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "fonti-a-monte (template-claude-developing)"})
+    req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "fonti-a-monte (sistema-di-progetto)"})
     if github:
         req.add_header("Accept", "application/vnd.github+json")
         if token():
@@ -877,7 +877,7 @@ def scarica(url: str, github: bool = False):
 
 
 def scarica_testo(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": "fonti-a-monte (template-claude-developing)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "fonti-a-monte (sistema-di-progetto)"})
     try:
         with urllib.request.urlopen(req, timeout=25, context=contesto_tls()) as r:
             return r.read().decode("utf-8", errors="replace")

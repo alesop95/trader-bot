@@ -493,8 +493,8 @@ def autotest():
     # I valori di prova si compongono a tempo di esecuzione e non stanno scritti per intero in
     # questo file, che è tracciato: scritti per intero, lo strumento trova sé stesso in ogni
     # progetto che lo istanzia sotto tools/, dove ESCLUSIONI_PREDEFINITE non arriva perché copre
-    # il solo prefisso .claude/templates/. Osservato il 2026-10-27 su windows-status e su
-    # retrogame-mod-pok-dev, dove due riscontri bloccanti fermavano il commit subito dopo
+    # il solo prefisso .claude/templates/. Osservato il 2026-10-27 su due progetti,
+    # dove due riscontri bloccanti fermavano il commit subito dopo
     # l'allineamento. È la stessa ragione per cui un autotest non porta mai un valore reale.
     importo_finto = "€" + "10"
     nome_finto = "Mario" + " " + "Rossi"

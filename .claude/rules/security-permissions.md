@@ -1,6 +1,6 @@
 # Sicurezza, permessi e sandboxing
 
-> Regola modulare. Descrive le sei modalità di permesso di Claude Code, le limitazioni del sandbox per sistema operativo, le linee guida per l'uso di --dangerously-skip-permissions e le avvertenze sugli Agent Teams sperimentali. Si applica a ogni sessione e integra le regole deny già presenti in `.claude/settings.json`.
+> Regola modulare. Descrive le sei modalità di permesso di Claude Code, le limitazioni del sandbox per sistema operativo, e il rimando alla norma per i due casi che non si presentano a ogni sessione. Si applica a ogni sessione e integra le regole deny già presenti in `.claude/settings.json`.
 
 ## Le sei modalità di permesso
 
@@ -18,24 +18,12 @@ Su macOS funziona nativamente via Seatbelt. Su Linux e WSL2[^1] richiede i pacch
 
 Una limitazione documentata dalla stessa Anthropic: la policy di lettura default del sandbox lascia accessibili `~/.aws/credentials` e `~/.ssh/`. Quando si abbina il sandbox a sessioni autonome, aggiungere entrambi a `sandbox.filesystem.denyRead` nel `settings.json` prima di avviare la sessione, non dopo.
 
-## --dangerously-skip-permissions: quando e accettabile
+## I due casi che vivono nella norma
 
-Il consenso unanime di documentazione ufficiale e community e chiaro: questo flag non va mai usato su una macchina reale non containerizzata. In un container o VM completamente isolati e accettabile, a condizione che il container giri come utente non privilegiato (il flag si rifiuta di girare come root su Linux e macOS).
-
-Tre comportamenti del flag che sorprendono spesso. Le chiamate ai tool MCP[^2] si auto-approvano insieme a tutto il resto: più server MCP con permessi di scrittura hai connessi, più ampio e il raggio d'azione in caso di prompt injection. Le regole `deny` esplicite nel `settings.json` continuano a bloccare anche in bypass. `--disallowedTools` funziona correttamente in bypass, mentre `--allowedTools` può essere ignorato: se si vuole limitare i tool disponibili in un container autonomo, usare il primo.
-
-Per le sessioni autonome su macchina reale la modalità consigliata e *auto* oppure *dontAsk* con una lista `allow` ben costruita, non il bypass.
-
-## Agent Teams sperimentali: avvertenza sui permessi
-
-Gli Agent Teams sono una feature sperimentale (disabilitata di default, si attiva con la variabile di ambiente `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) che permette a più agenti di lavorare in parallelo con comunicazione diretta tra pari, una task list condivisa e file locking. La caratteristica che richiede attenzione prima del lancio: i permessi del lead si propagano a tutti i teammate nel momento dello spawn. Se il lead parte con `bypassPermissions`, tutti i teammate lo ereditano. La postura dei permessi va quindi pianificata sul lead, con cura, prima di avviare il team, non corretta a posteriori.
-
-I team non supervisionati per più di 10-15 minuti tendono a bloccarsi su prompt di permesso, a segnare task come completati prematuramente o a perdere lo scope del lavoro originale. Un check-in periodico sulla task list condivisa non è opzionale per i task lunghi.
+Due situazioni hanno regole proprie e non si presentano a ogni sessione, quindi stanno in `.claude/norme/security-permissions.md` e si caricano quando servono. La prima è l'uso di `--dangerously-skip-permissions`, con le condizioni in cui è accettabile, i tre comportamenti del flag che sorprendono e la modalità da preferire per una sessione autonoma su macchina reale. La seconda sono gli Agent Teams sperimentali, dove i permessi del lead si propagano a ogni teammate nel momento dello spawn e la postura va decisa prima dell'avvio.
 
 ## Integrazione con settings.json
 
 Le regole deny nel `templates/settings.json` del progetto coprono il perimetro minimo: commit e push git manuali, reset e rebase git, configurazione git globale, lettura di file di credenziali (`.env`, chiavi SSH, credenziali AWS) e rimozione ricorsiva. Le operazioni distruttive-ma-reversibili (`npm publish`, `docker push`) stanno in `ask` così che Claude chieda conferma invece di bloccare del tutto. Questo schema si committa nel repository e vale per l'intero team, indipendentemente dalla configurazione personale di ciascun membro.
 
 [^1]: *WSL2*, Windows Subsystem for Linux versione 2 - layer di virtualizzazione che esegue un kernel Linux completo dentro Windows, usato per ottenere il sandboxing nativo su macchine Windows.
-
-[^2]: *MCP*, Model Context Protocol - standard che permette a un client AI di parlare con sistemi esterni (GitHub, database, browser) attraverso un'interfaccia comune; ogni server MCP espone tool, risorse e prompt che diventano disponibili all'agente.

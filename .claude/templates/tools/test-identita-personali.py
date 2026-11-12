@@ -51,9 +51,16 @@ QUESTO = "test-identita-personali.py"
 LIMITE_BYTE = 2 * 1024 * 1024
 AMMESSE = Path(".claude") / "templates" / "tools" / "identita-forme-ammesse.txt"
 PERCORSO_TEMPLATE = Path.home() / ".config" / "template-claude-path.txt"
+# Il disco privato e' un dato personale quanto un indirizzo: un percorso che comincia per E: dice
+# che esiste un progetto privato, e lo dice anche quando quel nome non sta in nessun elenco. E' la
+# sola forma che vale per verso: in un repository aziendale ferma, in uno personale no, perche'
+# li' nominare il proprio disco e' legittimo. Senza di essa un progetto creato domani su E: non
+# sarebbe coperto finche' qualcuno non ne scrivesse il nome a mano in un elenco.
+FORMA_DISCO_PRIVATO = ("percorso privato", re.compile(r"[Ee]:[\\/][A-Za-z0-9._-]+"))
 FORME = [
     ("indirizzo", re.compile(r"[A-Za-z0-9._%+@-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", re.I)),
     ("chiave", re.compile(r"\bid_(?:rsa|dsa|ecdsa|ed25519)[A-Za-z0-9_.-]*", re.I)),
+    FORMA_DISCO_PRIVATO,
 ]
 NON_CONTROLLATO = 2
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
@@ -149,11 +156,7 @@ def cerca_stage(radice: Path, cercatore: Cercatore) -> list:
     """I file in stage letti dall'indice, cioè ciò che il commit conterrà davvero, più l'identità
     con cui verrà firmato: autore e committer."""
     trovate = []
-    nomi = git(radice, "diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR").stdout.decode("utf-8", errors="replace")
-    for rel in [p for p in nomi.split("\0") if p]:
-        if Path(rel).name in (QUESTO, AMMESSE.name):
-            continue
-        testo = git(radice, "show", ":" + rel).stdout.decode("utf-8", errors="ignore")
+    for rel, testo in testi_in_stage(radice):
         trovate += [(rel, n) for n, riga in enumerate(testo.splitlines(), 1) if cercatore.trova(riga)]
     for var in ("GIT_AUTHOR_IDENT", "GIT_COMMITTER_IDENT"):
         ident = git(radice, "var", var).stdout.decode("utf-8", errors="replace")
@@ -176,20 +179,8 @@ def cerca_tracciati(radice: Path, cercatore: Cercatore) -> list:
     """Come il controllo del template ma su tutti i file tracciati, saltando i binari e i file
     molto grandi, che non contengono identita' scritte a mano e costerebbero l'intera scansione."""
     trovate = []
-    for f in file_tracciati(radice):
-        rel = f.relative_to(radice)
-        if not f.is_file() or FUORI.intersection(rel.parts) or f.name in (QUESTO, AMMESSE.name):
-            continue
-        try:
-            if f.stat().st_size > LIMITE_BYTE:
-                continue
-            grezzo = f.read_bytes()
-        except OSError:
-            continue
-        if b"\0" in grezzo[:8192]:
-            continue
-        testo = grezzo.decode("utf-8", errors="ignore")
-        trovate += [(rel.as_posix(), n) for n, riga in enumerate(testo.splitlines(), 1) if cercatore.trova(riga)]
+    for rel, testo in testi_tracciati(radice):
+        trovate += [(rel, n) for n, riga in enumerate(testo.splitlines(), 1) if cercatore.trova(riga)]
     return trovate
 
 
@@ -215,11 +206,58 @@ def cerca_forme(radice: Path) -> list:
             testo = f.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        for n, riga in enumerate(testo.splitlines(), 1):
-            for nome, forma in FORME:
-                for v in forma.findall(riga):
-                    if v.lower() not in ammesse:
-                        trovate.append((rel.as_posix(), n, nome))
+        trovate += forme_nel_testo(rel.as_posix(), testo, ammesse, FORME)
+    return trovate
+
+
+def forme_nel_testo(rel: str, testo: str, ammesse: set, forme: list) -> list:
+    """Le stringhe che hanno una delle forme cercate e non sono dichiarate fra gli esempi ammessi.
+    La punteggiatura finale appartiene alla frase e non al valore: senza toglierla un segnaposto
+    gia' dichiarato non si riconosce quando chiude un periodo."""
+    trovate = []
+    for n, riga in enumerate(testo.splitlines(), 1):
+        for nome, forma in forme:
+            for v in forma.findall(riga):
+                if v.lower().rstrip("._-") not in ammesse:
+                    trovate.append((rel, n, nome))
+    return trovate
+
+
+def testi_in_stage(radice: Path):
+    """I file in stage letti dall'indice, cioe' il contenuto che il commit avra' davvero."""
+    nomi = git(radice, "diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR").stdout.decode("utf-8", errors="replace")
+    for rel in [p for p in nomi.split("\0") if p]:
+        if Path(rel).name in (QUESTO, AMMESSE.name):
+            continue
+        yield rel, git(radice, "show", ":" + rel).stdout.decode("utf-8", errors="ignore")
+
+
+def testi_tracciati(radice: Path):
+    """Tutti i file tracciati, saltando binari e file molto grandi."""
+    for f in file_tracciati(radice):
+        rel = f.relative_to(radice)
+        if not f.is_file() or FUORI.intersection(rel.parts) or f.name in (QUESTO, AMMESSE.name):
+            continue
+        try:
+            if f.stat().st_size > LIMITE_BYTE:
+                continue
+            grezzo = f.read_bytes()
+        except OSError:
+            continue
+        if b"\0" in grezzo[:8192]:
+            continue
+        yield rel.as_posix(), grezzo.decode("utf-8", errors="ignore")
+
+
+def cerca_forme_aziendali(radice: Path, stage: bool) -> list:
+    """Il percorso del disco privato dentro un repository aziendale, per forma e non per elenco.
+    Gira solo nel verso aziendale, perche' in un repository personale quel percorso e' legittimo:
+    e' la stessa asimmetria con cui lo strumento tratta gia' le due identita'."""
+    ammesse = forme_ammesse(radice)
+    sorgente = testi_in_stage(radice) if stage else testi_tracciati(radice)
+    trovate = []
+    for rel, testo in sorgente:
+        trovate += forme_nel_testo(rel, testo, ammesse, [FORMA_DISCO_PRIVATO])
     return trovate
 
 
@@ -262,6 +300,12 @@ def controlla(radice: Path, esplicito: str = "", stage: bool = False, tracciati:
         return 1
     lavoro = voci_di_lavoro(voci)
     dentro = nell_ambito(radice, ambiti(voci))
+    if (stage or tracciati) and dentro:
+        # Nel verso aziendale il percorso del disco privato si ferma per la sua forma e senza
+        # elenco: e' cosi' che un progetto privato nato dopo l'ultimo censimento resta coperto.
+        forme = cerca_forme_aziendali(radice, stage)
+        for rel, n, nome in forme:
+            print("   %s:%d ha la forma di un %s e non e' fra gli esempi ammessi" % (rel, n, nome))
     verso = ""
     if stage or tracciati:
         # In un repository aziendale non deve comparire l'identita' personale; in uno personale
@@ -287,7 +331,8 @@ def controlla(radice: Path, esplicito: str = "", stage: bool = False, tracciati:
         # L'identificativo non si stampa: questa uscita finisce in log e trascrizioni.
         print("   %s%s contiene un identificativo%s" % (rel, ":%d" % n if n else "", verso or " personale"))
     if forme:
-        print("identita personali: %d stringhe con la forma di un'identita' nei file che il template propaga" % len(forme))
+        dove_forme = "nel commit in preparazione" if stage else ("fra i file tracciati" if tracciati else "nei file che il template propaga")
+        print("identita personali: %d stringhe con la forma di un dato privato %s" % (len(forme), dove_forme))
     if trovate:
         dove = "fra i file tracciati" if tracciati else ("nel commit in preparazione" if stage else "nei file che il template propaga")
         print("identita personali: %d occorrenze %s; toglierle prima di committare" % (len(trovate), dove))
@@ -353,6 +398,13 @@ def autotest() -> int:
         (r / ".claude" / "rules" / "identita.md").write_text("chiave id_ed25519_qualcosa\n", encoding="utf-8")
         rc, out = esegui()
         caso("un nome di file di chiave si ferma per la sua forma", rc == 1 and "forma di un chiave" in out)
+        (r / ".claude" / "rules" / "identita.md").write_text("il vault sta in E:\\progetto-privato\\dati\n", encoding="utf-8")
+        rc, out = esegui()
+        caso("un percorso del disco privato si ferma per la sua forma", rc == 1 and "forma di un percorso privato" in out)
+        caso("il percorso non si stampa", "progetto-privato" not in out)
+        ammesse.write_text(ammesse.read_text(encoding="utf-8") + "e:\\un-progetto\n", encoding="utf-8")
+        (r / ".claude" / "rules" / "identita.md").write_text("per esempio E:\\un-progetto.\n", encoding="utf-8")
+        caso("un segnaposto dichiarato passa anche quando chiude il periodo", esegui()[0] == 0)
         (r / ".claude" / "rules" / "identita.md").write_text("pulito\n", encoding="utf-8")
         caso("tolte le forme, il perimetro torna verde", esegui()[0] == 0)
 
@@ -389,6 +441,13 @@ def autotest() -> int:
         (r / "doc.md").write_text("contatto: persona.privata@posta.example\n", encoding="utf-8")
         subprocess.run(["git", "-C", str(r), "add", "doc.md"], check=True)
         caso("--stage nell'ambito aziendale (email di lavoro) ferma", esegui(str(elenco), stage=True)[0] == 1)
+        (r / "doc.md").write_text("il vault sta in E:\\altro-privato\\dati\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(r), "add", "doc.md"], check=True)
+        rc, out = esegui(str(elenco), stage=True)
+        caso("--stage ferma un percorso privato mai censito, per la forma", rc == 1 and "forma di un percorso privato" in out)
+        caso("--stage non stampa il percorso", "altro-privato" not in out)
+        (r / "doc.md").write_text("contatto: persona.privata@posta.example\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(r), "add", "doc.md"], check=True)
         subprocess.run(["git", "-C", str(r), "config", "user.email", "io@privato.example"], check=True)
         rc, out = esegui(str(elenco), stage=True)
         caso("--stage fuori ambito senza voci di lavoro NON e' verde: esce 2", rc == NON_CONTROLLATO and "NON controllato" in out)
@@ -418,6 +477,10 @@ def autotest() -> int:
         subprocess.run(["git", "-C", str(r), "commit", "-q", "-m", "z", "--no-verify"], check=True)
         rc, out = esegui(str(elenco), tracciati=True)
         caso("fuori ambito, --tracciati trova l'identita' di lavoro", rc == 1 and "vecchio.md:1" in out and "di lavoro" in out)
+        (r / "vecchio.md").write_text("il mio vault sta in E:\\mio-progetto\\dati\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(r), "add", "vecchio.md"], check=True)
+        subprocess.run(["git", "-C", str(r), "commit", "-q", "-m", "v", "--no-verify"], check=True)
+        caso("in un repository personale il percorso del disco privato e' legittimo", esegui(str(elenco), tracciati=True)[0] == 0)
         (r / "vecchio.md").write_text("persona.privata@posta.example, che qui e' legittima\n", encoding="utf-8")
         subprocess.run(["git", "-C", str(r), "add", "vecchio.md"], check=True)
         subprocess.run(["git", "-C", str(r), "commit", "-q", "-m", "w", "--no-verify"], check=True)

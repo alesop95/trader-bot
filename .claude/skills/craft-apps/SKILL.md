@@ -64,6 +64,8 @@ Il documento passa da WordCraft, verso docx, pdf, odt, rtf, html o tex. Le slide
 
 Prima di consegnare, l'artefatto si guarda: `wordcraft-cli render doc.docx pagina.png` e `deckcraft-cli render slide.pptx --all cartella` producono le immagini da leggere. Le applicazioni sono in alpha, e un comando che esce con 0 non prova che abbia fatto ciò che si chiedeva: in WordCraft 0.8.0 tre nomi sbagliati della chiave del font sono accettati e ignorati senza errore, ed è emerso solo aprendo `word/styles.xml`. `craft-documento.py --collaudo` rifà la prova sui byte dei file prodotti.
 
+Il file di stile nomina i caratteri, ma WordCraft usa soltanto quelli installati sulla macchina: un carattere assente non produce un errore, e il documento esce con un carattere senza grazie di ripiego, che si vede solo nella pagina resa in immagine (lezione L-048 di un progetto istanziato, WordCraft 0.17.0, 2026-11-10). La riga di comando non ha un'opzione per caricare caratteri da una cartella; installarli per il solo utente, cioè il file in `%LOCALAPPDATA%/Microsoft/Windows/Fonts` e la voce in `HKCU/Software/Microsoft/Windows NT/CurrentVersion/Fonts`, senza privilegi, basta perché la conversione successiva li usi, e va detto al proprietario perché è una modifica della macchina. Con Cormorant Garamond nei titoli la u con accento grave usciva con l'accento spostato anche da una sorgente precomposta: un titolo con quella lettera si riformula.
+
 ## Passo 4 - Se l'applicazione manca
 
 Non si installa di propria iniziativa. Si chiede a GitHub lo stato di quella sola applicazione, che dice versione disponibile e peso del file per questa macchina, e si riporta all'utente con il comando per prenderla.
@@ -96,6 +98,8 @@ Prima di puntare una di queste applicazioni a una cartella, si guarda che cosa c
 ## Quando il lavoro è finito
 
 Si dichiara che cosa è stato prodotto, con quale applicazione e quale versione, e se si è passati dalla riga di comando o dal server. La fonte Markdown e il file di stile restano nel progetto, così l'artefatto si rigenera invece di ritoccarsi a mano, **finché l'artefatto non viene modificato da una persona**; quando l'artefatto ha un formato nativo, per esempio un `.deckcraft`, si conserva anche l'esportazione in un formato che si legge altrove.
+
+Una consegna fuori dal repository, per esempio una pagina sul Desktop del proprietario, è una vista e non una fonte: dichiara in fondo da quale documento del progetto è generata, e la versione precedente si elimina nello stesso giro in cui nasce la nuova, dichiarandolo, invece di archiviarla accanto. In un progetto istanziato tre pagine nate in giorni diversi sullo stesso tema erano diventate copie parallele della memoria del progetto e ne divergevano (lezione L-008, direttiva d'uso del 2026-11-10).
 
 ## Quando l'artefatto smette di essere generato
 

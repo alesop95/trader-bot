@@ -66,6 +66,38 @@ function Argomenti-Lezioni([bool]$bundle) {
     return , @("controlla")
 }
 
+# I controlli propri del progetto, dal 2026-11-11 (L-011 di un progetto istanziato): l'elenco
+# sopra e' fisso, e i controlli di allineamento dei generatori che un progetto aggiunge non
+# avevano dove stare, quindi restavano affidati a chi chiudeva; un file generato e' rimasto
+# disallineato con i controlli verdi. tools\controlli-progetto.txt ne elenca uno per riga, nome
+# dello strumento in tools\ seguito dagli argomenti separati da spazi; righe vuote e righe che
+# cominciano con il cancelletto si saltano. Uno strumento dichiarato e assente ferma il commit.
+function Leggi-ControlliProgetto([string]$percorso) {
+    $esito = @()
+    if (-not (Test-Path $percorso)) { return , $esito }
+    foreach ($riga in Get-Content $percorso -Encoding UTF8) {
+        $r = "$riga".Trim()
+        if (-not $r -or $r.StartsWith("#")) { continue }
+        $parti = @($r -split '\s+')
+        $argomenti = if ($parti.Count -gt 1) { @($parti[1..($parti.Count - 1)]) } else { @() }
+        $esito += , @{ n = $parti[0]; a = $argomenti; riga = $r }
+    }
+    return , $esito
+}
+
+# Il messaggio si valida prima dello stage, dal 2026-11-12 (L-010 di un progetto istanziato): un
+# oggetto di 74 caratteri arrivava a git commit dopo lo stage, l'hook commit-msg lo rifiutava e
+# la chiusura restava a meta'. Stesse due condizioni dell'hook .githooks/commit-msg: nessuna
+# attribuzione a un agente, oggetto di al massimo 72 caratteri. Restituisce il difetto, o vuoto.
+function Difetto-Messaggio([string]$m) {
+    $t = "$m".Trim()
+    if ($t -match '(?i)^\s*co-authored-by:|generated with .*claude|generated with .*codex|noreply@anthropic\.com|noreply@openai\.com') {
+        return "il messaggio contiene un'attribuzione a un agente, che la regola git-commands-format.md vieta"
+    }
+    if ($t.Length -gt 72) { return "l'oggetto e' di $($t.Length) caratteri, la regola ne ammette al massimo 72" }
+    return ""
+}
+
 if ($Autotest) {
     $rossi = 0
     function Caso([string]$nome, [bool]$ok) { if ($ok) { Write-Host "ok   $nome" } else { $script:rossi++; Write-Host "ROSSO $nome" } }
@@ -83,6 +115,18 @@ if ($Autotest) {
     Caso "il controllo Codex gira solo dove esiste .agents\skills" ($src -match 'sync-codex-skills\.py";[^\r\n]*serve = "\.agents\\skills"')
     $tutti = Join-Path $PSScriptRoot "allinea-tutti.ps1"
     if (Test-Path $tutti) { Caso "la passata usa la stessa condizione" ((Get-Content $tutti -Raw) -match "Esiste \`$prj '\.agents/skills'") }
+    $prova = Join-Path ([System.IO.Path]::GetTempPath()) ("controlli-progetto-" + [guid]::NewGuid() + ".txt")
+    Set-Content -Path $prova -Encoding UTF8 -Value @("# commento", "", "build-bibliography.py --check", "  indice-fonti-unico.py   --check --breve  ")
+    $cp = Leggi-ControlliProgetto $prova
+    Remove-Item $prova
+    Caso "i controlli del progetto saltano commenti e righe vuote" ($cp.Count -eq 2)
+    Caso "il nome e gli argomenti si separano sugli spazi" ($cp[0].n -eq "build-bibliography.py" -and $cp[0].a.Count -eq 1 -and $cp[1].a.Count -eq 2 -and $cp[1].a[1] -eq "--breve")
+    Caso "senza il file l'elenco e' vuoto" ((Leggi-ControlliProgetto (Join-Path $prova "assente")).Count -eq 0)
+    Caso "un oggetto di 72 caratteri passa" (-not (Difetto-Messaggio ("a" * 72)))
+    Caso "un oggetto di 73 caratteri si ferma prima dello stage" ((Difetto-Messaggio ("a" * 73)) -match "73 caratteri")
+    Caso "una firma dell'agente nel messaggio si ferma" ((Difetto-Messaggio "Aggiunta X. Generated with Claude Code") -match "attribuzione")
+    Caso "un commit rifiutato toglie lo stage" ($src -match 'git commit -m \$Messaggio\r?\n\s*if \(\$LASTEXITCODE -ne 0\) \{\s*& git reset -q')
+    Caso "i controlli validano il messaggio preparato" ($src -match 'falliti \+= "messaggio di commit"')
     Write-Host ""; Write-Host "$(if ($rossi) { 'ROSSO' } else { 'verde' }): $rossi casi falliti"
     exit $(if ($rossi) { 1 } else { 0 })
 }
@@ -241,6 +285,18 @@ if (-not $python) {
             $falliti += $c.n
         }
     }
+    $propri = Leggi-ControlliProgetto "tools\controlli-progetto.txt"
+    if ($propri.Count -gt 0) { Titolo "Controlli propri del progetto (tools\controlli-progetto.txt)" }
+    foreach ($c in $propri) {
+        $p = Join-Path "tools" $c.n
+        if (-not (Test-Path $p)) { Ko "$($c.n) dichiarato in tools\controlli-progetto.txt e assente"; $falliti += $c.n; continue }
+        $uscita = & $python $p @($c.a) 2>&1
+        if ($LASTEXITCODE -eq 0) { Ok $c.riga } else {
+            Ko "$($c.riga) (uscita $LASTEXITCODE)"
+            $uscita | Select-Object -Last 15 | ForEach-Object { Write-Host "       $_" }
+            $falliti += $c.n
+        }
+    }
 }
 
 # Le prove interne degli script PowerShell della passata, nel solo template: fino al 2026-10-20
@@ -295,6 +351,23 @@ if ($python -and (Test-Path $cultura)) {
     if ($codiceC -ne 0) { $falliti += "lint-cultura.py" }
 }
 
+# Le voci parcheggiate fuori dal registro, dal 2026-11-12 (L-006 di un progetto istanziato): una
+# voce di work-log lasciata in _notes\PENDENTE-* e' rimasta fuori dal registro per due giorni
+# perche' nessun controllo la guardava. Avvisa e non ferma: incollarla resta di chi chiude.
+$pendenti = @(Get-ChildItem "_notes" -Filter "PENDENTE-*" -File -ErrorAction SilentlyContinue)
+if ($pendenti.Count -gt 0) {
+    Titolo "Voci parcheggiate fuori dal registro"
+    $pendenti | ForEach-Object { Write-Host "   _notes\$($_.Name): da incollare nel registro a cui appartiene, poi cancellare" -ForegroundColor Yellow }
+}
+
+# Il messaggio che l'agente ha preparato si controlla qui, insieme agli altri controlli, cosi'
+# -SoloControlli lo vede prima che il proprietario lanci la chiusura (L-010, 2026-11-12).
+if (Test-Path "_notes\COMMIT-MSG.txt") {
+    $preparato = ((Get-Content "_notes\COMMIT-MSG.txt" -Encoding UTF8 | Where-Object { $_.Trim() }) | Select-Object -First 1)
+    $difettoMsg = Difetto-Messaggio "$preparato"
+    if ($difettoMsg) { Titolo "Messaggio di commit"; Write-Host "   _notes\COMMIT-MSG.txt: $difettoMsg"; $falliti += "messaggio di commit" }
+}
+
 if ($falliti.Count -gt 0) {
     Write-Host ""
     Write-Host "Controlli falliti: $($falliti -join ', '). Mi fermo prima del commit." -ForegroundColor Red
@@ -313,6 +386,8 @@ if ($cambi.Count -gt 0) {
     if (-not $Messaggio) { $Messaggio = Read-Host "   Messaggio di commit" }
     $Messaggio = "$Messaggio".Trim()
     if (-not $Messaggio) { Write-Host "Messaggio vuoto: mi fermo." -ForegroundColor Red; exit 1 }
+    $difettoMsg = Difetto-Messaggio $Messaggio
+    if ($difettoMsg) { Write-Host "Messaggio non ammesso: $difettoMsg. Niente e' stato messo in stage." -ForegroundColor Red; exit 1 }
     $nome = (& git config --local user.name); $email = (& git config --local user.email)
     if (-not $nome -or -not $email) {
         Write-Host "Identita' git locale non impostata (skill identita-git): impostare user.name e user.email del repository e rilanciare." -ForegroundColor Red
@@ -359,7 +434,13 @@ if ($cambi.Count -gt 0) {
         }
     }
     & git commit -m $Messaggio
-    if ($LASTEXITCODE -ne 0) { Write-Host "Commit rifiutato (hook o errore): correggere e rilanciare." -ForegroundColor Red; exit 1 }
+    if ($LASTEXITCODE -ne 0) {
+        & git reset -q
+        # Lo stage era vuoto prima di questa chiusura, perche' verifica-milestone si ferma su uno
+        # stage gia' presente: toglierlo riporta l'indice com'era e il rilancio riparte (L-010).
+        Write-Host "Commit rifiutato (hook o errore): stage tolto, i file restano modificati. Correggere e rilanciare." -ForegroundColor Red
+        exit 1
+    }
     if (Test-Path $fileMsg) { Remove-Item $fileMsg -Force }
     if (Test-Path "_notes/COMMIT-SCOPE.json") { Remove-Item -LiteralPath "_notes/COMMIT-SCOPE.json" -Force }
     Remove-Item -LiteralPath $snapshot -Force

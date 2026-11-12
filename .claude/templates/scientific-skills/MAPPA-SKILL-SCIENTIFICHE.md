@@ -275,4 +275,4 @@ La colonna del codice dice se la skill porta una cartella `scripts/` con program
 | `what-if-oracle` | AHK Strategies (ashrafkahoush-ux) | CC BY-NC-SA 4.0 | no | Supports structured what-if scenario analysis for research planning, experimental contingencies, and scientific project decisions. Explores favorable, reference, adverse, wild-card, contrarian, and second-order scenarios with explicit... |
 | `zarr-python` | casa | MIT | no | Stores and queries chunked N-D scientific arrays with Zarr-Python 3, including codecs, sharding, S3/GCS storage, and NumPy/Dask/Xarray integration. Use for array layout, bounded I/O, format migration, or scientific metadata preservation. |
 
-Copia letta in `C:/Users/Utente/AppData/Local/Temp/claude/E--template-claude-developing/644948a8-2f08-4e61-928e-65303aee7b29/scratchpad/kdense/repo`.
+Copia letta in una cartella temporanea di sessione, fuori dal repository.

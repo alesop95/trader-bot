@@ -24,14 +24,22 @@ CR a ogni riga. Con il base64 nessuna delle due cose puo' toccare il comando. Gl
 argomenti si citano con l'apice singolo della shell POSIX, l'unica citazione che
 non interpreta niente.
 
-Il template sulla macchina remota vive in ~/.cache/template-claude-developing,
+Il template sulla macchina remota vive in ~/.cache/<nome della cartella del template>,
 con la sua storia, perche' allinea-dal-template.py decide dalla storia git del
 template. Ci arriva come git bundle, solo quando il suo HEAD non coincide con
 quello locale. E' una copia di servizio: non e' un progetto e non si allinea.
 #>
 
 $script:SSH_OPZIONI = @('-o', 'BatchMode=yes', '-o', 'ConnectTimeout=8', '-o', 'ServerAliveInterval=15')
-$script:TPL_REMOTO = '.cache/template-claude-developing'
+# Il nome della copia remota e' quello della cartella del template locale, letto a runtime
+# (L-009 di un progetto istanziato, 2026-11-12): scritto qui come costante arrivava in ogni
+# progetto allineato, e li' il controllo delle identita' lo fermava come nome di un progetto
+# privato. Con la cartella di sempre il percorso remoto resta quello gia' in uso.
+function Cache-Template([string]$tpl) {
+  $nome = Split-Path -Leaf ($tpl.TrimEnd('\', '/'))
+  if (-not $nome -or $nome -notmatch '^[A-Za-z0-9._-]+$') { throw "nome della cartella del template non utilizzabile come percorso remoto: '$nome'" }
+  return '.cache/' + $nome
+}
 
 function Test-Remoto([string]$prj) { return $prj -match '^ssh://[^/]+/' }
 
@@ -282,10 +290,11 @@ function Parziale-Rumore([string]$p, [string]$casa, [string[]]$progetti) {
 
 # Porta il template sulla macchina allo stesso commit di quello locale e restituisce
 # il percorso assoluto della copia remota, oppure $null con il motivo in
-# $script:ErroreTemplate. Non tocca nient'altro che ~/.cache/template-claude-developing.
+# $script:ErroreTemplate. Non tocca nient'altro che la propria copia sotto ~/.cache.
 function Prepara-Template([string]$alias, [string]$tpl, [string]$tplHead) {
   $script:ErroreTemplate = ''
-  $stato = @(Esegui-Ssh $alias ('d="$HOME/' + $script:TPL_REMOTO + '"; echo "$d"; git -C "$d" rev-parse HEAD 2>/dev/null || echo ASSENTE'))
+  $remoto = Cache-Template $tpl
+  $stato = @(Esegui-Ssh $alias ('d="$HOME/' + $remoto + '"; echo "$d"; git -C "$d" rev-parse HEAD 2>/dev/null || echo ASSENTE'))
   if ($stato.Count -lt 2) { $script:ErroreTemplate = 'ssh non risponde'; return $null }
   $assoluto = $stato[0]
   if ($stato[1] -eq $tplHead) { return $assoluto }
@@ -295,8 +304,8 @@ function Prepara-Template([string]$alias, [string]$tpl, [string]$tplHead) {
     if ($LASTEXITCODE -ne 0) { $script:ErroreTemplate = 'git bundle fallito'; return $null }
   }
   $null = Esegui-Ssh $alias 'mkdir -p "$HOME/.cache"'
-  if (-not (Copia-Su $alias $bundle '.cache/template-claude-developing.bundle')) { $script:ErroreTemplate = 'scp del bundle fallito'; return $null }
-  $cmd = 'd="$HOME/' + $script:TPL_REMOTO + '"; b="$HOME/.cache/template-claude-developing.bundle"; ' +
+  if (-not (Copia-Su $alias $bundle ($remoto + '.bundle'))) { $script:ErroreTemplate = 'scp del bundle fallito'; return $null }
+  $cmd = 'd="$HOME/' + $remoto + '"; b="$HOME/' + $remoto + '.bundle"; ' +
     'if [ -d "$d/.git" ]; then git -C "$d" fetch -q "$b" HEAD; else rm -rf "$d" && git clone -q --no-checkout "$b" "$d"; fi && ' +
     'git -C "$d" checkout -q -f --detach ' + $tplHead + ' && rm -f "$b" && git -C "$d" rev-parse HEAD'
   $fine = @(Esegui-Ssh $alias $cmd)

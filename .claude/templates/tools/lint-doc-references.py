@@ -347,6 +347,17 @@ def documenti_da_leggere(radice=None):
     return unici
 
 
+def fuori_radice(token, base):
+    """Vero se il token è un percorso assoluto che non sta dentro la radice del progetto."""
+    # Un comando slash come `/riprendi` comincia con la barra e non è un percorso: un percorso
+    # assoluto POSIX qui deve avere almeno due componenti.
+    if not re.match(r"^([A-Za-z]:[\\/]|/[^/\s]+/|~[\\/])", token):
+        return False
+    radice = os.path.normcase(os.path.abspath(base)).replace("\\", "/").rstrip("/") + "/"
+    assoluto = os.path.normcase(os.path.abspath(os.path.expanduser(token.split()[0]))).replace("\\", "/") + "/"
+    return not assoluto.startswith(radice)
+
+
 def analizza(radice=None, bundle=False):
     """Ritorna il dizionario delle tre categorie e la fonte delle radici."""
     cartelle, file_radice, fonte = radici(radice)
@@ -372,8 +383,22 @@ def analizza(radice=None, bundle=False):
                 continue
             # Solo i riferimenti fra apici inversi: un percorso scritto in prosa nuda e' spesso una
             # frase, per esempio "i file in src", e produrrebbe rumore che nessuno legge.
-            for token in re.findall(r"`([^`\n]+)`", riga):
-                token = normalizza(token.strip().rstrip(".,;:)"))
+            # Dal 2026-11-12 (L-007 di un progetto istanziato): un file di ripresa che citava i file
+            # di un repository gemello li vedeva risolti su questo, e la chiusura si fermava. Un
+            # percorso assoluto fuori da questa radice dichiara che la frase parla di un altro
+            # repository: i percorsi relativi che lo seguono nella stessa frase sono suoi.
+            esterno, fine_precedente = False, 0
+            for trovato in re.finditer(r"`([^`\n]+)`", riga):
+                if re.search(r"[.!?](\s|$)", riga[fine_precedente:trovato.start()]):
+                    esterno = False
+                fine_precedente = trovato.end()
+                grezzo = trovato.group(1).strip().rstrip(".,;:)")
+                if fuori_radice(grezzo, base):
+                    esterno = True
+                    continue
+                if esterno:
+                    continue
+                token = normalizza(grezzo)
                 if not e_percorso(token, cartelle, file_radice):
                     continue
                 if os.path.exists(os.path.join(base, token)):
@@ -551,6 +576,17 @@ def self_test():
               "tools/verifica-schede.py" in [t for _d, _n, t in trovati["vivo"]], str(trovati))
         trovati_b, _f, _c = analizza(tmp, bundle=True)
         prova("nel bundle i propagati non si distinguono", not trovati_b["propagato"], str(trovati_b["propagato"]))
+        altrove = os.path.join(os.path.dirname(tmp), "un-altro-repository").replace("\\", "/")
+        scrivi("CLAUDE.md", "Nel gemello `%s` ho toccato `src/del-gemello.ts`. Qui manca `src/di-qui.ts`.\n"
+                            "Dentro `%s` manca `src/assoluto-interno.ts`.\n"
+                            "Con `/riprendi` si legge `src/dopo-comando.ts`.\n" % (altrove, tmp.replace("\\", "/")))
+        vivi = [t for _d, _n, t in analizza(tmp)[0]["vivo"]]
+        prova("un percorso relativo dopo una radice assoluta diversa è dell'altro repository",
+              "src/del-gemello.ts" not in vivi, str(vivi))
+        prova("la frase successiva torna a parlare di questo repository", "src/di-qui.ts" in vivi, str(vivi))
+        prova("negativo: la radice assoluta di questo repository non esenta niente",
+              "src/assoluto-interno.ts" in vivi, str(vivi))
+        prova("negativo: un comando slash non è una radice assoluta", "src/dopo-comando.ts" in vivi, str(vivi))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

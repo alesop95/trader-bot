@@ -1,6 +1,6 @@
 """Prepara da codice gli estratti di un lotto di documenti, perche' un modello economico li schedi.
 
-Nato in un progetto istanziato il 2026-10-06 (diy-2way-monitors-home, MS-212 e MS-213), dove
+Nato in un progetto istanziato il 2026-10-06 (MS-212 e MS-213), dove
 le schede di fonte di un corpus di migliaia di documenti convertiti si scrivono con il modello
 economico. Il lavoro meccanico, cioe' scegliere i documenti, escludere quelli personali e tagliare
 lo scheletro e le prime parole, resta nel codice; il modello legge soltanto gli estratti.

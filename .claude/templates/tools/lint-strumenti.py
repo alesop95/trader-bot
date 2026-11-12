@@ -27,7 +27,7 @@ cerca prima l'eseguibile sul PATH, poi il modulo dell'interprete corrente.
 
 Uso:
     python .claude/templates/tools/lint-strumenti.py
-    python .claude/templates/tools/lint-strumenti.py --radice E:/template-claude-developing
+    python .claude/templates/tools/lint-strumenti.py --radice <percorso-del-template>
 
 Esce con 0 senza riscontri, con 1 se ce ne sono o se ruff manca.
 """

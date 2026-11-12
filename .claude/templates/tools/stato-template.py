@@ -30,7 +30,12 @@ def individua(progetto, esplicito=None):
     candidates = [esplicito, os.environ.get("PROJECT_TEMPLATE_ROOT")]
     if local.is_file():
         candidates.append(local.read_text(encoding="utf-8").strip())
-    candidates.append(Path(progetto).resolve().parent / "template-claude-developing")
+    # Dal 2026-11-12 (L-009 di un progetto istanziato) il nome della cartella del template non
+    # sta piu' scritto qui, perche' questo file arriva in ogni progetto: l'indirizzo si legge
+    # da ~/.config/template-claude-path.txt, lo stesso file che usa il controllo delle identita'.
+    indirizzo = Path.home() / ".config" / "template-claude-path.txt"
+    if indirizzo.is_file():
+        candidates.append(indirizzo.read_text(encoding="utf-8-sig").strip())
     for candidate in candidates:
         if candidate and (Path(candidate) / ".claude/PROJECT-SYSTEM.md").is_file():
             return Path(candidate).resolve()

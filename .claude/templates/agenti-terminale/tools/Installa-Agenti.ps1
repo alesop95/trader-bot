@@ -154,7 +154,10 @@ if (-not $SoloCodex) {
     # non c'e' un URL da tenere aggiornato a mano.
     if (-not $RemotoTemplate) {
       $mio = (& git -C (Split-Path -Parent $PSScriptRoot) remote get-url origin 2>$null)
-      if ($mio) { $RemotoTemplate = ($mio -replace '[^/:]+\.git$', 'template-claude-developing.git') }
+      # Il nome del repository e' quello della cartella attesa in -Template, letto a runtime
+      # (L-009 di un progetto istanziato, 2026-11-12), invece di una costante propagata.
+      $nomeTpl = Split-Path -Leaf ("$Template".TrimEnd('\', '/'))
+      if ($mio -and $nomeTpl) { $RemotoTemplate = ($mio -replace '[^/:]+\.git$', ($nomeTpl + '.git')) }
     }
     if (-not $RemotoTemplate) {
       Nota '  Impossibile derivare il remoto del template dal remoto di questo repository.' 'Red'

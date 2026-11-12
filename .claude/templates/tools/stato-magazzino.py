@@ -439,7 +439,7 @@ def autotest():
         atteso('processo non leggibile: l\'ipotesi guarda tutti gli account', 'eeeeeeee-5' in ids666 and l2[666]['ambito'] == 'ipotesi')
         pz2 = protezione(list(l2.values()))
         atteso('processo leggibile: progetto registrato per scratchpad e verbali', 'e--prova' in pz2['slug_comune'] and 'accountp|e--prova' in pz2['slug_account'])
-        atteso('slug: ogni carattere non alfanumerico diventa un trattino', slug_di('E:\\retrogame-mod-pok-dev\\') == 'E--retrogame-mod-pok-dev' and slug_di('/var/tmp/x y') == '-var-tmp-x-y')
+        atteso('slug: ogni carattere non alfanumerico diventa un trattino', slug_di('E:\\un-progetto\\') == 'E--un-progetto' and slug_di('/var/tmp/x y') == '-var-tmp-x-y')
         tutti = {10: {'ppid': 1, 'avvio': 0, 'args': '/home/u/.local/bin/claude --resume'},
                  11: {'ppid': 10, 'avvio': 0, 'args': 'bash session-end-wipe.sh'},
                  12: {'ppid': 1, 'avvio': 0, 'args': 'node /usr/lib/node_modules/@anthropic-ai/claude-code/cli.js'},

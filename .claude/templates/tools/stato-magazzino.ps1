@@ -258,7 +258,7 @@ function Read-Codex($radice) {
 # dall'ambiente e la cartella corrente dai parametri di processo. Aggiunto il 2026-10-09:
 # il PID 13528, una sessione viva senza file di sessione, era attribuito per ipotesi a tre
 # verbali di altri account, mentre il processo stesso dichiarava account3 e la cartella
-# E:\retrogame-mod-pok-dev. Si apre il processo con i soli diritti di interrogazione e di
+# E:\un-progetto. Si apre il processo con i soli diritti di interrogazione e di
 # lettura della memoria, possibili sui processi dello stesso utente; se non riesce, il
 # legame torna all'ipotesi.
 if (-not ('StatoMagazzino.Peb' -as [type])) {
@@ -312,7 +312,7 @@ function Get-ContestoProcesso([int]$pidP) {
 }
 # Lo slug con cui Claude Code nomina la cartella di un progetto: ogni carattere che non e'
 # una lettera o una cifra diventa un trattino. Verificato sugli slug presenti sulla macchina,
-# per esempio 'E:\retrogame-mod-pok-dev' -> 'E--retrogame-mod-pok-dev'.
+# per esempio 'E:\un-progetto' -> 'E--un-progetto'.
 function ConvertTo-Slug($percorso) { return (([string]$percorso).TrimEnd('\', '/') -replace '[^A-Za-z0-9]', '-') }
 
 # Stesso criterio della guardia 0.4 di session-end-wipe.ps1, cosi' che i PID mostrati qui

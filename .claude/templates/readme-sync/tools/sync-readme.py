@@ -87,6 +87,27 @@ def managed_block(markdown: str, start: str, end: str, content: str) -> str:
     return f"{before}{start}\n{content}\n{end}{after}"
 
 
+def lost_headings(original: str, proposed: str) -> list[str]:
+    """Headings of the original that the rewrite would drop.
+
+    A managed block replaces everything between its markers, so prose written by hand
+    inside a block, typically a section appended after the start marker, disappears on
+    --write with no error. Headings are never generated inside these blocks, so a heading
+    that would vanish is authored text: the run stops instead of deleting it (lesson
+    L-010 of an instantiated project, 2026-11-11, where 340 lines were lost this way).
+    """
+    remaining: dict[str, int] = {}
+    for line in proposed.splitlines():
+        remaining[line] = remaining.get(line, 0) + 1
+    lost = []
+    for line in original.splitlines():
+        if remaining.get(line, 0) > 0:
+            remaining[line] -= 1
+        elif re.match(r"^#{1,6} ", line):
+            lost.append(line)
+    return lost
+
+
 def ensure_toc(markdown: str) -> str:
     if TOC_START in markdown or TOC_END in markdown:
         return markdown
@@ -157,7 +178,7 @@ def validate_links(markdown: str, root: Path) -> list[str]:
     return sorted(set(errors))
 
 
-def sync(root: Path, write: bool, bundle: bool) -> int:
+def sync(root: Path, write: bool, bundle: bool, forza: bool = False) -> int:
     readme = root / "README.md"
     if not readme.is_file():
         print(f"README mancante: {readme}", file=sys.stderr)
@@ -178,6 +199,13 @@ def sync(root: Path, write: bool, bundle: bool) -> int:
     if proposed == original:
         print("README allineato; link locali validi")
         return 0
+    lost = lost_headings(original, proposed)
+    if lost and not forza:
+        print("sync-readme: FERMO, la riscrittura dei blocchi generati toglierebbe titoli scritti a mano:", file=sys.stderr)
+        for line in lost:
+            print(f"    {line}", file=sys.stderr)
+        print("Spostare quelle sezioni fuori dai marcatori; --forza procede comunque. Nessun file scritto.", file=sys.stderr)
+        return 2
     if not write:
         print("README da aggiornare: eseguire sync-readme.py --write" + (" --bundle" if bundle else ""), file=sys.stderr)
         return 1
@@ -195,10 +223,12 @@ def main() -> int:
     parser.add_argument("--write", action="store_true", help="Aggiorna i blocchi generati")
     parser.add_argument("--check", action="store_true", help="Verifica senza scrivere (default)")
     parser.add_argument("--bundle", action="store_true", help="Genera anche l'indice dei pacchetti del template")
+    parser.add_argument("--forza", action="store_true",
+                        help="Scrive anche se sparirebbero titoli scritti dentro un blocco generato")
     args = parser.parse_args()
     if args.write and args.check:
         parser.error("--write e --check sono alternativi")
-    return sync(args.root.resolve(), args.write, args.bundle)
+    return sync(args.root.resolve(), args.write, args.bundle, args.forza)
 
 
 if __name__ == "__main__":

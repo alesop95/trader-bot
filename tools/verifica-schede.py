@@ -58,7 +58,10 @@ def leggi_frontmatter(testo):
     if len(parti) < 3:
         return None
     fm = parti[1]
-    ancora = re.search(r"^last-verified(?:-commit)?:[ \t]*(\S+)", fm, re.MULTILINE)
+    # Una scheda può avere sia `last-verified:` (una data, con nota) sia `last-verified-commit:`:
+    # l'ancora è il commit quando c'è, e la data vale solo dove manca.
+    ancora = (re.search(r"^last-verified-commit:[ \t]*(\S+)", fm, re.MULTILINE)
+              or re.search(r"^last-verified:[ \t]*(\S+)", fm, re.MULTILINE))
     percorsi = None
     in_linea = re.search(r"^covers-paths:\s*\[(.*?)\]", fm, re.MULTILINE | re.DOTALL)
     if in_linea:
@@ -141,6 +144,8 @@ def self_test():
     fm = leggi_frontmatter("---\ncovers-paths: []\n---\n")
     prova("una lista vuota non è assenza di lista", fm == ([], None), str(fm))
     prova("un file senza frontmatter non è una scheda", leggi_frontmatter("# titolo\n") is None)
+    fm = leggi_frontmatter("---\ncovers-paths: [a.ts]\nlast-verified: 2026-06-24 (nota)\nlast-verified-commit: abc\n---\n")
+    prova("con data e commit vale il commit, non la data", fm == (["a.ts"], "abc"), str(fm))
 
     def tutto(p):
         return True

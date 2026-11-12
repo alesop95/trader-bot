@@ -31,6 +31,17 @@ class SyncReadmeTests(unittest.TestCase):
     def write_readme(self, text: str) -> None:
         (self.root / "README.md").write_text(text, encoding="utf-8")
 
+    def test_heading_inside_a_managed_block_stops_the_rewrite(self) -> None:
+        source = ("# Progetto\n\n## Indice\n\n" + MODULE.TOC_START + "\n- vecchio\n\n## Sezione scritta a mano\n\nTesto.\n"
+                  + MODULE.TOC_END + "\n\n## Uso\n\nAltro.\n")
+        self.write_readme(source)
+        self.assertEqual(MODULE.sync(self.root, True, False), 2)
+        self.assertEqual((self.root / "README.md").read_text(encoding="utf-8"), source)
+        self.assertEqual(MODULE.sync(self.root, False, False), 2)
+        rewritten = MODULE.managed_block(source, MODULE.TOC_START, MODULE.TOC_END, "- nuovo")
+        self.assertEqual(MODULE.lost_headings(source, rewritten), ["## Sezione scritta a mano"])
+        self.assertEqual(MODULE.lost_headings(rewritten, rewritten), [])
+
     def test_write_is_idempotent_and_preserves_encoding_shape(self) -> None:
         (self.root / "guide.md").write_text("Guida", encoding="utf-8")
         source = "# Progetto\r\n\r\nDescrizione.\r\n\r\n## Uso\r\n\r\n[Guida](guide.md)\r\n\r\n## Uso\r\n\r\nAltro.\r\n"

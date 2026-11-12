@@ -65,8 +65,31 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$INIZIO = '# >>> comandi agenti (windows-status) >>>'
-$FINE = '# <<< comandi agenti (windows-status) <<<'
+$INIZIO = '# >>> comandi agenti >>>'
+$FINE = '# <<< comandi agenti <<<'
+
+# Il marcatore delimita il blocco generato dentro il profilo. Le versioni
+# precedenti vi scrivevano un'etichetta fra parentesi: un profilo installato
+# allora porta quella forma, e senza riconoscerla il blocco vecchio resterebbe
+# orfano mentre il nuovo finirebbe in coda, cioe' i comandi verrebbero definiti
+# due volte e in PowerShell vincerebbe l'ultima definizione. La forma vecchia si
+# riconosce con una espressione regolare invece che per confronto letterale, e il
+# testo letto si normalizza subito, cosi' tutto il resto dello script continua a
+# ragionare su un marcatore solo.
+#
+# Gli spazi si scrivono [ \t] e non \s, e la riga finisce con un lookahead invece
+# che con l'ancora $, perche' \s comprende il fine riga: in modo Multiline la coda
+# greedy se lo mangiava e la sostituzione non lo rimetteva, cosi' il profilo
+# perdeva due byte a ogni giro e l'installazione non era piu' idempotente. Il
+# lookahead riconosce la fine della riga senza consumarla, quindi il terminatore
+# resta quello che era, CRLF o LF che sia.
+$RX_MARCATORE_INIZIO = '^#[ \t]*>>>[ \t]*comandi agenti([ \t]*\([^)]*\))?[ \t]*>>>[ \t]*(?=\r?\n|$)'
+$RX_MARCATORE_FINE = '^#[ \t]*<<<[ \t]*comandi agenti([ \t]*\([^)]*\))?[ \t]*<<<[ \t]*(?=\r?\n|$)'
+function Normalizza-Marcatore($testo) {
+  if (-not $testo) { return $testo }
+  $t = [regex]::Replace($testo, $RX_MARCATORE_INIZIO, $INIZIO, 'Multiline')
+  return [regex]::Replace($t, $RX_MARCATORE_FINE, $FINE, 'Multiline')
+}
 
 function Nota($t, $c) { Write-Host $t -ForegroundColor $c }
 
@@ -150,6 +173,7 @@ if ($Verifica) {
   Nota '' 'Gray'
   if (Test-Path -LiteralPath $Profilo) {
     $att = Get-Content -LiteralPath $Profilo -Raw -Encoding UTF8
+    $att = Normalizza-Marcatore $att
     if ($att -match [regex]::Escape($INIZIO)) { Nota 'Nel profilo esiste gia un blocco generato: verrebbe SOSTITUITO.' 'Yellow' }
     else { Nota 'Nel profilo non c e ancora un blocco generato: verrebbe AGGIUNTO in coda.' 'Yellow' }
     $fuori = @(Select-String -LiteralPath $Profilo -Pattern '^\s*function\s+(claude|codex)-account\d+' -ErrorAction SilentlyContinue |
@@ -174,6 +198,7 @@ if (Test-Path -LiteralPath $Profilo) {
   Copy-Item -LiteralPath $Profilo -Destination $backup -Force
   Nota ("Copia del profilo: {0}" -f $backup) 'DarkGray'
   $attuale = Get-Content -LiteralPath $Profilo -Raw -Encoding UTF8
+  $attuale = Normalizza-Marcatore $attuale
 }
 
 # Le definizioni precedenti, scritte a mano fuori dal blocco, farebbero ombra a

@@ -107,6 +107,8 @@ Select-String -Path .\script.ps1 -Pattern '[^\x00-\x7F]' -Encoding utf8
 $e = $null; [void][System.Management.Automation.Language.Parser]::ParseFile('.\script.ps1', [ref]$null, [ref]$e); $e
 ```
 
+**Script operativi con impronte.** Il preflight incorporato va eseguito nello stesso interprete usato dall'operatore prima di consegnare il comando. Il solo controllo sintattico e un hash calcolato separatamente non verificano che la costante nello script sia corretta. La modalità di prova si ferma prima di copie, SSH e azioni; quando un hash differisce mostra valore atteso e rilevato. Un carattere in più in una costante ha causato uno stop evitabile pur con il file locale invariato.
+
 ## Se si vuole comunque un hook di Codex: tre cose che non si vedono
 
 Non serve per la pulizia, per le ragioni già dette. Ma il meccanismo esiste, prima o poi qualcuno lo userà per altro, e queste tre cose si pagano una volta ciascuna.

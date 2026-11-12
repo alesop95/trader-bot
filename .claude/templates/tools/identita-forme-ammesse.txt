@@ -29,3 +29,43 @@ git@servizio.example
 alpha@example.test
 other@example.test
 fixture@example.invalid
+
+# Aggiunte il 2026-11-10: i segnaposto del disco privato. Da oggi un percorso che comincia
+# per E: si ferma per la sua forma, come un indirizzo, perché dice che esiste un progetto
+# privato anche quando quel nome non sta in nessun elenco: è così che un progetto creato
+# domani resta coperto senza che nessuno aggiorni niente. Questi sono i segnaposto generici
+# già usati negli esempi del template, che non nominano niente di reale.
+e:/x
+e:\x
+e:/p
+e:\p
+e:/n
+e:\n
+e:/r
+e:\r
+e:/uno
+e:\uno
+e:/due
+e:\due
+e:/tre
+e:\tre
+e:/opt
+e:\opt
+e:/progetto
+e:\progetto
+e:/progetti
+e:\progetti
+e:/prova
+e:\prova
+e:/percorso
+e:\percorso
+e:/repo
+e:\repo
+e:/un-progetto
+e:\un-progetto
+e:/mio-progetto
+e:\mio-progetto
+e:/altro-progetto
+e:\altro-progetto
+e:/nome-progetto
+e:\nome-progetto

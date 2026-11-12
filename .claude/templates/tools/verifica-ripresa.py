@@ -529,7 +529,39 @@ def confronta(radice=None):
                     "sessione stava facendo quando è caduta."
                     % (adesso["modificati"], adesso["non_tracciati"]))
 
+    for nome, titolo in note_parcheggiate(radice):
+        note.append("debito di memoria aperto: _notes/" + nome + (" («" + titolo + "»)" if titolo else "") +
+                    " è una voce parcheggiata che aspetta di entrare nel registro a cui appartiene; "
+                    "si incolla lì e poi si cancella la nota.")
+
     return divergenze, note
+
+
+def note_parcheggiate(radice=None):
+    """Le note `_notes/PENDENTE-*`, cioè voci di registro scritte fuori dal registro.
+
+    Dal 2026-11-12 (L-006 di un progetto istanziato): una voce di work-log parcheggiata sotto
+    `_notes/` perché un'altra sessione aveva il registro aperto è rimasta fuori per due giorni,
+    dopo che quella sessione aveva committato anche i file a cui la voce apparteneva. Nessun
+    controllo guardava le note parcheggiate. Ritorna (nome, prima riga non vuota)."""
+    cartella = os.path.join(radice or ".", "_notes")
+    esito = []
+    if not os.path.isdir(cartella):
+        return esito
+    for nome in sorted(os.listdir(cartella)):
+        percorso = os.path.join(cartella, nome)
+        if not nome.startswith("PENDENTE-") or not os.path.isfile(percorso):
+            continue
+        titolo = ""
+        try:
+            for riga in io.open(percorso, encoding="utf-8", errors="replace"):
+                if riga.strip():
+                    titolo = riga.strip().lstrip("# ").strip()[:80]
+                    break
+        except OSError:
+            pass
+        esito.append((nome, titolo))
+    return esito
 
 
 # ------------------------------------------------------------------------------------------
@@ -739,6 +771,19 @@ def self_test():
               d and d["commit"] == "abc123", str(d))
         prova("negativo: un'impronta senza i campi che servono non si legge a metà",
               leggi_impronta(APERTURA + "\ncommit: abc\n" + CHIUSURA) is None, "")
+
+        # Una voce parcheggiata fuori dal registro è un debito che la ripresa deve nominare.
+        div, note = confronta(radice=tmp)
+        prova("negativo: senza note parcheggiate non si segnala nessun debito",
+              not any("debito di memoria" in n for n in note), str(note))
+        io.open(os.path.join(tmp, "_notes", "PENDENTE-voce-worklog.md"), "w", encoding="utf-8").write(
+            "\n# Voce del 10 novembre\n\ntesto\n")
+        io.open(os.path.join(tmp, "_notes", "appunti-PENDENTE.md"), "w", encoding="utf-8").write("altro\n")
+        div, note = confronta(radice=tmp)
+        debiti = [n for n in note if "debito di memoria" in n]
+        prova("una nota parcheggiata si segnala con nome e titolo",
+              len(debiti) == 1 and "PENDENTE-voce-worklog.md" in debiti[0] and "Voce del 10 novembre" in debiti[0],
+              str(note))
     finally:
         if tmp:
             import shutil as _s

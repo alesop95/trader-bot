@@ -63,6 +63,20 @@
     "dove": ".claude/rules/git-commands-format.md e .claude/norme/git-commands-format.md"
   },
   {
+    "progetto": "51462580c4f1",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-11-11",
+    "dove": ".claude/templates/tools/rigenera_sicuro.py (nuovo), readme-sync/tools/sync-readme.py (fermo sui titoli tolti, con prova), .claude/rules/chat-non-e-memoria.md (presidio)"
+  },
+  {
+    "progetto": "51462580c4f1",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-11-11",
+    "dove": ".claude/templates/tools/chiudi-sessione.ps1 e chiudi-sessione.sh (tools/controlli-progetto.txt, con prova -Autotest), .claude/rules/chat-non-e-memoria.md"
+  },
+  {
     "progetto": "71947b5a11ed",
     "id": "L-001",
     "commit": "",
@@ -75,6 +89,13 @@
     "commit": "",
     "data": "2026-10-28",
     "dove": "due interventi: .claude/templates/anonymization/patterns.example.json, la chiave nomi_propri dichiara anche i nomi di progetto e porta la taratura misurata (5.979 riscontri con i token singoli contro 16 con i nomi completi); .claude/templates/anonymization/README.md, il controllo si esegue anche nel template perche i valori possono vivere li e una bonifica a valle e lavoro perso"
+  },
+  {
+    "progetto": "76b1da65f681",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: una scrittura da script dichiara lo stato che deve risultare"
   },
   {
     "progetto": "7bdce874415c",
@@ -406,6 +427,62 @@
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: spiegare i messaggi normali ambigui prima della procedura, distinguendoli dai guasti."
   },
   {
+    "progetto": "7bdce874415c",
+    "id": "L-048",
+    "commit": "d915d1a",
+    "data": "2026-11-12",
+    "dove": "nomi dei progetti privati tolti dai file propagati in d915d1a, controllo per forma esteso in e9acf12"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-049",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/rules/git-commands-format.md e .claude/norme/git-commands-format.md: il divieto di attribuzione vale anche per gh; controllo sul corpo passato a gh non attuato"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-050",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/templates/tools/misura-istruzioni.py: crescita di ogni regola sempre attiva su una finestra di giorni, letta da git"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-051",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/rules/git-commands-format.md, .claude/norme/git-commands-format.md e .claude/skills/prove-che-misurano/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-052",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: una procedura mai eseguita è un'ipotesi"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-053",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md: rilascio di un sito generato in anticipo"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-054",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md: il codice viaggia con il rilascio, i contenuti no"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-055",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md: il giorno del passaggio contiene solo ciò che non si poteva fare prima"
+  },
+  {
     "progetto": "8244a68c44aa",
     "id": "L-001",
     "commit": "",
@@ -481,6 +558,13 @@
     "commit": "",
     "data": "2026-10-20",
     "dove": "templates/tools/chiudi-sessione.ps1: @( ) attorno all'if degli argomenti delle lezioni, lo splat di un solo argomento non perde l'array"
+  },
+  {
+    "progetto": "86a83b3800c7",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/templates/agenti-terminale/README.md: preflight nello stesso interprete e hash atteso/rilevato"
   },
   {
     "progetto": "90c4372dac0a",
@@ -945,6 +1029,27 @@
     "dove": ".claude/templates/grc-skills/skills/soc2/.md-unwrap-ignore e grc-skills.py autotest: stesso difetto di L-040, prova del marcatore su tutte le skill assorbite."
   },
   {
+    "progetto": "9546cca6109b",
+    "id": "L-048",
+    "commit": "ce1bacb",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/craft-apps/SKILL.md: i caratteri dello stile devono essere installati; il controllo preventivo in craft-documento.py non è attuato"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-049",
+    "commit": "ce1bacb",
+    "data": "2026-11-12",
+    "dove": ".claude/templates/tools/verifica-schede.py: l'ancora è last-verified-commit quando c'è, con prova nel self-test"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-050",
+    "commit": "ce1bacb",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: una dipendenza importata solo dal punto d'ingresso si prova con la build"
+  },
+  {
     "progetto": "9781581909d7",
     "id": "L-001",
     "commit": "",
@@ -978,6 +1083,41 @@
     "commit": "",
     "data": "2026-10-20",
     "dove": "templates/tools/lint-doc-references.py: categoria propagato, i documenti scritti dall'allineamento non fermano la chiusura di un progetto"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/templates/tools/verifica-ripresa.py, chiudi-sessione.ps1 e chiudi-sessione.sh: le note _notes/PENDENTE-* si segnalano; convenzione in .claude/norme/git-commands-format.md"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/templates/tools/lint-doc-references.py: un percorso assoluto di radice diversa rende esterni i riferimenti relativi della stessa frase"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/craft-apps/SKILL.md: una consegna fuori dal repository dichiara la fonte e sostituisce la precedente"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-009",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": "nome del template tolto dai file propagati: trasporto-ssh.ps1 e Installa-Agenti.ps1 lo leggono a runtime dalla cartella, stato-template.py da ~/.config/template-claude-path.txt, installa-chiudi.sh riconosce il marcatore per forma; 19 occorrenze diventate 0 con l'elenco di macchina"
+  },
+  {
+    "progetto": "9781581909d7",
+    "id": "L-010",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/templates/tools/chiudi-sessione.ps1 e chiudi-sessione.sh: messaggio validato prima dello stage e nei controlli, stage tolto dopo un commit rifiutato"
   },
   {
     "progetto": "ae8dd2775ccf",
@@ -1169,6 +1309,20 @@
     "dove": ".claude/templates/lavoro-a-lotti/rules/lavoro-a-lotti.md e README.md del pacchetto"
   },
   {
+    "progetto": "bae518523f0d",
+    "id": "L-024",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: guasto latente piantato da un aggiornamento automatico, colpa attribuita all'innesco, riparazione ancorata a una versione che scade."
+  },
+  {
+    "progetto": "bae518523f0d",
+    "id": "L-025",
+    "commit": "",
+    "data": "2026-11-10",
+    "dove": ".claude/PROJECT-SYSTEM.md sezione 24: misurare il margine dei progetti prima di far crescere una regola sempre attiva; .claude/rules/security-permissions.md alleggerita di 1667 caratteri spostando due sezioni in .claude/norme/security-permissions.md."
+  },
+  {
     "progetto": "f00655740f68",
     "id": "L-001",
     "commit": "",
@@ -1188,5 +1342,26 @@
     "commit": "",
     "data": "2026-11-04",
     "dove": ".claude/norme/git-commands-format.md"
+  },
+  {
+    "progetto": "f00655740f68",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: esclusione relativa alla radice distinta da quella a ogni profondità, inventario della copia confrontato con l'albero sorgente"
+  },
+  {
+    "progetto": "f00655740f68",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: su Windows un discendente che trattiene la pipe tiene il chiamante oltre il timeout, la prova misura il ritorno effettivo"
+  },
+  {
+    "progetto": "fe9dbb2ce7fe",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-12",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: una scrittura da script dichiara lo stato che deve risultare"
   }
 ]
