@@ -603,5 +603,50 @@ class Somiglianza(unittest.TestCase):
                         self.assertEqual(q, piena)
 
 
+class ConsegnaSegnalataAlProgetto(BaseDelMerge):
+    """Dal 2026-11-12. La passata tiene il proprio blocco nel template, dove il progetto non lo
+    vede: una sessione aperta nel progetto poteva lanciare `chiudi` prima di
+    `chiudi-allineamento` e committare i file del template con il proprio lavoro. La corsa lascia
+    nella cartella di git del progetto l'elenco di ciò che ha scritto, e lo strumento del
+    perimetro di `chiudi` si ferma se il commit ne comprende uno."""
+
+    def progetto_git(self):
+        for args in (("init", "-q", "-b", "main"), ("config", "user.name", "prova"),
+                     ("config", "user.email", "prova@example.invalid")):
+            subprocess.run(["git", "-C", str(self.prj), *args], check=True, capture_output=True)
+        (self.prj / "proprio.txt").write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(self.prj), "add", "-A"], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(self.prj), "commit", "-q", "-m", "Base"], check=True, capture_output=True)
+
+    def perimetro(self):
+        return subprocess.run([sys.executable, str(STRUMENTO.with_name("verifica-milestone.py")),
+                               "--radice", str(self.prj)], capture_output=True, text=True, encoding="utf-8")
+
+    def test_la_corsa_lascia_l_elenco_e_chiudi_si_ferma(self):
+        self.commit(righe("riga", 6), "Regola")
+        self.progetto_git()
+        self.assertEqual(self.allinea()["esito"], "NUOVO")
+        marcatore = self.prj / ".git" / "allineamento-in-sospeso.json"
+        self.assertTrue(marcatore.is_file(), self.uscita)
+        self.assertIn(REGOLA, json.loads(marcatore.read_text(encoding="utf-8"))["file"])
+        r = self.perimetro()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("chiudi-allineamento", r.stderr)
+
+    def test_negativo_senza_consegna_chiudi_non_si_ferma(self):
+        self.progetto_git()
+        (self.prj / "proprio.txt").write_text("lavoro della sessione\n", encoding="utf-8")
+        r = self.perimetro()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertFalse((self.prj / ".git" / "allineamento-in-sospeso.json").exists())
+
+    def test_una_corsa_a_vuoto_non_lascia_l_elenco(self):
+        self.commit(righe("riga", 6), "Regola")
+        self.progetto_git()
+        subprocess.run([sys.executable, str(STRUMENTO), "--template", str(self.tpl), "--progetto", str(self.prj)],
+                       capture_output=True, text=True)
+        self.assertFalse((self.prj / ".git" / "allineamento-in-sospeso.json").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

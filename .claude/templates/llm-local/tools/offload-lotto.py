@@ -35,7 +35,21 @@ def chiedi(base_url, model, api_key, prompt, max_tokens):
                                           "Authorization": f"Bearer {api_key}"})
     with urllib.request.urlopen(req, timeout=300) as resp:
         d = json.load(resp)
-    return d["choices"][0]["message"]["content"]
+    return risposta_di(d)
+
+
+def risposta_di(d):
+    """Il testo della risposta e se e' stata tagliata prima di cominciare.
+
+    Dal 2026-11-12. Un modello che ragiona prima di rispondere spende i token nel ragionamento:
+    con un tetto basso il servizio restituisce un testo vuoto e `finish_reason` uguale a
+    `length`. Misurato quel giorno su un modello da 14 miliardi di parametri servito da Ollama:
+    0 risposte giuste su 12 con 24 token, 12 su 12 con 800. Lo zero non misurava il modello ma
+    il tetto, e una risposta vuota contata come sbagliata ha lo stesso aspetto di un modello
+    scarso. Qui il caso si riconosce e si conta a parte."""
+    scelta = d["choices"][0]
+    testo = scelta["message"].get("content") or ""
+    return testo, (not testo.strip() and scelta.get("finish_reason") == "length")
 
 
 def id_gia_fatti(percorso):
@@ -47,6 +61,9 @@ def id_gia_fatti(percorso):
                 if not r:
                     continue
                 try:
+                    # Una risposta tagliata non e' un elemento fatto: alla ripresa si rifa'.
+                    if json.loads(r).get("tagliata"):
+                        continue
                     fatti.add(json.loads(r)["id"])
                 except (json.JSONDecodeError, KeyError):
                     continue
@@ -78,12 +95,17 @@ def main():
     print(f"lotto: {len(elementi)} elementi, {len(fatti)} gia' fatti, {len(da_fare)} da fare", file=sys.stderr)
 
     t0 = time.time()
+    tagliate = 0
     with open(a.uscita, "a", encoding="utf-8") as out:
         for n, el in enumerate(da_fare, 1):
             riga = dict(el)
             try:
-                riga["risposta"] = chiedi(a.base_url, a.model, a.api_key, el["prompt"], a.max_tokens).strip()
+                testo, tagliata = chiedi(a.base_url, a.model, a.api_key, el["prompt"], a.max_tokens)
+                riga["risposta"] = testo.strip()
                 riga["modello"] = a.model
+                if tagliata:
+                    riga["tagliata"] = True
+                    tagliate += 1
             except (urllib.error.URLError, KeyError, TimeoutError) as e:
                 riga["risposta"] = None
                 riga["errore"] = str(e)
@@ -93,6 +115,10 @@ def main():
                 dt = time.time() - t0
                 print(f"  {n}/{len(da_fare)} in {dt:.0f}s ({n/dt:.2f} elem/s)", file=sys.stderr)
     print("fatto. Esiti in:", a.uscita, file=sys.stderr)
+    if tagliate:
+        print(f"ATTENZIONE: {tagliate} risposte vuote perche' il tetto di {a.max_tokens} token e' finito prima della "
+              "risposta, tipico di un modello che ragiona. Sono marcate 'tagliata' e alla prossima corsa si rifanno: "
+              "rilanciare con --max-tokens piu' alto. Nel file l'ultima riga di un id e' quella che vale.", file=sys.stderr)
     return 0
 
 

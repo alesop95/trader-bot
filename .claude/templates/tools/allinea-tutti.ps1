@@ -691,6 +691,16 @@ try {
             $o.avvisi += 'carico istruzioni' + $(if ($causa) { ": $($causa.Line.Trim())" } else { ' oltre soglia' })
           }
         }
+        # Dal 2026-11-12 (L-004 di un progetto istanziato): quando il controllo delle identita' si
+        # estende, cio' che e' entrato prima in un progetto non lo vede nessun commit finche' quel
+        # file non cambia. La passata lo ripassa su tutti i file tracciati e dice quante occorrenze
+        # stanno in file consegnati e quante in file del progetto. Solo quando applica e solo in
+        # locale: in misura rallenterebbe l'apertura, e in remoto l'elenco della macchina non c'e'.
+        if ($Applica -and (Test-Path -LiteralPath $identita) -and -not (Test-Remoto $prj)) {
+          $idn = @(& python $identita --radice $prj --tracciati 2>&1)
+          $rigaId = $idn | Select-String 'di cui \d+ in file consegnati' | Select-Object -First 1
+          if ($rigaId) { $o.avvisi += 'identita nei file tracciati: ' + (($rigaId.Line -replace '^identita personali: ', '').Trim()) }
+        }
       }
     }
     $sintesi = if ($o.c) { ($AZIONABILI + 'ADATTATO' | Where-Object { $o.c[$_] } | ForEach-Object { "$_=$($o.c[$_])" }) -join ' ' } else { '' }

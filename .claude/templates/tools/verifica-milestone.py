@@ -45,9 +45,50 @@ def inventario(root):
     }
 
 
+MARCATORE_CONSEGNA = "allineamento-in-sospeso.json"
+
+
+def file_marcatore(root):
+    """Il marcatore sta nella cartella di git dell'albero: non è mai tracciato, ogni albero di
+    lavoro ha il proprio, ed esiste in qualunque repository senza contare su un `.gitignore`."""
+    path = Path(git(root, "rev-parse", "--git-path", MARCATORE_CONSEGNA).decode("utf-8").strip())
+    return path if path.is_absolute() else root / path
+
+
+def consegna_in_sospeso(root, sporchi):
+    """I file che la passata di allineamento del template ha scritto in questo albero e che
+    `chiudi-allineamento` non ha ancora committato.
+
+    Dal 2026-11-12: la passata registra il proprio blocco nel template, dove un progetto non lo
+    vede, quindi una sessione aperta nel progetto poteva lanciare `chiudi` fra la consegna e
+    `chiudi-allineamento` e portarsi nel proprio commit i file del template. La passata lascia
+    qui l'elenco di ciò che ha scritto; una voce che termina con `/` vale per tutta la cartella.
+    Il marcatore si toglie da sé quando nessuno di quei file risulta più modificato, cioè quando
+    qualcuno li ha committati: non serve che chi li committa sappia che esiste."""
+    try:
+        path = file_marcatore(root)
+        if not path.is_file():
+            return [], {}
+        dati = json.loads(path.read_text(encoding="utf-8-sig"))
+        voci = [v for v in dati.get("file", []) if isinstance(v, str) and v]
+    except (ValueError, OSError, AttributeError):
+        return [], {}
+    cartelle = tuple(v for v in voci if v.endswith("/"))
+    esatti = set(voci)
+    attivi = sorted(p for p in sporchi if p in esatti or (cartelle and p.startswith(cartelle)))
+    if not attivi:
+        try:
+            path.unlink()
+        except OSError:
+            pass
+        return [], {}
+    return attivi, dati
+
+
 def controlla(root, data):
     if data["staged"]:
         raise ValueError("stage già presente: chiusura fermata senza modificarlo")
+    consegnati, consegna = consegna_in_sospeso(root, data["paths"])
     scope = root / "_notes/COMMIT-SCOPE.json"
     if scope.is_file():
         expected = json.loads(scope.read_text(encoding="utf-8-sig"))
@@ -63,8 +104,21 @@ def controlla(root, data):
         data["fuori_perimetro"] = outside
         data["paths"] = sorted(set(paths))
         data["files"] = {name: data["files"][name] for name in data["paths"]}
+    dentro = sorted(set(consegnati) & set(data["paths"]))
+    if dentro:
+        quando = consegna.get("scritto", "data ignota")
+        raise ValueError(
+            "la passata di allineamento del template (" + quando + ") ha consegnato qui "
+            + str(len(consegnati)) + " file che aspettano `chiudi-allineamento`, e " + str(len(dentro))
+            + " stanno in questo commit: " + ", ".join(dentro[:5]) + (", ..." if len(dentro) > 5 else "")
+            + ". Lanciare `chiudi-allineamento.ps1 -Applica` dal template e poi ripetere; oppure dichiarare in"
+            " _notes/COMMIT-SCOPE.json un perimetro che non li comprende; oppure, per committarli qui di"
+            " proposito, cancellare " + str(file_marcatore(root)))
     groups = Counter(path.split("/", 1)[0] if "/" in path else "(radice)" for path in data["paths"])
     warnings = []
+    if consegnati:
+        warnings.append("Consegna del template in attesa di `chiudi-allineamento`, lasciata fuori da questo commit: "
+                        + str(len(consegnati)) + " file")
     data["conferma_aree"] = len(data["paths"]) > 10 or len(groups) > 1
     if data.get("fuori_perimetro"):
         warnings.append("Lavoro fuori perimetro conservato: " + repr(data["fuori_perimetro"]))

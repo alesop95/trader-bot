@@ -157,7 +157,7 @@ $bundle = (Test-Path ".claude\templates\PACKAGES.md") -and (Test-Path ".claude\P
 # fermerebbe il commit per strumenti che nessuno ha scelto.
 $cartelle = if ($bundle) { @("tools", ".claude\templates\tools", ".claude\templates\md-unwrap\tools",
               ".claude\templates\readme-sync\tools", ".claude\templates\fix-typography\tools",
-              ".claude\templates\verifica-link\tools") } else { @("tools", "scripts") }
+              ".claude\templates\verifica-link\tools", ".claude\templates\vault-di-progetto\tools") } else { @("tools", "scripts") }
 function Trova([string]$nome) {
     foreach ($c in $cartelle) { $p = Join-Path $c $nome; if (Test-Path $p) { return $p } }
     return $null
@@ -246,11 +246,23 @@ $controlli = @(
     @{ n = "check-copie-modelli.py";  a = @(); solobundle = $true },
     @{ n = "check-catalogo.py";       a = @(); solobundle = $true },
     @{ n = "check-raggiungibilita.py"; a = @(); solobundle = $true },
+    # Dal 2026-11-12: il riferimento completo si genera dal disco, e una skill o un pacchetto senza
+    # come, perche' e quando no ferma il commit, come un documento generato rimasto indietro.
+    @{ n = "riferimento.py";           a = @("--check"); solobundle = $true },
+    @{ n = "guida-grafica.py";         a = @("--check"); solobundle = $true },
+    # Dal 2026-11-16: la pagina d'ingresso, vista corta del riferimento, generata dagli stessi dati.
+    @{ n = "come-si-usa.py";           a = @("--check"); solobundle = $true },
+    @{ n = "come-si-usa.py";           a = @("--autotest"); solobundle = $true },
     # Dal 2026-10-19: i controlli di qualita' che un progetto adotta valgono anche sulle copie del
     # template, quindi il template li tiene a zero sui propri strumenti (PROJECT-SYSTEM.md, sez. 16).
     @{ n = "lint-strumenti.py";       a = @(); solobundle = $true },
     @{ n = "test-tipografia.py";      a = @(); solobundle = $true },
     @{ n = "test-documenti-personali.py"; a = @(); solobundle = $true },
+    # Dal 2026-11-16: le prove del pacchetto agenti-terminale, che si lanciavano a mano.
+    @{ n = "test-agenti-terminale.py"; a = @(); solobundle = $true },
+    @{ n = "controllo-rilascio.py";    a = @("--autotest"); solobundle = $true },
+    # Dal 2026-11-17: l'elenco dei plugin del vault e i comandi che lo applicano, con impronte.
+    @{ n = "vault-progetto.py";        a = @("--autotest"); solobundle = $true },
     # Dal 2026-10-21: nessun identificativo personale nei file che il template porta nei progetti.
     @{ n = "test-identita-personali.py"; a = @(); solobundle = $true },
     # Dal 2026-10-28: la visibilita' dichiarata si confronta con quella del servizio. La

@@ -160,6 +160,31 @@ if ($Progetto -and -not $NoPosta) {
   $argomenti += @('--add-dir', $cassetta)
 }
 
+# --- Riserva dei subagent ---------------------------------------------------
+# Oltre la soglia scelta del limite del piano la sessione parte senza gli
+# strumenti con cui Codex apre altri agenti, cosi' che il resto della finestra
+# resti al lavoro in prima persona. E' l'equivalente, per wrapper, della riserva
+# che in Claude Code attua la mod instradamento-modelli. La lettura e' quella
+# registrata all'uscita dell'ultima sessione; qualunque errore lascia partire
+# Codex com'e', perche' un wrapper che non parte e' peggio di una riserva mancata.
+$riservaTool = Join-Path $PSScriptRoot 'riserva-agenti.py'
+$python = Get-Command python -ErrorAction SilentlyContinue
+if ($python -and (Test-Path -LiteralPath $riservaTool)) {
+  try {
+    $decisione = (& python $riservaTool decidi --radice $radice | Out-String) | ConvertFrom-Json
+    if ($decisione.oltre) {
+      if ($decisione.nega) {
+        $argomenti += @($decisione.argomenti)
+        Write-Host ("Riserva: subagent spenti per questa sessione, {0}." -f $decisione.motivo) -ForegroundColor Yellow
+      }
+      else {
+        Write-Host ("Riserva (solo avviso): {0}." -f $decisione.motivo) -ForegroundColor Yellow
+      }
+    }
+  }
+  catch { }
+}
+
 # --- Esecuzione -------------------------------------------------------------
 try {
   $tutti = @($argomenti) + @($Resto | Where-Object { $_ })
@@ -175,6 +200,11 @@ finally {
   Remove-Item Env:PROJECT_AGENT_MAILBOX_ROOT,Env:PROJECT_AGENT_MAILBOX_ID,Env:PROJECT_AGENT_MAILBOX_TOOL,Env:PROJECT_TEMPLATE_ROOT -ErrorAction SilentlyContinue
   # Il finally copre anche Ctrl+C e un'uscita per errore, che sono i casi in cui
   # una pulizia messa in coda al blocco try non verrebbe mai eseguita.
+  # La lettura dei limiti si registra prima della pulizia, che cancella le
+  # sessioni da cui viene.
+  if ($python -and (Test-Path -LiteralPath $riservaTool)) {
+    try { & python $riservaTool registra --radice $radice | Out-Null } catch { }
+  }
   if (-not $NoPulizia) {
     $pulizia = Join-Path $PSScriptRoot 'Pulisci-Codex.ps1'
     if (Test-Path -LiteralPath $pulizia) {

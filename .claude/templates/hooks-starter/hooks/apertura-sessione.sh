@@ -57,6 +57,14 @@ for candidato in python3 python; do
     fi
 done
 
+# Dal 2026-11-12: Claude Code passa all'hook su stdin un JSON con il campo source, che vale
+# clear dopo /clear e compact dopo una compattazione. In quei due casi la conversazione riparte
+# vuota dentro una sessione gia' aperta, e lo strumento stampa la testa del file di ripresa
+# perche' l'agente riprenda da li' senza che l'utente ripeta niente. Lo stdin si legge una volta
+# qui: la prima chiamata allo strumento, piu' sotto, altrimenti potrebbe consumarlo.
+INGRESSO=""
+if [ ! -t 0 ]; then INGRESSO="$(cat)"; fi
+
 echo "=== Verifica di ripresa ==="
 
 if [ -z "$STRUMENTO" ] || [ -z "$PY" ]; then
@@ -70,6 +78,10 @@ else
     USCITA="$("$PY" "$STRUMENTO" --radice "$RADICE" 2>&1)"
     ESITO=$?
     echo "$USCITA"
+    if [ -n "$INGRESSO" ]; then
+        RIPRESA="$(printf '%s' "$INGRESSO" | "$PY" "$STRUMENTO" --radice "$RADICE" --dopo-azzeramento 2>/dev/null)"
+        if [ -n "$RIPRESA" ]; then echo ""; echo "$RIPRESA"; fi
+    fi
     if [ $ESITO -ne 0 ]; then
         echo ""
         echo "ISTRUZIONE PER L'AGENTE: sopra ci sono divergenze fra il file di ripresa e"

@@ -38,7 +38,7 @@ Autore: utente GitHub blader. Indirizzi: https://github.com/blader/humanizer e h
 
 Autorevole su: la traduzione del catalogo di F01 in una procedura di riscrittura per un agente.
 
-Affermazioni. "Wikipedia: Signs of AI writing is the source for the pattern list"; venticinque pattern in cinque sezioni, dalla messa in scena al posto dell'affermazione ai residui della chat.
+Affermazioni. "Wikipedia: Signs of AI writing is the source for the pattern list"; ventisei pattern in sei sezioni, dalla messa in scena al posto dell'affermazione ai residui della chat, più la sesta sullo scrivere per il lettore sbagliato, aggiunta nella v3.1.0. Riletto a monte il 2026-11-16 alla v4.0.0: la riga sulla fonte Wikipedia è uscita dalla descrizione della skill e sta nella sezione finale delle fonti, e dalla v4.0.0 una riscrittura può contenere un dettaglio che nel testo di partenza non c'era, cosa da sapere prima di usarla su un testo che deve restare fedele.
 
 Limiti. Nessun limite metodologico dichiarato; la sua affidabilità dipende da F01.
 

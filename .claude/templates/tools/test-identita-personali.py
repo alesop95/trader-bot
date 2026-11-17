@@ -63,6 +63,8 @@ FORME = [
     FORMA_DISCO_PRIVATO,
 ]
 NON_CONTROLLATO = 2
+# Le cartelle che in un progetto istanziato arrivano dal template con l'allineamento.
+CONSEGNATI = (".claude/", ".agents/", "tools/")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 PAROLA = re.compile(r"[A-Za-z0-9][A-Za-z0-9._+-]*")
 
@@ -330,14 +332,21 @@ def controlla(radice: Path, esplicito: str = "", stage: bool = False, tracciati:
     for rel, n in trovate:
         # L'identificativo non si stampa: questa uscita finisce in log e trascrizioni.
         print("   %s%s contiene un identificativo%s" % (rel, ":%d" % n if n else "", verso or " personale"))
+    if tracciati and (forme or trovate):
+        # Dal 2026-11-12 (L-004 di un progetto istanziato): in un progetto una parte delle
+        # occorrenze sta in file che il template ha consegnato e che il progetto non puo'
+        # correggere senza divergere. Si contano a parte, cosi' chi legge sa quali spettano a
+        # lui e quali spariscono ricevendo i file correnti del template, il cui perimetro e'
+        # tenuto a zero da questo stesso controllo.
+        nomi = [str(x[0]) for x in forme] + [str(x[0]) for x in trovate]
+        consegnati = sum(1 for r in nomi if r.replace("\\", "/").startswith(CONSEGNATI))
+        print("identita personali: di cui %d in file consegnati dal template e %d in file del progetto" % (consegnati, len(nomi) - consegnati))
     if forme:
         dove_forme = "nel commit in preparazione" if stage else ("fra i file tracciati" if tracciati else "nei file che il template propaga")
         print("identita personali: %d stringhe con la forma di un dato privato %s" % (len(forme), dove_forme))
     if trovate:
         dove = "fra i file tracciati" if tracciati else ("nel commit in preparazione" if stage else "nei file che il template propaga")
         print("identita personali: %d occorrenze %s; toglierle prima di committare" % (len(trovate), dove))
-        return 1
-    if forme:
         return 1
     if forme:
         return 1

@@ -108,3 +108,50 @@ def test_windows_closure_commits_only_prepared_scope_and_keeps_other_work(repo):
     assert git(repo, "rev-parse", "HEAD") != head
     assert git(repo, "show", "--format=", "--name-only", "HEAD").strip() == b"uno.txt"
     assert (repo / "due.txt").read_text(encoding="utf-8") == "lavoro di un'altra sessione\n"
+
+
+def _marcatore(repo, voci):
+    path = milestone.file_marcatore(repo)
+    path.write_text(json.dumps({"scritto": "2026-11-12T10:00:00+01:00", "file": voci}), encoding="utf-8")
+    return path
+
+
+def test_delivery_from_template_blocks_a_commit_that_would_take_it(repo):
+    _marcatore(repo, ["uno.txt"])
+    with pytest.raises(ValueError, match="chiudi-allineamento"):
+        milestone.controlla(repo, milestone.inventario(repo))
+
+
+def test_delivery_outside_the_prepared_scope_only_warns(repo):
+    (repo / "due.txt").write_text("lavoro della sessione\n", encoding="utf-8")
+    _marcatore(repo, ["uno.txt"])
+    data = milestone.inventario(repo)
+    scope = repo / "_notes/COMMIT-SCOPE.json"
+    scope.parent.mkdir()
+    scope.write_text(json.dumps({"head": data["head"], "paths": ["due.txt"]}), encoding="utf-8")
+    report = milestone.controlla(repo, data)
+    assert report["paths"] == ["due.txt"]
+    assert any("chiudi-allineamento" in w for w in report["warnings"])
+
+
+def test_delivery_marker_removes_itself_once_its_files_are_committed(repo):
+    path = _marcatore(repo, ["uno.txt"])
+    git(repo, "commit", "-q", "-am", "Allineamento chiuso altrove")
+    (repo / "tre.txt").write_text("lavoro nuovo\n", encoding="utf-8")
+    report = milestone.controlla(repo, milestone.inventario(repo))
+    assert report["paths"] == ["tre.txt"]
+    assert not path.exists()
+
+
+def test_delivery_folder_entry_covers_generated_adapters(repo):
+    (repo / ".agents/skills/x").mkdir(parents=True)
+    (repo / ".agents/skills/x/SKILL.md").write_text("adattatore\n", encoding="utf-8")
+    git(repo, "commit", "-q", "-am", "Base")
+    _marcatore(repo, [".agents/skills/"])
+    with pytest.raises(ValueError, match="chiudi-allineamento"):
+        milestone.controlla(repo, milestone.inventario(repo))
+
+
+def test_unreadable_delivery_marker_does_not_stop_a_closure(repo):
+    milestone.file_marcatore(repo).write_text("{non json", encoding="utf-8")
+    assert milestone.controlla(repo, milestone.inventario(repo))["paths"] == ["uno.txt"]

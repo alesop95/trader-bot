@@ -513,6 +513,52 @@ def scrivi(dest: Path, dati: bytes):
     dest.write_bytes(dati)
 
 
+def segna_consegna(prj: Path, esiti: list, rimuovi: bool, testa: str) -> list[str]:
+    """Lascia nella cartella di git del progetto l'elenco dei file che questa corsa ha scritto.
+
+    Dal 2026-11-12. Il blocco della passata sta nel template, dove il progetto non lo vede: una
+    sessione aperta nel progetto poteva lanciare `chiudi` fra la consegna e `chiudi-allineamento`
+    e committare i file del template insieme al proprio lavoro. `verifica-milestone.py`, che
+    `chiudi` usa per il perimetro, legge questo elenco e si ferma se il commit ne comprende uno;
+    lo toglie da sé quando nessuno dei file risulta più modificato. L'elenco si somma a quello di
+    una corsa precedente non ancora committata. Una voce che termina con `/` vale per la cartella:
+    gli adattatori Codex li genera la passata dopo questo strumento, e senza la cartella
+    resterebbero fuori dall'elenco. Non fallisce mai la corsa: se non si può scrivere, lo dice."""
+    scritti = set()
+    for e in esiti:
+        if e["esito"] in ("INNESCO", "NUOVO", "VECCHIO", "SUPERATO", "MERGE", "RISOLTO"):
+            scritti.add(e["file"])
+        elif e["esito"] == "SPOSTATO":
+            scritti.add(e["template"])
+            if rimuovi:
+                scritti.add(e["file"])
+        elif e["esito"] == "RIMOSSO" and rimuovi:
+            scritti.add(e["file"])
+    if not scritti:
+        return []
+    if (prj / ".agents/skills").is_dir():
+        scritti.add(".agents/skills/")
+    try:
+        r = subprocess.run(["git", "-C", str(prj), "rev-parse", "--git-path", "allineamento-in-sospeso.json"],
+                           capture_output=True)
+        if r.returncode != 0:
+            raise OSError(r.stderr.decode(errors="replace").strip())
+        dest = Path(r.stdout.decode("utf-8").strip())
+        dest = dest if dest.is_absolute() else prj / dest
+        if dest.is_file():
+            try:
+                scritti |= {v for v in json.loads(dest.read_text(encoding="utf-8-sig")).get("file", []) if isinstance(v, str)}
+            except (ValueError, AttributeError):
+                pass
+        import datetime
+        dest.write_text(json.dumps({"scritto": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
+                                    "template_head": testa.strip(), "file": sorted(scritti)},
+                                   ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    except OSError as err:
+        print(f"avviso: elenco della consegna non scritto nella cartella di git del progetto: {err}", file=sys.stderr)
+    return sorted(scritti)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--template", required=True, type=Path, help="radice del repository del template")
@@ -901,6 +947,9 @@ def main():
                 out.write_bytes(e["_dati_conflitto"])
                 dove = f"esito del merge in {out.relative_to(prj).as_posix()}"
                 e["nota"] = f"{e['nota']}; {dove}" if e.get("nota") else dove
+
+    if a.applica:
+        segna_consegna(prj, esiti, a.rimuovi, stato_template.git(tpl, "rev-parse", "HEAD"))
 
     stato_pacchetti = pacchetti.audit(prj, ricette, catalogo)
     if stato_pacchetti:

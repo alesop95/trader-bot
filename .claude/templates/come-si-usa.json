@@ -1,0 +1,89 @@
+{
+  "_nota": "Dati autorati della pagina d'ingresso docs/COME-SI-USA.md: i comandi che digita la persona e le regole d'uso parsimonioso. Le fasi vengono da guida-grafica.json; pacchetti, skill e strumenti il generatore tools/come-si-usa.py li legge dal catalogo, dalle skill e dalla cartella degli strumenti. Un comando che nomina uno strumento inesistente ferma il generatore.",
+  "comandi": [
+    {
+      "situazione": "Apro una sessione su un progetto",
+      "comando": "/riprendi",
+      "nota": "In Codex `$riprendi`. Verifica prima che il file di ripresa descriva il presente, poi si ferma e aspetta."
+    },
+    {
+      "situazione": "Ho finito un blocco di lavoro, o chiudo la sessione",
+      "comando": "chiudi",
+      "nota": "Controlli, commit con conferma, push verificato, impronta. Una milestone per commit; l'agente prepara il messaggio, il commit è tuo."
+    },
+    {
+      "situazione": "Voglio solo sapere se i controlli passano",
+      "comando": "chiudi -SoloControlli",
+      "nota": "È ciò che l'agente lancia prima di proporti un commit. L'ultima riga dice «Controlli verdi» oppure no."
+    },
+    {
+      "situazione": "Sto per costruire qualcosa che forse esiste già",
+      "comando": "python tools/cerca-pacchetto.py <parole>",
+      "nota": "Cerca nel catalogo e nell'indice dei filoni. La skill `cerca-pacchetto` lo fa da sé quando riconosce la situazione."
+    },
+    {
+      "situazione": "Il progetto è nuovo, o ha cambiato obiettivo",
+      "comando": "/gate-pacchetti",
+      "nota": "Riconosce i settori del progetto e propone i pacchetti uno alla volta. Non installa niente senza una risposta."
+    },
+    {
+      "situazione": "Sto per mandare un'applicazione in produzione",
+      "comando": "python tools/controllo-rilascio.py",
+      "nota": "Trentadue voci: presente, assente, non applicabile o da dichiarare. Con `--rigoroso` il giorno del rilascio."
+    },
+    {
+      "situazione": "Mi serve un agente per un lavoro che si ripete",
+      "comando": "/crea-agente <il lavoro>",
+      "nota": "Legge il progetto, dice che cosa ha capito, chiede solo ciò che manca, scrive l'agente per Claude Code e per Codex."
+    },
+    {
+      "situazione": "Ho committato nel template e voglio portarlo ai progetti",
+      "comando": "allinea-tutti.ps1",
+      "nota": "Prima a vuoto, poi con `-Applica`, poi `chiudi-allineamento.ps1 -Applica`. Una volta per giornata, non per commit."
+    },
+    {
+      "situazione": "Voglio vedere quanto pesa l'avvio di una sessione",
+      "comando": "python tools/misura-istruzioni.py",
+      "nota": "Caratteri caricati a ogni avvio, regola per regola, con la soglia."
+    },
+    {
+      "situazione": "Voglio sapere quante sessioni sono aperte e che cosa resta da pulire",
+      "comando": "stato-magazzino.ps1",
+      "nota": "Sola lettura. Il wipe lo fa l'hook di fine sessione, e a mano `session-end-wipe.ps1`."
+    }
+  ],
+  "risparmio": [
+    {
+      "regola": "Il lavoro meccanico va al modello più economico, il giudizio resta nella conversazione",
+      "perche": "Leggere molti file per estrarne lo stesso dato si verifica leggendo il risultato. Il 2026-11-16 la lettura di una sessantina di fonti si è fermata sul limite del piano con il modello intermedio ed è arrivata in fondo con quello più economico."
+    },
+    {
+      "regola": "Tre subagent alla volta, non sette",
+      "perche": "Il parallelismo consuma gli stessi token in meno tempo: avvicina il limite. Sette lettori avviati insieme hanno esaurito la finestra delle cinque ore in pochi minuti."
+    },
+    {
+      "regola": "Prima il codice, poi il modello",
+      "perche": "Ciò che uno script sa fare non deve vedere un modello: conta, converte, confronta. Il modello si chiama per il solo salto di comprensione, e il suo esito torna a essere un file."
+    },
+    {
+      "regola": "Una skill invece di una regola, una regola condizionale invece di una sempre attiva",
+      "perche": "Ogni carattere sotto le regole sempre attive si paga a ogni sessione. Una skill costa la sua descrizione finché non serve."
+    },
+    {
+      "regola": "Un comando invece di un server, e mai più di sei server connessi",
+      "perche": "Un server MCP dichiara i propri strumenti all'apertura, usati o no. Conviene solo al lavoro che torna indietro tenendo lo stato."
+    },
+    {
+      "regola": "Compattare presto, e un compito per conversazione",
+      "perche": "Fra il 40 e il 60 per cento del contesto, con istruzioni su che cosa tenere. Oltre una certa soglia la qualità scende anche se la finestra non è piena."
+    },
+    {
+      "regola": "Una riserva sul limite del piano",
+      "perche": "Oltre la soglia i subagent non partono, e il resto della finestra resta al lavoro in prima persona. Vale per i due client, sulle due finestre."
+    },
+    {
+      "regola": "Un lavoro lungo si fa a lotti riprendibili",
+      "perche": "Un lavoro che riparte da capo non si conclude mai. Il costo per elemento cresce con la dimensione del lotto."
+    }
+  ]
+}

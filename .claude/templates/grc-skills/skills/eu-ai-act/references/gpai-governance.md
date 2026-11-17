@@ -1,12 +1,12 @@
-# EU AI Act — GPAI, Governance, and Cross-Framework Reference
+# EU AI Act - GPAI, Governance, and Cross-Framework Reference
 
 ## GPAI Model Obligations
 
-### Art. 3(63) — What Qualifies as a GPAI Model
+### Art. 3(63) - What Qualifies as a GPAI Model
 
 A model qualifies as GPAI when **all** of the following apply:
 - Trained with **large amounts of data** using **self-supervision at scale**
-- Displays **significant generality** — competently performs a wide range of distinct tasks
+- Displays **significant generality** - competently performs a wide range of distinct tasks
 - Can be used for multiple **different purposes** regardless of how placed on market
 - **Excludes:** Models in pre-release R&D phase not yet placed on market
 
@@ -14,7 +14,7 @@ A model qualifies as GPAI when **all** of the following apply:
 
 ---
 
-### Art. 53 — Universal GPAI Provider Obligations (applies from 2 August 2025)
+### Art. 53 - Universal GPAI Provider Obligations (applies from 2 August 2025)
 
 ALL GPAI model providers (regardless of size or systemic risk status) must:
 
@@ -32,7 +32,7 @@ Document and make available to downstream AI system providers who integrate the 
 - Integration instructions
 - Security measures
 - Evaluation results
-- **Note:** Intellectual property protections are permitted — Annex XII information may be provided under reasonable commercial terms
+- **Note:** Intellectual property protections are permitted - Annex XII information may be provided under reasonable commercial terms
 
 **3. Copyright Compliance Policy (EU Directive 2019/790 Text and Data Mining):**
 - Implement a policy to comply with EU copyright and related rights law
@@ -45,11 +45,11 @@ Document and make available to downstream AI system providers who integrate the 
 - Purpose: enable downstream providers and the public to understand what data was used
 
 **Open-source / free-license exception:**
-GPAI model providers releasing under open-source/free licenses need only comply with obligations **3 and 4** (copyright policy and training summary) — **UNLESS** the model is later designated as having systemic risk, in which case full Art. 53 + Art. 55 obligations apply.
+GPAI model providers releasing under open-source/free licenses need only comply with obligations **3 and 4** (copyright policy and training summary) - **UNLESS** the model is later designated as having systemic risk, in which case full Art. 53 + Art. 55 obligations apply.
 
 ---
 
-### Art. 51 — Systemic Risk Classification
+### Art. 51 - Systemic Risk Classification
 
 **GPAI classification threshold (Commission guidelines, July 2025):**
 Models trained with cumulative compute ≥ **10²³ FLOPs** are subject to GPAI obligations under Arts. 53–55.
@@ -77,7 +77,7 @@ Providers may present evidence demonstrating systemic risk does not apply despit
 
 ---
 
-### Art. 55 — Systemic Risk GPAI Provider Additional Obligations (applies from 2 August 2025)
+### Art. 55 - Systemic Risk GPAI Provider Additional Obligations (applies from 2 August 2025)
 
 In addition to Art. 53 universal obligations, providers of systemic-risk GPAI models must:
 
@@ -100,18 +100,18 @@ In addition to Art. 53 universal obligations, providers of systemic-risk GPAI mo
 - Includes protection against model theft, unauthorized access, adversarial attacks on model weights
 
 **Compliance pathways for GPAI obligations:**
-1. **GPAI Code of Practice** (primary pathway) — Final CoP published 10 July 2025, endorsed by Commission and AI Board 1 August 2025. Operates from 2 August 2025. Three chapters: (i) Transparency, (ii) Copyright, (iii) Safety and Security (systemic risk only). Non-signatories must demonstrate compliance by alternative means and explain their approach to the AI Office.
-2. **Harmonised standards** — when published under Commission mandate; compliance gives presumption of conformity. prEN 18286 (QMS for AI Act) entered public enquiry October 2025; key standards expected Q4 2026.
-3. **Alternative adequate means** — provider demonstrates compliance through other methods acceptable to Commission.
+1. **GPAI Code of Practice** (primary pathway) - Final CoP published 10 July 2025, endorsed by Commission and AI Board 1 August 2025. Operates from 2 August 2025. Three chapters: (i) Transparency, (ii) Copyright, (iii) Safety and Security (systemic risk only). Non-signatories must demonstrate compliance by alternative means and explain their approach to the AI Office.
+2. **Harmonised standards** - when published under Commission mandate; compliance gives presumption of conformity. **EN 18286:2026** (AI quality management, supporting Art. 17) became the first AI Act harmonised standard cited in the OJEU, announced October 15, 2026. The broader standardisation request deadline was revised to February 2027; prEN 18228 (risk management) is in final approval.
+3. **Alternative adequate means** - provider demonstrates compliance through other methods acceptable to Commission.
 
-**GPAI Code of Practice — Key obligations by chapter:**
+**GPAI Code of Practice - Key obligations by chapter:**
 - **Transparency chapter:** Model Documentation Form covering technical properties, training data, energy consumption, intended use; retained for 10 years. Downstream providers can request additional information within 14 days.
 - **Copyright chapter:** Written copyright policy; compliance with robots.txt and technical opt-out protocols; rightsholder complaints mechanism; prohibition of infringing uses in acceptable use policies.
 - **Safety and Security chapter (systemic risk only):** Safety and Security Framework established within **4 weeks of notification to the Commission** and **at least 2 weeks before market placement**; Safety and Security Model Reports submitted to AI Office before market placement; adversarial testing (red-teaming); serious incident reporting with staggered timelines; cybersecurity measures.
 
 **Legacy GPAI models** (placed on market before 2 August 2025): deadline to comply is **2 August 2027**.
 
-**Confirmed CoP signatories (as of April 2026):** Aleph Alpha, Amazon, Anthropic, Black Forest Labs, Cohere, Google, IBM, Microsoft, Mistral AI, OpenAI, ServiceNow, WRITER, and others. Note: xAI signed only the Safety and Security chapter, committing to demonstrate compliance with Transparency and Copyright by alternative means.
+**Confirmed CoP signatories:** 22 full signatories per the Commission page updated October 7, 2026, including Amazon, Anthropic, Google, IBM, Microsoft, Mistral AI, and OpenAI. Note: xAI signed only the Safety and Security chapter, committing to demonstrate compliance with Transparency and Copyright by alternative means.
 
 A **Signatory Taskforce**, chaired by the AI Office, facilitates coherent CoP implementation.
 
@@ -119,29 +119,36 @@ A **Signatory Taskforce**, chaired by the AI Office, facilitates coherent CoP im
 
 ## Governance Structure
 
-### AI Office (Arts. 64–68)
+### AI Office (Art. 64)
 
 - Established within the **European Commission** (not an independent agency)
 - Primary responsibility for: GPAI model oversight, monitoring, compliance assessment
-- Conducts GPAI model evaluations — both compliance assessments and systemic risk investigations
+- Conducts GPAI model evaluations - both compliance assessments and systemic risk investigations
 - May request access to model weights, source code, training procedures, technical documentation
 - Receives complaints from downstream providers against upstream GPAI providers
 - Provides secretariat support for the AI Board
 - Key contact point for: systemic risk notifications, Codes of Practice development, serious incident reports from GPAI providers
 - Issues non-binding guidance; makes recommendations to the Commission
-- Full enforcement powers over GPAI providers (information requests, model evaluations, fines) activate **2 August 2026**
+- Full enforcement powers over GPAI providers (information requests, model evaluations, fines) active since **2 August 2026**; procedural rules for Commission proceedings are set by **Implementing Regulation (EU) 2026/1755** (OJ July 21, 2026, in force August 10, 2026): model evaluations including API, source code, and model access; appointment and independence of experts; fine proceedings with preliminary findings and a right to be heard; access to file; five-year limitation period
+- Enforcement in practice: first formal Art. 91 requests for information to GPAI providers reported in late August 2026; a further wave was announced October 14, 2026 covering security practices, external evaluation, and post-market monitoring; recipients have not been officially named
 
 **Key guidance and actions published by the AI Office (chronological):**
-- **4 Feb 2025:** Guidelines on prohibited AI practices under Art. 5 — with practical examples for all 8 categories
-- **6 Feb 2025:** Guidelines on the definition of an AI system (Art. 3(1)) — clarifying what falls within the regulation's scope
+- **4 Feb 2025:** Guidelines on prohibited AI practices under Art. 5 - with practical examples for all 8 categories
+- **6 Feb 2025:** Guidelines on the definition of an AI system (Art. 3(1)) - clarifying what falls within the regulation's scope
 - **July 2025:** Final GPAI Code of Practice published; GPAI scope guidelines published; Commission training data summary template published (for Art. 53(1)(d))
-- **October 2025:** AI Act Whistleblower Tool launched — secure channel for reporting suspected violations
+- **October 2025:** AI Act Whistleblower Tool launched - secure channel for reporting suspected violations
 - **December 2025:** First draft of Code of Practice on Marking and Labelling of AI-generated Content
 - **5 March 2026:** Second draft of the AI-generated content marking CoP
 - **8 May 2026:** Draft guidelines on Art. 50 transparency obligations opened for consultation; three studies on Art. 5 prohibited practices published; three studies on technical marking/detection of AI-generated content published
 - **19 May 2026:** Draft guidelines on high-risk AI system classification opened for public consultation
+- **21 July 2026:** Implementing Regulation (EU) 2026/1755 published in the OJ (in force 10 August 2026): procedural rules for Commission proceedings against GPAI providers
+- **Late August 2026:** First formal Art. 91 requests for information to GPAI providers reported (recipients not officially named)
+- **12 October 2026:** Consultation opened on a draft implementing act for penalty-proceeding procedural rules (closing 9 November 2026)
+- **14 October 2026:** Further wave of Art. 91 information requests announced, covering security practices, external evaluation, and post-market monitoring
+- **15 October 2026:** EN 18286:2026 announced as the first AI Act harmonised standard cited in the OJEU (Art. 17 quality management)
+- Note: the Art. 73 serious-incident reporting guidance remains a DRAFT (September 2025); no final version as of November 2026
 
-### European Artificial Intelligence Board — AI Board (Art. 65)
+### European Artificial Intelligence Board - AI Board (Art. 65)
 
 **Composition:**
 - One representative per EU Member State (3-year renewable mandate)
@@ -174,7 +181,13 @@ Each Member State designates one or more national competent authorities with pow
 - Data protection authorities for law enforcement AI applications
 - European Data Protection Supervisor for EU institutions' AI systems (Art. 77)
 
-### Scientific Panel (Arts. 68–70)
+### Advisory Forum (Art. 67)
+
+- Stakeholder body advising the Commission and the AI Board
+- Balanced membership drawn from industry (including SMEs and start-ups), civil society, and academia
+- Provides technical expertise and stakeholder input for the Board's and the Commission's tasks
+
+### Scientific Panel (Art. 68)
 
 - Independent expert body for GPAI matters
 - Can alert AI Office about high-impact GPAI capabilities that may qualify for systemic risk designation
@@ -192,7 +205,7 @@ Each Member State designates one or more national competent authorities with pow
 
 ## Post-Market Monitoring and Incident Reporting
 
-### Art. 72 — Post-Market Monitoring System
+### Art. 72 - Post-Market Monitoring System
 
 **Applies to:** All high-risk AI system providers.
 
@@ -207,7 +220,7 @@ Each Member State designates one or more national competent authorities with pow
 
 **Integration:** Existing post-market monitoring systems under sectoral legislation (medical devices, machinery, etc.) may be adapted and integrated to avoid duplication.
 
-### Art. 73 — Serious Incident Reporting
+### Art. 73 - Serious Incident Reporting
 
 **What constitutes a serious incident:**
 Any incident or malfunctioning of a high-risk AI system that directly or indirectly leads or could lead to:
@@ -217,7 +230,7 @@ Any incident or malfunctioning of a high-risk AI system that directly or indirec
 - Serious damage to property or the environment
 
 **Who reports:**
-- **Providers:** Report to market surveillance authority of Member State where incident occurred; within timeframe proportionate to severity (immediately for death-related incidents; within 15 days for other serious incidents; within 2 days for widespread safety threats)
+- **Providers:** Report to market surveillance authority of Member State where incident occurred; within timeframe proportionate to severity (for death-related incidents, Art. 73(4): immediately upon establishing a causal link between the AI system and the death, and no later than 10 days after awareness; within 15 days for other serious incidents; within 2 days for widespread safety threats)
 - **Deployers:** Immediately notify provider, importer/distributor, AND market surveillance authority
 - **GPAI systemic risk providers:** Report to AI Office and relevant national authorities
 
@@ -231,14 +244,14 @@ ISO 42001 is the primary AI management system standard complementing AI Act comp
 
 | AI Act Article | ISO 42001 Element |
 |---------------|-------------------|
-| Art. 9 (Risk Management) | Clause 6.1, Annex A.6 (AI risk assessment), Annex B.3 |
-| Art. 10 (Data Governance) | Clause 8.4, Annex A.8 (AI system operation), A.7 (AI data management) |
-| Art. 13 (Transparency) | Annex A.4.1 (intended purpose documentation), A.4.2 |
-| Art. 14 (Human Oversight) | Annex A.9.3, A.10.1 (human factors in AI) |
-| Art. 15 (Accuracy/Robustness) | Annex A.9.4 (AI system performance), B.5 |
+| Art. 9 (Risk Management) | Clause 6.1 (Actions to address risks and opportunities), A.5.2 (AI system impact assessment process) |
+| Art. 10 (Data Governance) | Clause 8 (Operation), A.7 (Data for AI systems: A.7.2 to A.7.6) |
+| Art. 13 (Transparency) | A.8.2 (System documentation and information for users), A.6.2.7 (AI system technical documentation) |
+| Art. 14 (Human Oversight) | A.9.2 (Processes for responsible use of AI systems), A.6.1.3 (Processes for responsible AI system design and development) |
+| Art. 15 (Accuracy/Robustness) | A.6.2.4 (AI system verification and validation), A.6.2.6 (AI system operation and monitoring) |
 | Art. 17 (QMS) | Clause 4–10 PDCA management system structure |
-| Art. 72 (Post-Market Monitoring) | Clause 9.1 (performance evaluation), A.10.3 |
-| Art. 73 (Incident Reporting) | Annex A.10.5 (adverse impacts), Clause 10.2 |
+| Art. 72 (Post-Market Monitoring) | Clause 9.1 (Monitoring, measurement, analysis and evaluation), A.6.2.6 (AI system operation and monitoring) |
+| Art. 73 (Incident Reporting) | A.8.4 (Communication of incidents), Clause 10.2 (Nonconformity and corrective action) |
 
 **Practical guidance:** ISO 42001 certification can support demonstration of Art. 17 QMS compliance. ISO 42001's Statement of Applicability (SoA) process may be adapted for mapping conformity with AI Act requirements.
 
@@ -257,7 +270,7 @@ ISO 42001 is the primary AI management system standard complementing AI Act comp
 
 ### GDPR Alignment
 
-The AI Act operates concurrently with GDPR — both apply when AI systems process personal data.
+The AI Act operates concurrently with GDPR - both apply when AI systems process personal data.
 
 | Intersection | AI Act | GDPR |
 |-------------|--------|------|
@@ -271,11 +284,11 @@ The AI Act operates concurrently with GDPR — both apply when AI systems proces
 | Supervisory authorities | Art. 77 (DPAs have access rights) | Supervisory authority under Chapter VI |
 | Enforcement | Art. 99 (AI Act fines) | Art. 83 (GDPR fines up to 4% global turnover) |
 
-**Key distinction:** GDPR governs personal data processing; the AI Act governs AI system development and deployment. Many AI systems trigger obligations under both — operators need dual compliance programmes.
+**Key distinction:** GDPR governs personal data processing; the AI Act governs AI system development and deployment. Many AI systems trigger obligations under both - operators need dual compliance programmes.
 
 ---
 
-## Penalties Reference — Art. 99
+## Penalties Reference - Art. 99
 
 | Violation Type | Maximum Fine |
 |----------------|--------------|
@@ -283,7 +296,7 @@ The AI Act operates concurrently with GDPR — both apply when AI systems proces
 | **Provider/deployer/notified body violations** (Arts. 16, 22, 23, 24, 26, 31, 33, 34, 50) | €15,000,000 or **3%** of total worldwide annual turnover (higher applies) |
 | **Incorrect/misleading information** to notified bodies or competent authorities | €7,500,000 or **1%** of total worldwide annual turnover (higher applies) |
 
-**SME / startup / SMC reduction:** For SMEs, startups, and — per the AI Omnibus — **small mid-cap companies (SMCs)**, the lower of the fixed amount or percentage applies (Art. 99(6)).
+**SME / startup / SMC reduction:** For SMEs, startups, and - per the AI Omnibus - **small mid-cap companies (SMCs)**, the lower of the fixed amount or percentage applies (Art. 99(6)).
 
 **Proportionality factors:** Nature, gravity, and duration; prior infringements; company size and market share; intentionality; cooperation level; mitigation measures taken; actual damage caused.
 

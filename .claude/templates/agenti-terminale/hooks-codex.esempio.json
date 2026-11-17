@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(.*spawn_agent|Agent)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"CARTELLA_DEGLI_STRUMENTI/riserva-agenti.py\" hook",
+            "timeout": 15,
+            "statusMessage": "Riserva dei subagent"
+          }
+        ]
+      }
+    ]
+  }
+}

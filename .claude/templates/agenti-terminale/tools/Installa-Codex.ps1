@@ -184,3 +184,6 @@ else {
   Scrivi 'Tutte le radici hanno credenziali. Verifica con -Stato di Avvia-Codex.' 'Green'
 }
 Scrivi '' 'Gray'
+
+# Progetti MCP autorizzati della macchina: registro privato, nessun token copiato.
+& (Join-Path $PSScriptRoot 'Progetti-Agenti.ps1') -Agente codex -Account $Account -Verifica:$Verifica

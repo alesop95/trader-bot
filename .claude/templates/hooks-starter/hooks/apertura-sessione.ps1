@@ -47,6 +47,14 @@ function Trova-Strumento([string]$nome) {
 # lo sta cercando nel posto sbagliato: un difetto che si traveste da diagnosi.
 $strumento = Trova-Strumento "verifica-ripresa.py"
 
+# Dal 2026-11-12: Claude Code passa all'hook su stdin un JSON con il campo source, che vale
+# clear dopo /clear e compact dopo una compattazione. In quei due casi la conversazione riparte
+# vuota dentro una sessione gia' aperta, e lo strumento stampa la testa del file di ripresa
+# perche' l'agente riprenda da li' senza che l'utente ripeta niente. Lo stdin si legge una volta
+# qui e si passa allo strumento: un processo figlio non lo eredita in modo affidabile.
+$ingresso = ""
+try { if ([Console]::IsInputRedirected) { $ingresso = [Console]::In.ReadToEnd() } } catch { $ingresso = "" }
+
 Write-Output "=== Verifica di ripresa ==="
 
 if (-not $strumento) {
@@ -61,6 +69,10 @@ if (-not $strumento) {
     $uscita = & python $strumento --radice $radice 2>&1
     $esito = $LASTEXITCODE
     $uscita | ForEach-Object { Write-Output $_ }
+    if ($ingresso) {
+        $ripresa = $ingresso | & python $strumento --radice $radice --dopo-azzeramento 2>$null
+        if ($ripresa) { Write-Output ""; $ripresa | ForEach-Object { Write-Output $_ } }
+    }
     if ($esito -ne 0) {
         Write-Output ""
         Write-Output "ISTRUZIONE PER L'AGENTE: sopra ci sono divergenze fra il file di ripresa e"

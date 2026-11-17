@@ -483,6 +483,62 @@
     "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md: il giorno del passaggio contiene solo ciò che non si poteva fare prima"
   },
   {
+    "progetto": "7bdce874415c",
+    "id": "L-056",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: la configurazione si verifica dove il servizio gira"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-057",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: variabili di costruzione e di avvio in due file"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-058",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: prima di una credenziale nuova si cerca l'esistente"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-059",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione sul campione di prova"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-060",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione «Una guardia che scarta non finge di accettare»"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-061",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione «Un campo di diagnostica si riproduce su un caso noto prima di costruirci sopra»"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-062",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione «La chiusura di chi ha eseguito non è la verifica»"
+  },
+  {
+    "progetto": "7bdce874415c",
+    "id": "L-063",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/separazione-ambienti/RIFERIMENTO.md, rischi trasversali: il contenuto di un CMS non viaggia con il codice"
+  },
+  {
     "progetto": "8244a68c44aa",
     "id": "L-001",
     "commit": "",
@@ -551,6 +607,20 @@
     "commit": "",
     "data": "2026-10-30",
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md; docs/correzione-ponte-codex.md"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-011",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/rules/recupero-dei-fatti.md; .claude/norme/recupero-dei-fatti.md"
+  },
+  {
+    "progetto": "8244a68c44aa",
+    "id": "L-012",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/templates/tools/check-eol.py; .claude/norme/recupero-dei-fatti.md"
   },
   {
     "progetto": "86a83b3800c7",
@@ -1139,6 +1209,41 @@
     "commit": "",
     "data": "2026-11-10",
     "dove": ".claude/templates/tools/verifica-ripresa.py"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-004",
+    "commit": "",
+    "data": "2026-11-13",
+    "dove": "test-identita-personali.py --tracciati conta a parte le occorrenze nei file consegnati dal template, e allinea-tutti.ps1 -Applica lo ripassa in ogni progetto locale e lo scrive fra gli avvisi; la prima metà esisteva già: il template tiene a zero le forme e le voci nel proprio perimetro propagato e la passata non parte se non lo è, quindi le occorrenze nei file consegnati spariscono ricevendo le copie correnti (misurato sul progetto d'origine: 36 con il suo elenco di esempi, 9 con quello di oggi, tutte in copie vecchie)"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-005",
+    "commit": "",
+    "data": "2026-11-13",
+    "dove": "esisteva già dal 2026-11-11 (L-011 di un altro progetto): chiudi legge tools/controlli-progetto.txt, un controllo per riga, e ne è fermato come dai propri; la lezione è stata registrata prima che il progetto ricevesse quella passata. Le prove proprie e la lettura di un file YAML del progetto si aggiungono lì. Non attuata la parte su lint-didattica, che resta legato a un nome di file fisso"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-006",
+    "commit": "",
+    "data": "2026-11-13",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione «Un file di configurazione si verifica con il lettore che lo userà»: quattro prescrizioni, senza uno strumento nuovo"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-007",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md, sezione sulla prova a secco"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-008",
+    "commit": "",
+    "data": "2026-11-16",
+    "dove": ".claude/skills/cerca-pacchetto/SKILL.md, sezione sul confine dei dati letto sul flusso"
   },
   {
     "progetto": "b3f9f458b450",

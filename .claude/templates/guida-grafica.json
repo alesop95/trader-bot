@@ -1,0 +1,74 @@
+{
+  "_nota": "Dati autorati della guida grafica: le fasi d'uso e l'intreccio degli strumenti. Settori, pacchetti, skill e filoni non stanno qui: il generatore tools/guida-grafica.py li legge dal catalogo, dalle skill e da docs/FILONI.md. Un nodo ha colonna e riga in una griglia di quattro per quattro.",
+  "fasi": [
+    {
+      "titolo": "Istanziare",
+      "quando": "Una volta, quando il progetto nasce o adotta il sistema",
+      "strumenti": ["init-project-system", "gate-pacchetti", "cerca-pacchetto", "PACKAGES.md"],
+      "esito": "Un progetto con memoria, regole e i soli pacchetti che il suo obiettivo richiede"
+    },
+    {
+      "titolo": "Aprire",
+      "quando": "A ogni sessione, prima di qualunque lavoro",
+      "strumenti": ["riprendi", "verifica-ripresa.py", "sync-context", "fonti-a-monte.py", "miniera-novita.py"],
+      "esito": "Si sa se il file di ripresa descrive il presente e che cosa è cambiato a monte"
+    },
+    {
+      "titolo": "Lavorare",
+      "quando": "Durante la sessione",
+      "strumenti": ["regole sempre attive", "norme su richiesta", "pacchetti scelti", "crea-agente", "instradamento-modelli"],
+      "esito": "Il lavoro meccanico va a subagent economici, il giudizio resta nella conversazione"
+    },
+    {
+      "titolo": "Persistere",
+      "quando": "A ogni giro sostanziale, non alla fine",
+      "strumenti": ["memory/index.md", "progress.md", "decisions.md", "RESUME-PROMPT.md", "lezioni-template.py"],
+      "esito": "Niente resta nella sola conversazione"
+    },
+    {
+      "titolo": "Chiudere",
+      "quando": "A ogni milestone e a fine sessione",
+      "strumenti": ["chiudi -SoloControlli", "COMMIT-MSG.txt", "chiudi", "verifica-ripresa.py --registra"],
+      "esito": "Un commit per milestone, fatto dal proprietario, con i controlli verdi e l'impronta registrata"
+    },
+    {
+      "titolo": "Allineare",
+      "quando": "Una volta per giornata di lavoro sul template",
+      "strumenti": ["passata-in-sospeso.py", "allinea-tutti.ps1", "chiudi-allineamento.ps1", "lezioni-recepite.json"],
+      "esito": "I progetti ricevono i file cambiati e le loro lezioni risultano chiuse"
+    }
+  ],
+  "nodi": [
+    { "id": "fonti", "etichetta": "Fonti a monte", "sotto": "fonti-a-monte.py", "col": 0, "riga": 0, "gruppo": "fonti" },
+    { "id": "miniera", "etichetta": "Miniera", "sotto": "miniera-novita.py", "col": 0, "riga": 1, "gruppo": "fonti" },
+    { "id": "filoni", "etichetta": "Filoni", "sotto": "docs/FILONI.md", "col": 0, "riga": 2, "gruppo": "fonti" },
+    { "id": "catalogo", "etichetta": "Catalogo", "sotto": "PACKAGES.md", "col": 1, "riga": 0, "gruppo": "catalogo" },
+    { "id": "riferimento", "etichetta": "Riferimento", "sotto": "riferimento.py", "col": 2, "riga": 0, "gruppo": "catalogo" },
+    { "id": "readme", "etichetta": "README e guide", "sotto": "sync-readme.py", "col": 3, "riga": 0, "gruppo": "catalogo" },
+    { "id": "gate", "etichetta": "Gate dei pacchetti", "sotto": "gate-pacchetti", "col": 1, "riga": 1, "gruppo": "progetto" },
+    { "id": "progetto", "etichetta": "Progetto istanziato", "sotto": "regole, skill, pacchetti", "col": 2, "riga": 1, "gruppo": "progetto" },
+    { "id": "subagent", "etichetta": "Agenti e subagent", "sotto": "crea-agente", "col": 3, "riga": 1, "gruppo": "consumo" },
+    { "id": "instradamento", "etichetta": "Instradamento e riserva", "sotto": "instradamento-modelli", "col": 3, "riga": 2, "gruppo": "consumo" },
+    { "id": "lezioni", "etichetta": "Lezioni", "sotto": "lezioni-template.py", "col": 2, "riga": 2, "gruppo": "progetto" },
+    { "id": "passata", "etichetta": "Passata di allineamento", "sotto": "allinea-tutti.ps1", "col": 1, "riga": 3, "gruppo": "catalogo" },
+    { "id": "chiudi", "etichetta": "Chiusura", "sotto": "chiudi", "col": 2, "riga": 3, "gruppo": "progetto" },
+    { "id": "memoria", "etichetta": "Memoria e ripresa", "sotto": "riprendi", "col": 3, "riga": 3, "gruppo": "progetto" }
+  ],
+  "archi": [
+    { "da": "fonti", "a": "catalogo", "etichetta": "versioni nuove" },
+    { "da": "miniera", "a": "filoni", "etichetta": "candidati" },
+    { "da": "filoni", "a": "catalogo", "etichetta": "diventa pacchetto" },
+    { "da": "catalogo", "a": "riferimento", "etichetta": "genera" },
+    { "da": "riferimento", "a": "readme", "etichetta": "genera" },
+    { "da": "catalogo", "a": "gate", "etichetta": "propone" },
+    { "da": "gate", "a": "progetto", "etichetta": "installa" },
+    { "da": "progetto", "a": "subagent", "etichetta": "delega" },
+    { "da": "subagent", "a": "instradamento", "etichetta": "modello e soglia" },
+    { "da": "progetto", "a": "lezioni", "etichetta": "registra" },
+    { "da": "lezioni", "a": "passata", "etichetta": "recepite" },
+    { "da": "passata", "a": "progetto", "etichetta": "consegna file" },
+    { "da": "progetto", "a": "memoria", "etichetta": "a ogni giro" },
+    { "da": "memoria", "a": "chiudi", "etichetta": "impronta" },
+    { "da": "chiudi", "a": "passata", "etichetta": "ricorda" }
+  ]
+}

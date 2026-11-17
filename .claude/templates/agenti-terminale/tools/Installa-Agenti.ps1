@@ -86,7 +86,13 @@ param(
   [switch]$SoloClaude,
   [switch]$SoloCodex,
   [switch]$Verifica,
-  [switch]$Forza
+  [switch]$Forza,
+
+  # File JSON del repository di macchina con la riserva dei subagent e i plugin
+  # da avere in ogni radice; lo applica Installa-Plugin.ps1. Se non e' indicato
+  # si cerca `agenti-macchina.json` nella cartella da cui si lancia e nella sua
+  # sottocartella `scripts`, che e' dove lo tiene un repository di macchina.
+  [string]$Valori
 )
 
 Set-StrictMode -Version Latest
@@ -211,6 +217,22 @@ if (-not $Verifica) {
   $comandi = Join-Path $PSScriptRoot 'Installa-Comandi.ps1'
   if (Test-Path -LiteralPath $comandi) { & $comandi }
   else { Nota '  Installa-Comandi.ps1 non presente: i comandi brevi non sono stati installati.' 'DarkYellow' }
+}
+
+Titolo 'Valori di macchina: riserva dei subagent e plugin'
+if (-not $Valori) {
+  foreach ($candidato in @((Join-Path (Get-Location).Path 'agenti-macchina.json'), (Join-Path (Get-Location).Path 'scripts\agenti-macchina.json'))) {
+    if (Test-Path -LiteralPath $candidato) { $Valori = $candidato; break }
+  }
+}
+$applica = Join-Path $PSScriptRoot 'Installa-Plugin.ps1'
+if (Test-Path -LiteralPath $applica) {
+  $argValori = @{}
+  if ($Valori) { $argValori['Valori'] = $Valori; Nota ("  valori da {0}" -f $Valori) 'Cyan' }
+  if ($Verifica) { $argValori['Verifica'] = $true }
+  if ($Claude -and -not $SoloCodex) { $argValori['Claude'] = $Claude }
+  if ($Codex -and -not $SoloClaude) { $argValori['Codex'] = $Codex }
+  & $applica @argValori
 }
 
 Titolo 'Riepilogo'

@@ -47,6 +47,12 @@ Il catalogo e l'indice dei filoni dicono che cosa ha il template. Una terza poss
 
 Ne segue che una capacità copiata da un altro progetto conserva i nomi degli identificatori dell'origine, anche se stonano, oppure porta accanto a sé la tabella di corrispondenza fra i due insiemi di nomi e la provenienza. E che la decisione di estrarre un pacchetto comune si prende su una misura della sovrapposizione fatta per concetto e non per nome, perché un pacchetto dimensionato sulla misura per nome astrae o troppo poco o troppo. Il resto della procedura non cambia: la proposta all'utente resta quella delle tre frasi del gate.
 
+## Prima di collegare uno strumento ai dati: il confine si legge sul flusso
+
+Il catalogo e questa skill pesano uno strumento esterno per ciò che fa e per il contesto che costa. Quando lo strumento fa leggere a un modello una base di dati o un archivio, cioè testo verso SQL, catalogazione automatica, profilazione, uno strato semantico esposto come server MCP, c'è una terza domanda, e va posta prima di installarlo perché la profilazione parte al primo collegamento: dove passano i dati. Il caso è del 2026-11-16, in un progetto istanziato i cui dati devono restare sui propri server (L-008): la documentazione di uno strumento di questo genere metteva in evidenza che la variante MCP non richiede chiavi né modelli da ospitare, e più in basso diceva che lo strumento campiona le righe, registra i valori più frequenti di ogni colonna e passa tabelle e campioni al modello del client. L'assenza di una chiave dice chi paga il modello, non dove finiscono i dati.
+
+Il confine si legge sul flusso, con tre domande: quale processo legge la base di dati, che cosa di quel contenuto entra in un prompt, compresi campioni e valori frequenti, e dove gira il modello che lo riceve. Se la terza risposta è un servizio esterno e il progetto ha un vincolo sui dati, lo strumento non si collega alla base vera: si prova su dati costruiti, oppure si scarta, e la proposta all'utente lo dice nella prima delle tre frasi del gate.
+
 ## Che cosa non è
 
 Non sostituisce `gate-pacchetti`, che attraversa il catalogo per settore e resta la procedura delle tornate. Non si carica a ogni sessione e non elenca i pacchetti all'avvio: il catalogo supera i centomila caratteri e un elenco di nomi non dice quando servono, quindi entrambe le vie costerebbero contesto a ogni sessione che non ne ha bisogno. Il costo di questa skill è la sua descrizione, che l'ambiente annuncia da sé, più una ricerca quando la situazione si presenta.

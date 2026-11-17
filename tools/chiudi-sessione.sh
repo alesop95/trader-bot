@@ -61,7 +61,7 @@ cd "$radice" || exit 2
 # vive solo nel bundle e non si importa mai.
 bundle=0; [ -f .claude/templates/PACKAGES.md ] && [ -f .claude/PROMPT-nuovo-progetto.md ] && bundle=1
 
-cartelle="tools .claude/templates/tools .claude/templates/md-unwrap/tools .claude/templates/readme-sync/tools .claude/templates/fix-typography/tools .claude/templates/verifica-link/tools"
+cartelle="tools .claude/templates/tools .claude/templates/md-unwrap/tools .claude/templates/readme-sync/tools .claude/templates/fix-typography/tools .claude/templates/verifica-link/tools .claude/templates/vault-di-progetto/tools"
 # In un progetto si eseguono soltanto i controlli istanziati in tools/: le copie dei modelli sono
 # pacchetti non ancora adottati, e lanciarli fermerebbe il commit per strumenti che nessuno ha scelto.
 [ $bundle = 0 ] && cartelle="tools scripts"
@@ -116,8 +116,15 @@ verifica-link-progetto.py|--check --senza-rete|tools/verifica-link-progetto.json
 check-copie-modelli.py|||1
 check-catalogo.py|||1
 check-raggiungibilita.py|||1
+riferimento.py|--check||1
+guida-grafica.py|--check||1
+come-si-usa.py|--check||1
+come-si-usa.py|--autotest||1
 test-tipografia.py|||1
 test-documenti-personali.py|||1
+test-agenti-terminale.py|||1
+controllo-rilascio.py|--autotest||1
+vault-progetto.py|--autotest||1
 test-identita-personali.py|||1
 fonti-a-monte.py|--autotest||1
 retro-segnali.py|--autotest||1

@@ -1,0 +1,632 @@
+{
+  "pacchetto:academic-researcher": {
+    "come": "Si attiva al gate dei pacchetti e poi si invoca la skill research-scoping per definire lo scope, seguita da senior-researcher per un topic, citation-tracker per verificare le fonti e bib-sync per sincronizzare Zotero e il .bib.",
+    "perche": "Organizza in un ciclo unico la ricerca della letteratura, la verifica tripartita delle fonti, la bibliografia e l'analisi di corpus, per progetti di ricerca accademica, stato dell'arte o benchmark.",
+    "quando_no": "Non va aggiunto se il progetto ha già un sistema bibliografico equivalente, e tre skill (deep-paper-reading, gap-analysis, skill-autogen) sono parzialmente stub con calibrazione di dominio ancora da fissare, mentre il .bib va sempre validato in JabRef prima di una consegna."
+  },
+  "pacchetto:academix": {
+    "come": "Si inserisce la configurazione Academix nel `.mcp.json` in radice del progetto, usandola come base della skill `literature-search`.",
+    "perche": "Aggrega la ricerca di letteratura su OpenAlex, DBLP, Semantic Scholar, arXiv e Crossref con export BibTeX nativo.",
+    "quando_no": "Non proporlo se serve una fonte oltre OpenAlex, DBLP, Semantic Scholar, arXiv e Crossref o se manca Python 3.11 o superiore: il server si clona e si avvia da percorso locale, e senza `ACADEMIX_EMAIL` o una chiave Semantic Scholar i limiti di frequenza restano bassi (circa 100 richieste ogni cinque minuti su Semantic Scholar)."
+  },
+  "pacchetto:agent-catalog": {
+    "come": "Si esplora con `/list-community-agents`, si scarica un agente con `/fetch-community-agent 0xfurai react-expert` in `.claude/agents/` e si controllano gli aggiornamenti della fonte con `/check-agent-sources`.",
+    "perche": "Evita di scrivere da zero un subagent iper-specifico per uno stack o un tool preciso quando la community ne ha già pubblicato uno come file Markdown, senza manifest di plugin.",
+    "quando_no": "Per le fonti che offrono già un plugin marketplace nativo, come `wshobson/agents` e `VoltAgent/awesome-claude-code-subagents`, si usa il plugin e non questo pacchetto; inoltre l'API GitHub non autenticata limita a 60 richieste all'ora, e ogni agente scaricato è testo di terze parti da rivedere, in particolare il campo `model`, spesso fissato a uno snapshot datato."
+  },
+  "pacchetto:agenti-terminale": {
+    "come": "Non si copia: nel progetto di macchina uno script sottile chiama il template, e si usano .\\scripts\\Agenti.ps1 verifica e poi installa, quindi i comandi brevi claude-account<N> e codex-account<N>.",
+    "perche": "Fa convivere più radici di Claude Code e di Codex sulla stessa macchina con identità isolate, ricostruibili dopo una formattazione, pulite a fine sessione e con il consumo di token misurato.",
+    "quando_no": "Non si propone con un solo account e un solo agente, dove la catena costa più di quanto renda; inoltre è solo per Windows e PowerShell, -Forza sostituisce l'intero file di configurazione e un insieme di prefissi del wipe sbagliato cancella tutto senza errore."
+  },
+  "pacchetto:alignment": {
+    "come": "Si lancia `python tools/Test-Allineamento.py` (con `--silenzioso` per il solo verdetto), tenendo il registro `data/scadenze.json` e la riga di hook `SessionStart` in `settings.json` che lo esegue a ogni apertura di sessione.",
+    "perche": "Fa emergere le affermazioni che invecchiano in silenzio, cioè scadenze scritte in prosa, misure vecchie rispetto alla cadenza dichiarata e incoerenze fra documenti e repository, che nessun `git diff` contraddice mai.",
+    "quando_no": "Non si offre a un progetto di solo codice dove ogni affermazione è verificabile eseguendo i test, perché là il posto giusto per un invariante è la suite; senza il registro esce con codice 2 e non dichiara alcun verde."
+  },
+  "pacchetto:anatomy": {
+    "come": "`npx skills add wheresryan22/anatomy -g -a claude-code`, poi `/anatomy <idea da spiegare>`; la skill costruisce la figura e la controlla con Chrome.",
+    "perche": "Rende visibile un meccanismo come oggetto fatto di parti, che è la forma che una guida d'uso grafica chiede quando deve mostrare come gli strumenti si intrecciano.",
+    "quando_no": "Per grafici di dati, persone o mappe; quando serve una figura in pochi minuti; dove Chrome non è disponibile ai controlli."
+  },
+  "pacchetto:andrej-karpathy-skills": {
+    "come": "Si installa come plugin con `/plugin marketplace add multica-ai/andrej-karpathy-skills` seguito da `/plugin install andrej-karpathy-skills@karpathy-skills`, oppure si adotta il solo `CLAUDE.md` del repository.",
+    "perche": "Impone quattro principi comportamentali contro l'over-engineering: niente assunzioni silenziose, niente 500 righe dove ne bastano 50, niente modifiche ortogonali, niente scope creep.",
+    "quando_no": "Non proporlo per interventi banali o di una riga, perché il suo stesso README avverte che lo scopo è ridurre gli errori costosi sul lavoro non banale e non rallentare i compiti semplici, e dove esiste già `rules/interaction-style.md` i suoi principi si sovrappongono a quelli della regola."
+  },
+  "pacchetto:anki-mcp": {
+    "come": "Si aggiunge a `.mcp.json` in radice la configurazione di anki-mcp-server, con Anki desktop aperto e l'add-on AnkiConnect installato, e si chiede all'agente di creare note o condurre sessioni di review.",
+    "perche": "Automatizza lo scheduling del ripasso con ripetizione dilazionata invece di tracciarlo solo in `LEARNER_PROFILE.md`, senza telemetria.",
+    "quando_no": "Si offre solo a progetti con `learning-agent` attivo e richiede Anki desktop con l'add-on AnkiConnect; se basta solo il loop di ripasso esiste l'alternativa minimale mcp-ankiconnect di samefarrar."
+  },
+  "pacchetto:anonymization": {
+    "come": "Si copia `patterns.example.json` nel layer privato come `_notes/.anonymization-patterns.json` con i valori veri e si lancia `python tools/Test-Anonymization.py`, che il progetto può far eseguire a ogni chiusura.",
+    "perche": "Cerca nei file del repository i dati che identificano persone, luoghi e infrastrutture reali, categoria distinta dai segreti, e trova anche i residui ereditati che un controllo sul solo diff non vede mai.",
+    "quando_no": "Non si propone per un repository che documenta soltanto codice proprio, dove produrrebbe solo falsi positivi; ha inoltre due limiti dichiarati, cioè non distingue un falso positivo da una fuga quando il valore è ambiguo e non conosce il contesto, quindi la lista delle eccezioni va tenuta a mano e corta."
+  },
+  "pacchetto:anti-slop": {
+    "come": "Si lancia `python tools/lint-prosa.py docs README.md` sui file di prosa e, con un frontend, `python tools/lint-ui.py src`, che segnalano per ogni problema il codice del segno con rimando alla guida in `docs/anti-slop/`.",
+    "perche": "Rende visibili i segni ricorrenti dei contenuti generati, come autorità senza nome, parallelismi negativi, triadi e palette crema con accento caldo, e dice perché si producono e che cosa fare invece.",
+    "quando_no": "Non si offre a un progetto di solo codice senza documentazione né interfaccia, e il pacchetto non riscrive nulla ma segnala soltanto, con soglie calibrate su misure dichiarate e un lessico che invecchia con i modelli e va rivisto quando cambia la fonte."
+  },
+  "pacchetto:arxiv-cli": {
+    "come": "Si installa il binario nel PATH con npm, con `go install` oppure con Cargo, e lo si invoca da bash per cercare i paper arXiv per categoria o query.",
+    "perche": "Dà un recupero rapido dei paper arXiv più recenti senza un demone da mantenere, utile come primo passo della ricerca bibliografica o per il monitoraggio periodico di un argomento.",
+    "quando_no": "Non usarlo come ricerca bibliografica completa: copre solo arXiv, con un limite predefinito di cinque paper per interrogazione, e richiede un binario installato nel PATH con npm, Go o Cargo; per altre fonti serve `academix` o `semantic-scholar-mcp`."
+  },
+  "pacchetto:automation-starter": {
+    "come": "Si lancia `./tools/headless-run.sh \"<prompt>\"` per una corsa locale di `claude -p` autenticata dal login `claude login`, oppure si usa il workflow `automation-routine.yml` con il token ottenuto da `claude setup-token`.",
+    "perche": "Colma il vuoto di non avere un modo generico per eseguire un prompt o una skill fuori da una sessione interattiva e metterla su una cadenza ricorrente, restando dentro l'abbonamento Team o Max senza fatturazione a consumo dell'API.",
+    "quando_no": "Non va usato con una `ANTHROPIC_API_KEY` (lo script locale si rifiuta di girare), il vincolo sull'abbonamento nel workflow GitHub è solo documentale, `-PermissionMode plan` può bloccarsi senza eseguire nulla per compiti che producono effetti, e i limiti di quota delle routine cloud native non sono verificati."
+  },
+  "pacchetto:blender-skills": {
+    "come": "Con Blender 5.2 o successivo installato, `/plugin marketplace add EL4CTEO/blender-skills` e `/plugin install blender-agent-skills@blender-agent-skills`; poi si descrive il modello o il render e l'agente lancia Blender in sottofondo.",
+    "perche": "Blender ha un'interfaccia di script ampia e poco perdonante; skill che codificano i flussi corretti evitano che l'agente la reinventi a ogni modello.",
+    "quando_no": "Quando il programma CAD della suite Craft basta per il pezzo; per un'illustrazione che spiega un meccanismo, dove serve `anatomy`; dove Blender non è installato."
+  },
+  "pacchetto:book-bib-extract": {
+    "come": "Dopo aver ingerito il libro con doc-ingest, si invoca la skill book-bib-extract a mano, che propone i campi e la citekey e attende la conferma contro il colophon, poi si rilancia python tools/render-bib-registry.py per rigenerare la tabella.",
+    "perche": "Colma il vuoto fra doc-ingest, che estrae struttura e non anagrafica, e academic-researcher, pensato per paper con DOI, ricavando l'anagrafica bibliografica dei libri fisici o scansionati dal frontespizio e dal colophon.",
+    "quando_no": "Non serve per paper accademici con DOI, per i quali c'è academic-researcher, non scrive mai una voce .bib senza conferma umana contro il colophon, e per scansioni di bassa qualità che omettono la pagina di copyright può non trovare un anno e lasciare la voce in da-verificare a tempo indeterminato."
+  },
+  "pacchetto:book-to-skill": {
+    "come": "Si invoca la skill `book-digest` indicando il PDF tecnico e uno slug, e poi si usa la skill-libro generata con `/<slug> <argomento>` in sessione.",
+    "perche": "Trasforma un libro o PDF tecnico di riferimento in una skill pre-digerita che carica i capitoli solo quando servono, a basso costo di contesto.",
+    "quando_no": "Non usarlo per libri o PDF che non sono tecnici o che si consultano una volta sola, e non pubblicare in una skill globale il contenuto di un libro coperto da diritto d'autore senza conferma: le skill-libro restano locali al progetto per impostazione predefinita."
+  },
+  "pacchetto:caveman": {
+    "come": "Si installa su conferma come skill o plugin di Claude Code (nessun file nel progetto) e lo si attiva nelle sessioni operative, dove l'agente risponde in modo telegrafico.",
+    "perche": "Riduce di circa il 65% i token di output senza toccare il ragionamento, utile nelle sessioni operative o di coding con molto output.",
+    "quando_no": "Non va usato quando il progetto produce documentazione o prosa da leggere, e dalla versione 4.1.0 un forward_headers sotto providers.<nome> impedisce l'avvio del proxy e va spostato in compat.<nome>, mentre per i pacchetti npm la licenza non è dichiarata."
+  },
+  "pacchetto:ccusage": {
+    "come": "Si lancia npx ccusage@latest per i report di consumo e si usano /usage e /context per la sessione corrente, senza istanziare file nel progetto.",
+    "perche": "Misura la baseline del consumo di token per sessione, modello e progetto leggendo i JSONL locali, così i guadagni di ogni altra ottimizzazione si possono misurare davvero.",
+    "quando_no": "Non usarlo come fonte di costo affidabile quando serve il prezzo esatto: legge solo i file locali di Claude Code e calcola i costi da un listino di prezzi pubblico interno, quindi per l'abbonamento a quota o per sessioni su altre macchine la cifra in dollari è solo indicativa, e la licenza dichiarata dal repository non è riconosciuta come standard (NOASSERTION)."
+  },
+  "pacchetto:claude-code-handoff": {
+    "come": "Si istanziano il documento di handoff, il comando /refresh-handoff e lo script tools/update-handoff.ps1 o .sh, poi si lancia lo script con -Check per vedere se c'è un aggiornamento e senza flag per aggiornare, oppure si usa /refresh-handoff dentro la sessione.",
+    "perche": "La conoscenza che l'agente ha di Claude Code si ferma all'addestramento e la documentazione ufficiale andrebbe riletta ogni volta, mentre il documento di handoff tiene nel progetto un riferimento denso e allineato di flag, comandi, permessi, MCP, hook e subagent.",
+    "quando_no": "Non va trattato come fonte affidabile senza verifica, perché la fonte upstream può fermarsi (già successo) e «versione allineata» non significa «informazione aggiornata», ogni voce va controllata con claude --help prima di usarla in uno script, la ri-distillazione consuma token, il workflow GitHub richiede il secret ANTHROPIC_API_KEY, e in caso di divergenza vincono le regole del sistema."
+  },
+  "pacchetto:claude-code-router": {
+    "come": "Si installa con `npm install -g @musistudio/claude-code-router` e si avvia il proxy locale con `ccr start`.",
+    "perche": "Instrada ogni richiesta verso il modello più economico adatto al tipo di task, con un risparmio dichiarato di 3-5 volte sul traffico spostato, quando il vincolo principale è la bolletta API.",
+    "quando_no": "Prima di abilitare provider non Anthropic si verifica la policy di compliance, in particolare su dati soggetti a NDA, perché le richieste possono uscire verso altri fornitori."
+  },
+  "pacchetto:claude-mem": {
+    "come": "Si installa con npx claude-mem install, si consulta il web viewer locale su localhost:37777 e si usa il tag <private> per escludere il contenuto sensibile.",
+    "perche": "Dà una memoria semantica persistente fra sessioni, interamente locale (SQLite e Chroma), con tre livelli di recupero che evitano di far esplodere il contesto al riavvio, per progetti lunghi con storia architetturale e di debug.",
+    "quando_no": "Non proporlo dove il progetto vieta che resti memoria fuori dal repository o dove la regola del template impone `.claude/memory/` come unica memoria: l'installatore propone l'accesso a un servizio cloud con periodo di prova a pagamento, la sincronizzazione cloud è opt-in ma le analitiche anonime sono attive di default (`npx claude-mem telemetry disable`), e un secondo agente osservatore consuma token a ogni sessione."
+  },
+  "pacchetto:claudecode.nvim": {
+    "come": "Si aggiunge il plugin alla configurazione init.lua di Neovim dell'utente, senza file nel progetto, per usare il toggle della finestra flottante.",
+    "perche": "Porta in Neovim il protocollo MCP WebSocket delle estensioni ufficiali, con auto-reload dei buffer quando Claude modifica file su disco.",
+    "quando_no": "Non proporlo a chi non usa Neovim come ambiente principale: richiede `folke/snacks.nvim` per il terminale integrato e una configurazione nel proprio `init.lua`, e per chi lavora in VS Code o JetBrains esistono già le estensioni ufficiali."
+  },
+  "pacchetto:code-context": {
+    "come": "Si copia la variante del sistema operativo di templates/mcp.json o templates/mcp.windows.json come .mcp.json nella radice del progetto, così il server MCP parte via npx.",
+    "perche": "Dà all'agente la struttura delle cartelle e dei simboli del codice, per mappare un progetto esistente e popolare le schede di contesto.",
+    "quando_no": "Non usarlo per leggere il contenuto o la logica del codice: espone soltanto la struttura delle cartelle e i simboli, quindi per grafi di dipendenze o ricerca semantica serve uno strumento complementare come `serena` o `graphify`, e un server MCP in più pesa sul contesto di ogni sessione."
+  },
+  "pacchetto:code-simplifier": {
+    "come": "Si installa il plugin ufficiale Anthropic con `/plugin marketplace add anthropics/claude-plugins-official` seguito da `/plugin install code-simplifier`.",
+    "perche": "Passa il codice già scritto attraverso un filtro di semplificazione con vincolo esplicito contro il cambio di comportamento, contenendo l'over-engineering prima del merge.",
+    "quando_no": "Va usato selettivamente su output genuinamente complesso e non come passo di routine."
+  },
+  "pacchetto:codebase-learning": {
+    "come": "Si copiano nel progetto il subagent `code-tutor`, la skill e il comando `learn-repo` e la scheda di riferimento, poi si scrive `/learn-repo`, opzionalmente con un modulo o una cartella come argomento.",
+    "perche": "Trasforma un progetto finito o quasi finito in un ambiente di apprendimento guidato della repository stessa, in cinque fasi che citano sempre path e riga reali.",
+    "quando_no": "Non si propone se il progetto è ancora in sviluppo attivo o se serve solo un onboarding rapido già coperto dalla skill `onboard`; deriva da un handoff non ancora validato su un progetto reale e non insegna un topic esterno, compito di `learning-agent`."
+  },
+  "pacchetto:codebase-memory-mcp": {
+    "come": "Si scarica il binario statico locale e lo si collega con claude mcp add codebase-memory -- <percorso-binario>.",
+    "perche": "Offre un grafo strutturale del codice (chiamate, rotte HTTP, dipendenze fra moduli) che riduce di 10-120 volte i token sulle query strutturali rispetto all'esplorazione file per file.",
+    "quando_no": "Si propone solo oltre le 50K righe dove la navigazione strutturale è frequente, quindi non per progetti piccoli, ed è complementare e non sostitutivo di code-context e graphify."
+  },
+  "pacchetto:comandi-ragionamento": {
+    "come": "Si copiano in `.claude/skills/` le cartelle dei comandi scelti, si lancia `python tools/sync-codex-skills.py` dove si usa Codex e poi si scrive il comando in sessione, per esempio `/premortem il piano di migrazione`.",
+    "perche": "Dà sedici modi pronti di cambiare l'approccio dell'agente a una richiesta, per analisi critica, decisione, stile di risposta e produzione, senza costo di contesto perché ogni skill dichiara `disable-model-invocation: true`.",
+    "quando_no": "`godmode` alza di proposito il costo in token, `redteam` vale solo per il lavoro e i sistemi propri, `ghost` non serve a nascondere l'origine di un testo a chi ha diritto di conoscerla, e `brief`, `silent` e `lockin` non sospendono ciò che le regole chiedono a ogni giro, cioè memoria su disco e riga dei file scritti."
+  },
+  "pacchetto:community-sources": {
+    "come": "Si copiano in tools/ i sei script e si lancia per esempio python tools/fetch-discord.py fetch <id canale> --limit 500 per Discord con un bot invitato, oppure python tools/fetch-reddit.py crawl <url o id> --dry-run per attraversare il grafo di un post di Reddit.",
+    "perche": "Recupera le fonti che gli strumenti di sessione non raggiungono, cioè canali di community e catene di thread che per certi domini tecnici sono la sola documentazione, e le riduce a materiale leggibile e citabile.",
+    "quando_no": "Non si propone se i canali stanno su server di cui non si è amministratori e non si intende chiedere l'invito al bot (resta la copia manuale), export-discord.py è bloccato per via del token personale, e per Reddit non va usato se serve lo stato corrente di un thread, perché legge una copia d'archivio con latenza che conserva anche ciò che l'autore ha cancellato."
+  },
+  "pacchetto:context-mode": {
+    "come": "Si installa come strumento esterno di sessione, senza file nel progetto, e fa sì che l'output dei tool pesanti finisca in SQLite locale lasciando a Claude solo un riferimento.",
+    "perche": "Evita che dump di Playwright, log di server o issue riempiano il contesto di decine di migliaia di token.",
+    "quando_no": "Si propone solo se gli output dei tool superano regolarmente le decine di migliaia di token, e la licenza è Elastic License 2.0, sorgente disponibile ma non open source."
+  },
+  "pacchetto:context7": {
+    "come": "Si aggiunge in `.mcp.json` alla radice la configurazione di Context7 e si interroga la documentazione con un singolo trigger.",
+    "perche": "Evita le allucinazioni da documentazione obsoleta fornendo la documentazione aggiornata di librerie e framework con release frequenti.",
+    "quando_no": "Non proporlo per librerie interne o senza documentazione pubblica indicizzata, né dove non si vuole inviare le proprie query a un servizio esterno: il backend, il motore di analisi e quello di scansione sono privati e non stanno nel repository, e senza una chiave API gratuita i limiti di frequenza sono più stretti."
+  },
+  "pacchetto:craft-apps": {
+    "come": "Si lancia `craft-apps.py rileva` da `.claude/templates/craft-apps/tools/` per vedere in locale e senza rete quali applicazioni Craft sono installate, poi si usa la loro riga di comando oppure `craft-documento.py` per la ricetta dal Markdown al documento o alle slide con il design del progetto.",
+    "perche": "Permette all'agente di produrre e modificare immagini, PDF, fogli, impaginati e presentazioni con applicazioni open source locali, senza account, senza rete e senza token, e di elaborare in massa un corpus che non deve uscire dalla macchina.",
+    "quando_no": "Le applicazioni sono in alpha e non sostituiscono ancora il programma che imitano su un lavoro per un cliente, un server MCP collegato per intero costa fra 4 800 e 33 800 token a sessione (per un lavoro a passo unico si usa la riga di comando), e l'autosalvataggio scrive copie fuori dalle radici confinate, quindi prima di puntarle a una cartella dell'utente vale la regola `documenti-personali.md`."
+  },
+  "pacchetto:cyber-lab": {
+    "come": "Si compila cyber-lab/cyber-lab.valori.sh copiandolo dall'esempio, con i digest delle immagini e i bersagli, poi si lancia bash cyber-lab/tools/su.sh per verificare l'isolamento e tirare su il laboratorio, e `giu.sh` per smontarlo.",
+    "perche": "Permette di imparare la valutazione difensiva e di provare hardening e rilevamento su una rete interna senza via d'uscita, con un esercizio per ciascuna funzione del NIST CSF 2.0, senza toccare nessuna rete reale.",
+    "quando_no": "Non va usato contro reti aziendali o di terzi (servono sistemi propri o l'autorizzazione scritta), non è ancora un ambiente collaudato perché lo scaffold non è stato tirato su e i digest sono segnaposto, e richiede Docker (su Windows dentro Docker Desktop su WSL2)."
+  },
+  "pacchetto:deepwiki-mcp": {
+    "come": "Si registra il server con `claude mcp add -s user -t http deepwiki https://mcp.deepwiki.com/mcp` e si pongono domande architetturali in linguaggio naturale sul repository.",
+    "perche": "Permette un Q&A architetturale su repository GitHub pubbliche già indicizzate, includendo codice, README e issue, senza indicizzare nulla in locale.",
+    "quando_no": "Mai per codice proprietario, perché l'indicizzazione pubblica non copre i repository privati ed è gratis solo per quelli pubblici; si offre solo a progetti con `codebase-learning` attivo il cui repository è davvero pubblico."
+  },
+  "pacchetto:deepwiki-skill": {
+    "come": "Si installa con apm install natsu1211/deepwiki-skill, che mette la skill in .claude/skills/wiki/ insieme all'agente workflow-runner e al prompt gen-wiki, e la si invoca per generare la documentazione di apprendimento.",
+    "perche": "Genera documentazione di apprendimento della codebase con citazioni precise a riga e un passo di validazione dell'accuratezza dei riferimenti, da conservare in docs/learning/ invece di consumarla solo in sessione.",
+    "quando_no": "Non si propone ai progetti senza codebase-learning attivo, che non vogliono persistere il materiale in docs/learning/, e richiede Python 3.12 o superiore."
+  },
+  "pacchetto:dev-skills": {
+    "come": "Si istanzia al gate una per una la skill voluta sotto .claude/skills/ e la si invoca per nome, per esempio /test-generator sul modulo da coprire o /mcp-tool-scaffold con il contratto del tool.",
+    "perche": "Dà procedure di sviluppo versionate col repository, che ogni membro riceve da un clone indipendentemente dalla versione della sua CLI: generazione di test sui pattern esistenti, scaffold di tool MCP e due varianti di revisione.",
+    "quando_no": "Le due skill di review code-review e security-review duplicano le native /code-review e /security-review (più evolute) e gli agenti di subagent-template, e con lo stesso nome le mettono in ombra nel progetto, quindi si istanziano solo se serve una review personalizzata e versionata, una CLI senza le native, o la revisione nel contesto principale."
+  },
+  "pacchetto:diagram-design": {
+    "come": "`/plugin marketplace add cathrynlavery/diagram-design` e `/plugin install diagram-design@diagram-design`; si chiede il diagramma e si ottiene un file HTML, che `/export-diagram` porta in SVG e PNG.",
+    "perche": "Produce un diagramma con l'aspetto del progetto e non con quello predefinito di uno strumento, in un file che si apre ovunque.",
+    "quando_no": "Per diagrammi versionati che cambiano a ogni sprint, per elenchi e confronti che stanno meglio in una tabella, e quando un paragrafo scritto bene insegna lo stesso."
+  },
+  "pacchetto:diagrams": {
+    "come": "Si copia tools/render-diagrams.mjs in tools/ e lo si esegue con Node per rendere in .svg i diagrammi Mermaid .mmd sotto .claude/context/diagrams/.",
+    "perche": "Trasforma i diagrammi Mermaid in SVG riusando il browser già installato, senza aggiungere un motore di rendering dedicato.",
+    "quando_no": "Non è utilizzabile senza Node e senza un browser Chromium-based come Edge o Chrome, e non serve a un progetto che non ha diagrammi Mermaid."
+  },
+  "pacchetto:discord-mcp": {
+    "come": "Si sceglie, leggendone il codice, un server MCP community che usi un bot token del portale sviluppatori Discord e lo si configura nel client MCP passando il token dall'ambiente, esponendo i soli tool di lettura.",
+    "perche": "Permette a un agente residente di leggere e cercare nei canali Discord da sé nel mezzo di un ragionamento, attraverso la via legittima del bot ufficiale.",
+    "quando_no": "Non si propone quando il compito è deterministico, cioè leggere una fonte e trasferirne la sintesi in un registro, dove vale community-sources; sono tutti progetti community da leggere prima perché ricevono un token, e va evitata la famiglia che usa il token dell'account personale, che è self-botting vietato dalle condizioni d'uso."
+  },
+  "pacchetto:doc-ingest": {
+    "come": "Si lancia `python tools/doc-ingest.py percorso/al/corpus`, che converte `.pdf`, `.docx`, `.pptx`, `.xlsx` e `.html` in una cache Markdown locale con indice `_INDEX.md`, saltando i file invariati grazie al manifest a content-hash.",
+    "perche": "Permette di consultare un corpus di documenti voluminosi senza caricarlo in contesto, con estrazione locale e deterministica a zero token e uno scheletro di Livello 1 che l'agente legge a costo quasi nullo.",
+    "quando_no": "Non si propone dove basta l'ingestione manuale di un singolo documento né dove serve documentazione tecnica versionata da un `.docx` (c'è `docx-to-docs`), e l'OCR con `--ocr` su scansioni di bassa qualità può restituire zero parole, mentre `Docling` è una dipendenza pesante con licenze dei pesi non verificate."
+  },
+  "pacchetto:documentazione-didattica": {
+    "come": "Si istanziano gli strumenti in `tools/` e la skill `studio-didattico`, si adattano percorsi e data di adozione in `tools/didattica.json` e si rigenera l'indice con `python tools/indice-refactor.py`, aggiornando racconto e schede a ogni scelta non ovvia.",
+    "perche": "Tiene accanto al registro di che cosa è accaduto un registro del perché una scelta è migliore di un'altra, con quattro presidi contro i modi osservati in cui l'impianto si degrada da solo.",
+    "quando_no": "Non si offre a un progetto breve, dove il work-log basta e un secondo registro diventa un obbligo che nessuno onora, né quando il destinatario vuole istruzioni d'uso, che è un manuale operativo e non un racconto del perché."
+  },
+  "pacchetto:docx-to-docs": {
+    "come": "Si esegue `python tools/docx-to-md.py \"sorgente.docx\" --out docs --clean`, comando ri-eseguibile e idempotente che richiede `python-docx` e scrive un file per sezione con `README.md` indice per cartella.",
+    "perche": "Trasforma una volta per tutte un `.docx` voluminoso in un albero `docs/` Markdown versionato e navigabile, con annotazioni e redazioni curate che sopravvivono alla rigenerazione.",
+    "quando_no": "Non si propone dove il progetto non ha un documento sorgente di questo tipo o dove basta caricare a fette un documento in contesto senza versionare nulla, e senza `--clean` la conversione resta strettamente verbatim."
+  },
+  "pacchetto:drawio-skill": {
+    "come": "Installata l'applicazione desktop di draw.io, `npx skills add Agents365-ai/drawio-skill -g`; poi si chiede il diagramma indicando la sorgente, per esempio un file Terraform o una descrizione della rete, e si apre il `.drawio` prodotto per i ritocchi.",
+    "perche": "Un diagramma disegnato a mano si stacca dal sistema che descrive al primo cambiamento; generarlo dalle sorgenti e conservarne il layout lo tiene vero e insieme modificabile.",
+    "quando_no": "Per un diagramma piccolo che sta bene in Mermaid dentro un file Markdown; quando serve una mappa di rete che si aggiorna da una scansione; dove draw.io desktop non si può installare."
+  },
+  "pacchetto:feynman": {
+    "come": "Si installa separatamente la CLI ufficiale, si configura il provider con `feynman setup` e si usano `lit`, `deepresearch` e `audit`, invocabili da `senior-researcher`.",
+    "perche": "Offre un agente di ricerca autonomo per scoperta della letteratura, confronto fra paper e codice e bozze citate.",
+    "quando_no": "Richiede runtime, provider e accesso a servizi esterni, ha la telemetria attiva di default, va usato a versione fissata e i suoi risultati vanno campionati e verificati prima di adottarlo come strumento predefinito."
+  },
+  "pacchetto:figma-mcp": {
+    "come": "Si aggiunge a `.mcp.json` in radice la configurazione del server Figma MCP, che usa HTTP e OAuth, e lo si usa per leggere i nodi del file di design.",
+    "perche": "Dà accesso all'albero dei nodi Figma per implementare design pixel-accurate senza copia-incolla manuale.",
+    "quando_no": "Non proporlo ai progetti senza file Figma come fonte del design, né dove non si possono autorizzare gli accessi: il server è remoto, richiede l'autenticazione OAuth con un account Figma e legge i nodi dei file a cui l'account ha accesso."
+  },
+  "pacchetto:fix-typography": {
+    "come": "Si copiano i tre script in `tools/` e si procede in tre passaggi con `python tools/fix-accents.py --autotest`, poi `--check --ext .md,.tex,.py .` e `--residui`, applicando solo dopo aver letto i residui.",
+    "perche": "Rende meccanica la convenzione tipografica di `interaction-style.md`, trasformando gli accenti con l'apostrofo in accenti veri, ripristinando quelli mancanti e portando i trattini lunghi a trattini brevi, perché una convenzione non verificata non viene rispettata.",
+    "quando_no": "Non va lanciato con `--ext .ts` o simili su sorgenti con stringhe fra apici singoli, perché un letterale come `'che'` perde la chiusura (736 sostituzioni hanno rotto la compilazione di un progetto React), e `fix-missing-accents.py` lascia come indecidibili le forme che richiedono di capire la frase."
+  },
+  "pacchetto:gancio-globale": {
+    "come": "Si copia `templates/gancio-globale/hooks/pre-commit` in `~/.githooks/`, lo si rende eseguibile e si lancia una volta `git config --global core.hooksPath ~/.githooks`, poi si prova il rifiuto con un commit in un repository usa e getta.",
+    "perche": "Un hook installato per progetto lascia la copertura sempre parziale, perché manca proprio nei repository nati dopo la regola (il caso di partenza era un controllo presente in sei repository su cinquantacinque).",
+    "quando_no": "Non vi si attacca nulla che richieda rete, che impieghi secondi o che possa cambiare i file in stage, e i repository con un `core.hooksPath` locale non lo ricevono finché il loro `pre-commit` non delega con la riga `\"$HOME/.githooks/pre-commit\" || exit 1`."
+  },
+  "pacchetto:github-mcp": {
+    "come": "Si aggiunge in `.mcp.json` in radice la configurazione del server GitHub ufficiale, `github/github-mcp-server`, e si chiede a Claude di operare su issue, PR e repository.",
+    "perche": "Dà a Claude accesso diretto a issue, pull request, code search e gestione dei repository GitHub, ed è l'MCP a maggiore impatto per chi usa GitHub.",
+    "quando_no": "Non proporlo per progetti ospitati altrove o dove un token con permessi di scrittura sul repository è troppo ampio: richiede l'accesso OAuth o un token personale GitHub, e per limitare i danni si usa la modalità di sola lettura con `--read-only`, mentre per le sole operazioni su issue e pull request può bastare `gh`."
+  },
+  "pacchetto:graphify": {
+    "come": "Si installa con `uv tool install graphifyy` o `pipx install graphifyy`, poi `graphify install`, e si usa con `/graphify .`.",
+    "perche": "Costruisce un grafo di conoscenza dell'intero progetto, codice e documenti, con community, nodi centrali e report di insight, per capire in modo olistico un progetto grande o sconosciuto.",
+    "quando_no": "L'analisi dei documenti passa da un LLM e consuma token, mentre il solo codice è trattato in locale con tree-sitter, e per simboli o pagine curate sono complementari `code-context` e `knowledge-wiki`."
+  },
+  "pacchetto:grc-skills": {
+    "come": "Si installano le sole skill scelte con `tools/grc-skills.py installa`, che le copia da `grc-skills/skills/<nome>` a `.claude/skills/<nome>`, e si invocano poi per gap analysis, politiche, dichiarazione di applicabilità e registro dei rischi.",
+    "perche": "Porta in un progetto skill di conformità già pronte per ISO 27001, NIS2, GDPR, AI Act e le altre norme scelte, invece di scrivere a mano analisi per clausola e controllo.",
+    "quando_no": "Non serve a un progetto che non produce né mantiene documentazione di conformità, e va ricordato che le skill sono testo verbatim in inglese non correggibile localmente, che ogni skill istanziata aggiunge la sua descrizione al carico di avvio, e che il benchmark dichiarato dalla fonte non è stato ripetuto qui."
+  },
+  "pacchetto:grobid": {
+    "come": "Si avvia il container con `docker run --rm -it --init -p 8070:8070 lfoppiano/grobid:0.9.1-crf` e gli si passano i PDF scientifici per ottenere XML/TEI strutturato.",
+    "perche": "Trasforma un PDF scientifico in XML/TEI con titolo, abstract, autori, keyword e riferimenti bibliografici analizzati, per leggere i paper in profondità.",
+    "quando_no": "Si offre solo a progetti con `academic-researcher` attivo che leggono paper in profondità e richiede Docker; la versione 0.9.1 è stata letta a monte ma non provata."
+  },
+  "pacchetto:guardia-pubblicazione": {
+    "come": "Si copia tools/guardia-pubblicazione.py in tools/ del progetto e si lancia con python tools/guardia-pubblicazione.py, aggiungendo alla lista dei controlli di chiudi-sessione due righe, una con --autotest e una senza.",
+    "perche": "Una cartella privata che decade dall'ignorato o un sito compilato non ignorato finiscono in un commit senza che niente lo segnali, e la storia di git non si ripara dopo, quindi il controllo va fatto prima del commit invece di affidarlo a una regola in prosa.",
+    "quando_no": "Non è un controllo di contenuto, perché guarda solo collocazione, estensione e dimensione e non cerca termini riservati (per quelli serve il pacchetto anonymization), non corregge nulla, e senza l'aggancio alla chiusura il file esiste ma non gira e non protegge niente."
+  },
+  "pacchetto:hallmark": {
+    "come": "`npx skills add nutlope/hallmark -g --agent claude-code`, poi `/hallmark <richiesta>`, `/hallmark redesign <percorso>` oppure `/hallmark audit <percorso>` per il solo rapporto.",
+    "perche": "Fa scegliere un tema dichiarato e ne verifica il risultato in un browser a otto larghezze, con un livello di controlli che blocca la consegna.",
+    "quando_no": "Su un design esistente che l'utente non ha chiesto di rifare con questa skill; per i progetti dell'organizzazione, dove il design è quello della skill di account."
+  },
+  "pacchetto:headroom": {
+    "come": "Si installa con `pip install headroom-ai[all]` e si avvia Claude con `headroom wrap claude`.",
+    "perche": "Comprime tramite proxy locale tutto ciò che arriva all'LLM, cioè output dei tool, log, file e storia, con un risparmio dichiarato dal repository del 20% per gli agenti di codice e del 60-95% sui JSON.",
+    "quando_no": "Si propone solo per sessioni operative molto lunghe ed eterogenee dove RTK e l'igiene di sessione non bastano."
+  },
+  "pacchetto:hermes-agent": {
+    "come": "Si installa come servizio esterno sulla propria macchina, tipicamente di sistema, con i segreti in un file cifrato, e si configurano gateway di messaggistica, lavori periodici e server MCP da avviare come sottoprocessi.",
+    "perche": "Dà un presidio che agisce quando nessuno ha una sessione aperta, per esempio un digest periodico o un controllo notturno consegnato su una chat, e rende il progetto interrogabile da una chat.",
+    "quando_no": "Non si propone quando il bisogno è episodico, perché un programma deterministico chiamato a mano costa molto meno di un agente residente con il proprio modello, né al posto della modalità headless di `automation-starter`, e non è stato installato né eseguito, quindi l'esperienza d'uso è da validare."
+  },
+  "pacchetto:hooks-starter": {
+    "come": "Si copiano gli script della propria piattaforma da templates/hooks-starter/hooks/ in .claude/hooks/, poi si copiano a mano nella sezione hooks di .claude/settings.json i soli blocchi voluti da settings.hooks.<os>.json e si verifica con /hooks che risultino registrati.",
+    "perche": "Rende automatici i passi che altrimenti dipendono dal ricordarsene (ripresa all'apertura, normalizzazione dei Markdown, controlli pre-commit, impronta di chiusura) e aggiunge due difese contro scritture su file sensibili e segreti nei commit.",
+    "quando_no": "Il secret-scan non scatta finché resta in vigore il deny di baseline su git commit dell'agente, quindi è solo difesa in profondità, e nessun hook è attivo dopo l'istanziazione finché non lo si registra esplicitamente nel settings.json."
+  },
+  "pacchetto:humanizer": {
+    "come": "Si clona la skill in .claude/skills/humanizer/ (locale al progetto, globale solo su conferma) e si invoca con /humanizer seguito dal testo da ripulire.",
+    "perche": "Rimuove dal testo i segni di scrittura generata dall'AI, come frasi riempitive, regola del tre, trattini lunghi, grassetto in eccesso, hedging e tono promozionale, con 33 pattern e un audit finale.",
+    "quando_no": "Non usarlo su testi tecnici dove la precisione conta più dello stile, né come sostituto della verifica: il README dichiara che riscrive solo la prosa e lascia intatti codice, dati e link, ma una riscrittura può alterare il significato e va sempre riletta, e per il solo controllo senza riscrittura basta il pacchetto `anti-slop`."
+  },
+  "pacchetto:impeccable": {
+    "come": "`npx impeccable install` nel progetto, poi `/impeccable init`, che scrive `PRODUCT.md`; da lì i comandi di rifinitura e di critica, e `npx impeccable detect <cartella>` per il rilevatore.",
+    "perche": "Dà all'agente un vocabolario di design e controlli deterministici su un'interfaccia che esiste, dove `anti-slop` del sistema si ferma a otto segni.",
+    "quando_no": "Su un'applicazione nativa, dove rilevatore e modalità dal vivo non funzionano; dove non si accettano hook che girano fuori dall'approvazione del modello; insieme a `taste-skill` o `hallmark` sullo stesso lavoro."
+  },
+  "pacchetto:instradamento-modelli": {
+    "come": "Si installa la mod per account e si imposta `instradamento-modelli.json` nel modo `osserva` per misurare la linea di partenza, poi in `instrada` perché i subagent il cui tipo è in tabella partano su un modello più economico, leggendo i conteggi con `/instradamento`.",
+    "perche": "Rende un fatto della macchina il principio che il modello si sceglie dal compito e non dalla sessione, mandando il lavoro meccanico su un modello più economico e misurando i token per modello.",
+    "quando_no": "Non riduce i token ma solo il loro costo, non allarga i limiti di sessione e settimanale condivisi fra modelli, non instrada verso modelli non Anthropic, non tocca la conversazione principale se non richiesto e il risparmio sul campo non è ancora misurato."
+  },
+  "pacchetto:knowledge-mcp": {
+    "come": "Si aggiunge al .mcp.json in radice la configurazione di knowledge-mcp, che richiede uv, e si ingeriscono PDF, DOCX e Markdown per poi interrogarli via ricerca MCP.",
+    "perche": "Offre una knowledge base locale con RAG ibrido vettoriale e a grafo (LightRAG) sui file dell'utente, adatta a topic strutturati con dipendenze concettuali.",
+    "quando_no": "Non si propone senza learning-agent attivo o senza file dell'utente da interrogare, richiede Python 3.12 e uv, ed è un progetto di community, con alternative elencate come Local Knowledge RAG MCP di patakuti (100% locale via Ollama), mcpsurfr e mcp-local-rag."
+  },
+  "pacchetto:knowledge-wiki": {
+    "come": "Si mette una fonte in `knowledge/sources/<categoria>/` e si invoca la skill `wiki-digest`, che crea o aggiorna le pagine in `knowledge/wiki/` secondo `WIKI-SCHEMA.md` e appende una voce a `log.md`.",
+    "perche": "Fa accumulare conoscenza trasversale nel tempo in una wiki compilata dall'LLM, con fonti immutabili e pagine collegate fra loro senza che l'utente le colleghi a mano.",
+    "quando_no": "Non va proposto dove la conoscenza è già coperta da una knowledge base nativa, e le fonti sensibili devono restare fuori dalla parte versionata, in `_notes/` o nel `.gitignore`."
+  },
+  "pacchetto:latex": {
+    "come": "Si copiano gli script in `scripts/`, si adatta `tex-packages.txt` al preambolo, si esegue `scripts/setup-tex.ps1` o `.sh` una volta e poi `scripts/build.ps1` o `.sh`, oppure si invoca la skill `latex-build`.",
+    "perche": "Rende riproducibile la compilazione di un documento LaTeX versionando manifesto e script e lasciando fuori da git la distribuzione TinyTeX materializzata.",
+    "quando_no": "Si istanzia solo nei progetti che producono un documento LaTeX, e l'engine fissato è pdflatex, quindi per documenti che richiedono fontspec o unicode-math bisogna passare a lualatex o xelatex modificando `.latexmkrc` e il manifesto."
+  },
+  "pacchetto:lavoro-a-lotti": {
+    "come": "Si dichiara il lavoro e si genera il registro dagli elementi del corpus, si esegue il presidio in sola lettura, si stima il costo con il consumo misurato, si lavora un lotto fermandosi prima della fine della finestra e si riesegue il presidio.",
+    "perche": "Permette di svolgere un lavoro più grande di qualunque finestra di sessione, riprendibile fra sessioni e distribuibile su flotte di agenti con quote indipendenti, evitando di ricominciare da capo quando la sessione finisce a metà.",
+    "quando_no": "Non si usa quando il prodotto sta comodamente in una finestra, quando tutti gli elementi sembrano richiedere giudizio senza aver cercato la parte deterministica, o quando non esiste un artefatto per elemento, e il presidio non giudica la qualità degli esiti."
+  },
+  "pacchetto:learning-agent": {
+    "come": "Dopo l'istanziazione si lancia `/profile` per costruire il profilo del learner e la roadmap, poi `/learn <topic>` per ogni unità e `/review` per i ripassi.",
+    "perche": "Trasforma il progetto in un tutor di apprendimento guidato con profilo learner, roadmap pedagogica per categoria e verifica finale, a partire da una knowledge base di file dell'utente.",
+    "quando_no": "Non si propone a un progetto il cui scopo è sviluppare un prodotto e non apprendere un topic, né a uno che ha già un proprio tutor o una ripetizione spaziata equivalente; inoltre non è un modulo rodato su un progetto reale e restano da calibrare i MCP di knowledge base e Anki, la categoria dei topic nuovi e la cadenza di ripasso."
+  },
+  "pacchetto:linear-mcp": {
+    "come": "Si aggiunge in `.mcp.json` alla radice la configurazione del server MCP ufficiale di Linear, con trasporto HTTP e autenticazione OAuth.",
+    "perche": "Permette di creare, leggere e aggiornare issue, sprint e cicli di Linear direttamente dalla sessione.",
+    "quando_no": "Non serve a un team che non usa Linear come issue tracker e richiede il piano Standard o superiore."
+  },
+  "pacchetto:llm-local": {
+    "come": "Si esegue il rilevamento con `Rileva-ModelloLocale.ps1` su Windows o `bash tools/rileva.sh` su Linux, si avvia `coli serve` e si manda il lotto con `tools/offload-lotto.py`, un JSONL con una riga per elemento.",
+    "perche": "Sposta il lavoro meccanico ripetitivo su un modello locale su CPU che costa corrente invece di token, utile anche per materiale che non può uscire dalla macchina.",
+    "quando_no": "Non è un sostituto della conversazione principale, perché un modello su CPU di casa non regge i passi su cui si appoggia il passo successivo; nessun modello adatto all'offload reale è ancora validato, quindi dà gli strumenti per misurare e non un modello pronto."
+  },
+  "pacchetto:matt-pocock-skills": {
+    "come": "Si legge templates/matt-pocock-skills/README.md come guida alla scelta e si installano le skill a monte con claude plugins install mattpocock-skills oppure, se vanno adattate, copiandole con npx skills@latest add mattpocock/skills.",
+    "perche": "Colma buchi reali del sistema, come l'interrogazione che fa emergere ciò che non è stato deciso (grill-me), il ciclo di diagnosi dei difetti difficili e la procedura guidata per i passi solo umani.",
+    "quando_no": "Non si installano entrambe le vie, altrimenti ogni skill resta in doppia copia, e il gruppo legato a un tracciatore di problemi non si offre dove non esiste un tracciatore; le skill che duplicano capacità esistenti (code-review, handoff, teach) si prendono solo scegliendo quale delle due tenere, e tre vanno adattate perché scrivono in file con altro ruolo."
+  },
+  "pacchetto:md-unwrap": {
+    "come": "Si copia tools/md-unwrap.py in tools/ e dopo aver scritto un Markdown si lancia python tools/md-unwrap.py <file o cartella>, mentre prima di un commit si verifica con python tools/md-unwrap.py --check --oracle require .",
+    "perche": "Riporta ogni paragrafo su una riga sorgente unica senza toccare altro, così i diff git segnano solo i paragrafi davvero cambiati e la ricerca per frase funziona.",
+    "quando_no": "In un progetto che usa già Prettier per il codice e accetta di normalizzare anche il Markdown conviene prettier --prose-wrap never, e le cartelle di file .md che il codice legge a runtime (prompt di sistema, modelli) vanno protette con .md-unwrap-ignore perché unire righe cambia i byte inviati al modello."
+  },
+  "pacchetto:memoria-di-progetto": {
+    "come": "Si copia tools/lint-memoria.py in tools/, si adattano le tre costanti in testa (registro cronologico, registro dei pendenti, data di adozione) e si richiama il controllo dentro la direttiva sul tracciamento, prima di consegnare i comandi di version control.",
+    "perche": "Una regola come «si documenta mentre si fa» dipende dalla memoria di chi esegue e fallisce nelle sessioni lunghe, quindi serve un presidio che segnali i commit senza voce di registro, le chiusure senza data e le voci senza l'elenco di ciò che hanno toccato.",
+    "quando_no": "Non si offre dove il progetto non tiene un registro cronologico del lavoro, e comunque non verifica che una voce sia buona o dica il perché, perché distingue solo il silenzio dalla presenza."
+  },
+  "pacchetto:micro-passi": {
+    "come": "Non si installa nulla: si registra come ADR nel progetto la formula del README, cioè un micro-passo per volta con l'output atteso, e da lì in poi durante le sequenze operative l'agente consegna un passo e attende l'esito.",
+    "perche": "Chi sta eseguendo con il terminale aperto deve sapere che cosa fare adesso e quale esito riportare, senza cercare l'istruzione dentro la spiegazione, e così un giro di verifica manuale si conclude in una frazione del tempo.",
+    "quando_no": "Non si usa quando si ragiona su un disegno, si riporta l'esito di un'indagine, si spiega un difetto o si risponde a una domanda che non è un passo di procedura, e non si adotta senza la regola chat-non-e-memoria, perché senza la scrittura su disco comprime la comunicazione perdendo informazione."
+  },
+  "pacchetto:mods-claude-code": {
+    "come": "Si installa una mod come plugin da un marketplace, oppure la si carica per una sola sessione con `--plugin-dir`, dopo aver lanciato `claude plugin validate <cartella>` per elencarne eventi e chiamate senza eseguire nulla.",
+    "perche": "Offre capacità dell'interfaccia o del ciclo di vita che il template non copre, come un cruscotto di costo e contesto sopra il prompt o un pannello di stato dei subagent, con uno scanner che dichiara per ogni mod il livello di accesso da L0 a L3.",
+    "quando_no": "Una mod gira con i permessi dell'utente, vede ogni prompt e ogni chiamata di tool e la sandbox della shell non la contiene, quindi non si installa senza validarla; per instradare i subagent su modelli più economici resta preferibile `instradamento-modelli`, versionato qui e impostabile per account."
+  },
+  "pacchetto:multiclaude": {
+    "come": "Si installa come tool esterno con go install github.com/dlorenc/multiclaude/cmd/multiclaude@latest e si assegnano task a subagent definiti in file Markdown, in modalità singleplayer o multiplayer.",
+    "perche": "Supervisiona più feature branch paralleli con un gate di review umana prima del merge nella modalità multiplayer.",
+    "quando_no": "Non proporlo con meno di tre rami paralleli o dove ogni modifica richiede una revisione umana: in modalità singleplayer la coda di merge unisce da sola le pull request che superano la CI, e servono Go 1.21 o superiore, tmux, git e `gh` autenticato, oltre ai token di più istanze di Claude Code in parallelo."
+  },
+  "pacchetto:nimbalyst": {
+    "come": "Si rileva in sola lettura con `winget list --id Nimbalyst.Nimbalyst` e, se l'utente lo chiede, si installa con `winget install --id Nimbalyst.Nimbalyst`, aprendo poi la cartella del repository dal Project Manager.",
+    "perche": "Fa lavorare in parallelo Claude Code, Codex e altri agenti ciascuno in un worktree git separato, con bacheca delle sessioni, tracker dei task e differenze da approvare una per una.",
+    "quando_no": "Non è un prerequisito e non serve sotto le tre sessioni o rami paralleli (due agenti collaborano anche scambiandosi file nel repository); raccoglie dati d'uso anonimi da spegnere in Settings, su una macchina con repository di clienti si resta in uso locale senza account, team o app mobile, e l'estensione Crew resta spenta finché non si dichiara un limite di spesa."
+  },
+  "pacchetto:notebooklm-bridge": {
+    "come": "L'utente carica le fonti su NotebookLM dal browser in una finestra privata, chiede la sintesi con citazioni e la incolla a Claude, dopo aver verificato account e browser con `tools/notebooklm-check.ps1` o `.sh`.",
+    "perche": "Tiene il corpus di fonti fuori dal contesto di Claude e vi fa entrare solo una sintesi citata, evitando il costo e il degrado di qualità di caricare decine di documenti.",
+    "quando_no": "Non si propone se il progetto non ha fonti proprie da caricare o se basta la ricerca web della skill `deep-research`; il piano gratuito è solo da browser, con tetto giornaliero di interrogazioni, Claude non pilota NotebookLM e il metodo non è ancora validato su un progetto reale."
+  },
+  "pacchetto:openalex": {
+    "come": "Si aggiunge il connector HTTP `https://mcp.openalex.org/mcp` in `.mcp.json` per Claude Code e in `.codex/config.toml` per Codex, seguendo `templates/academic-researcher/INTEGRAZIONI-TOOL.md`.",
+    "perche": "Permette di cercare lavori scientifici, identificatori e citazioni e di risolvere riferimenti bibliografici con query riproducibili.",
+    "quando_no": "Richiede un login OpenAlex e consuma il budget API dell'utente, l'esistenza di un record non verifica i claim nel testo, e va confrontato con gli MCP bibliografici già presenti e con `academix` per evitare sovrapposizioni."
+  },
+  "pacchetto:operations-log": {
+    "come": "Si copia templates/operations-log/OPERATIONS-LOG.md in docs/OPERATIONS-LOG.md e ad ogni intervento operativo si aggiunge in coda una voce che dichiara che cosa è stato fatto, il legame con lo scopo del progetto, la verifica e l'esito, aggiornando l'indice delle voci superate quando una ne smentisce un'altra.",
+    "perche": "Risolve il fatto che un lavoro fatto e non verificato è indistinguibile da uno dichiarato, perché il work log registra il passo e il registro delle decisioni la scelta, ma nessuno dei due registra la prova del singolo intervento.",
+    "quando_no": "Non va usato in un progetto di solo codice applicativo, dove i test rispondono meglio, né in un progetto piccolo dove basta il work log, perché un registro che nessuno aggiorna è peggio della sua assenza e suggerisce una copertura che non c'è."
+  },
+  "pacchetto:paperqa2": {
+    "come": "Si installa paper-qa versione 5 o successiva in un ambiente Python 3.11+ del progetto e si interroga il corpus con la CLI pqa, seguendo templates/academic-researcher/INTEGRAZIONI-TOOL.md.",
+    "perche": "Permette di interrogare PDF e documenti scientifici locali ottenendo risposte con citazioni e controllo delle retrazioni.",
+    "quando_no": "Richiede indicizzazione, un modello e servizi di metadati, e i passaggi citati vanno comunque controllati nei documenti originali, quindi non basta fidarsi della risposta."
+  },
+  "pacchetto:pipeline-app": {
+    "come": "Si invoca la skill `pipeline-app` quando l'utente chiede di strutturare il percorso dal commit al rilascio, e si realizzano soltanto le fasi approvate, cioè controlli pre-commit, CI, prova del runtime e CD.",
+    "perche": "Fa riconoscere separatamente quali controlli servono prima del commit, quali prove in CI dopo il push e se occorre un deploy, secondo il rischio osservato e non per analogia con un altro progetto.",
+    "quando_no": "Non si offre per un repository documentale né per il solo fatto che esista Git, e il pre-commit non si installa per default."
+  },
+  "pacchetto:playwright-mcp": {
+    "come": "Si aggiunge la configurazione di Playwright MCP al file .mcp.json nella radice del progetto.",
+    "perche": "Automatizza il browser tramite accessibility snapshot per test E2E e verifica visuale controllata, interamente in locale.",
+    "quando_no": "Non usarlo per navigare siti non fidati senza limitare le origini: l'opzione `--allowed-origins` dichiara espressamente di non essere un confine di sicurezza e non influisce sui reindirizzamenti, e per una verifica visiva a pixel serve uno screenshot e non l'accessibility snapshot su cui si basa."
+  },
+  "pacchetto:ponytail": {
+    "come": "Si installa come plugin con /plugin marketplace add DietrichGebert/ponytail e poi /plugin install ponytail@ponytail.",
+    "perche": "Impone al codice generato la disciplina del senior developer pigro (YAGNI, libreria standard prima, minimo che funziona), con il 46-94% di righe in meno sui benchmark Haiku 4.5.",
+    "quando_no": "Non va usato su modelli locali piccoli, e si propone solo per sessioni di coding con molto output su modelli Haiku, Sonnet o Opus."
+  },
+  "pacchetto:psmux": {
+    "come": "Si installa come strumento esterno per l'utente (nessun file nel progetto) e lo si usa al posto di tmux per tenere le sessioni Claude Code in pannelli separati, leggendo il .tmux.conf esistente.",
+    "perche": "Dà un tmux nativo per Windows senza WSL né Cygwin, con supporto di prima classe alle agent teams di Claude Code in pannelli separati.",
+    "quando_no": "Non si propone fuori dal caso Windows senza WSL2 con tre o più sessioni Claude Code in parallelo, dove l'esigenza non c'è."
+  },
+  "pacchetto:rea": {
+    "come": "Dopo aver letto `RIFERIMENTO-uso.md`, si installa con `npx rea-agents@latest setup --client claude_code` (prima con `--dry-run` per vedere il piano) e si segue la skill `rea-indagine`, che ordina cancello delle autorizzazioni, analisi statica, analisi a runtime solo se serve e documento di indagine.",
+    "perche": "Permette di capire come funziona un software di cui non si ha il sorgente, per interoperare con un formato non documentato, indagare un incidente o preservare un programma non più mantenuto, con l'evidenza accanto a ogni conclusione.",
+    "quando_no": "Non si usa su bersagli che non sono dell'utente o che l'utente non è autorizzato a esaminare, né per aggirare licenze, protezioni o controlli di accesso; non è una sandbox, richiede Node 22.19 o superiore, su Windows i binari nativi passano solo da Ghidra in forma sperimentale, i motori commerciali hanno licenza propria e i risultati degli strumenti arrivano al fornitore del modello, quindi non è vero che tutto resta locale."
+  },
+  "pacchetto:readme-sync": {
+    "come": "Si lancia `python tools/sync-readme.py --write` per aggiornare i blocchi marcati del README e `--check` per verificarli senza scrivere, mentre la skill `sync-readme` rilegge codice e documentazione per la prosa.",
+    "perche": "Un README pubblico che cresce con molte sezioni e documenti collegati perde l'indice allineato, l'inventario e i link locali, e il pacchetto li rigenera e li verifica invece di lasciarli invecchiare.",
+    "quando_no": "Non va offerto a un progetto con un README di poche righe, perché il controllo aggiungerebbe più struttura di quella che serve, e non crea un README in un progetto che ha scelto di non averlo; inoltre il controllo automatico non certifica che ogni affermazione della prosa sia vera."
+  },
+  "pacchetto:refchecker-mcp": {
+    "come": "Si aggiunge a `.mcp.json` in radice la configurazione di refchecker-mcp e la skill `citation-tracker` chiama `verify_citation` su titolo, autori, anno, DOI o arXiv-ID.",
+    "perche": "Controlla le citazioni contro Semantic Scholar, OpenAlex e Crossref per intercettare riferimenti inventati dal modello.",
+    "quando_no": "Si offre solo a progetti con `academic-researcher` attivo; è un server della comunità e, se assente, la skill `citation-tracker` ripiega sulla verifica manuale."
+  },
+  "pacchetto:repomix": {
+    "come": "Si aggiunge in `.mcp.json` in radice la configurazione `npx -y repomix --mcp` e si chiede all'agente di impacchettare la codebase, locale o remota.",
+    "perche": "Produce un singolo file consolidato e ottimizzato per l'AI, con metriche e file tree, come vista iniziale della codebase prima di scendere nel dettaglio con `serena` o `code-tutor`.",
+    "quando_no": "Non usarlo su codebase grandi da caricare per intero nel contesto, perché il file consolidato ne contiene tutto il testo e ne consuma i token; la scansione dei segreti con Secretlint è attiva di default ma non va disattivata con `--no-security-check`, e le configurazioni di repository remoti non vengono caricate senza `--remote-trust-config`."
+  },
+  "pacchetto:roadmap": {
+    "come": "Si copia `tools/roadmap-items.example.yml` in `tools/roadmap-items.yml`, si sostituiscono le voci di esempio con quelle vere e si lancia `python tools/roadmap.py`, con `--format html --write` per la resa da stampare o `--check` per un hook.",
+    "perche": "Risolve il fatto che la lista di che cosa resta da fare, tenuta a mano in più registri, invecchia in silenzio, separando il giudizio umano nel file dati dallo stato che la macchina misura a ogni esecuzione.",
+    "quando_no": "Non si offre a un progetto breve, dove l'elenco sta nella testa di chi lo scrive, né a uno privo di registro cronologico e punto di ripresa, e la sonda copre solo il lavoro che lascia una traccia testuale."
+  },
+  "pacchetto:rtk": {
+    "come": "Si installa con `winget install rtk-ai.rtk` su Windows o con l'installer curl altrove e si aggiunge un hook `PreToolUse` in `settings.json`.",
+    "perche": "Comprime l'output di git, cargo, pytest, npm e oltre cento comandi shell prima che entri nel contesto, con un risparmio del 60-90% sui comandi rumorosi.",
+    "quando_no": "Conviene solo a progetti con test runner o output di CI molto pesanti; la licenza è mista, Apache-2.0 per il nucleo e BUSL-1.1 per il motore di compressione e il proxy, gratuiti in produzione."
+  },
+  "pacchetto:scientific-skills": {
+    "come": "Si clona in modo parziale la raccolta in .tmp-skills, si genera la mappa con python tools/mappa-skill-scientifiche.py --da .tmp-skills --out docs/MAPPA-SKILL-SCIENTIFICHE.md e si installa una skill per volta con gh skill install K-Dense-AI/scientific-agent-skills <nome>, bloccandola con --pin.",
+    "perche": "Dà la vista che manca per scegliere fra le oltre cento skill scientifiche della raccolta, con autore, licenza, presenza di programmi eseguibili e sovrapposizioni con altri pacchetti, e impone la procedura in quattro mosse invece dell'installazione in blocco.",
+    "quando_no": "Non si propone a un progetto di sviluppo software, perché le skill di libreria valgono per l'analisi di dati scientifici, non si installano tutte (la maggioranza porta codice eseguibile, alcune hanno licenza proprietaria o non commerciale e quelle di terzi hanno avuto meno revisione), e ogni skill va letta per intero e bloccata a una versione prima dell'uso."
+  },
+  "pacchetto:security-audit": {
+    "come": "`npx skills add https://github.com/cloudflare/security-audit-skill --skill security-audit`, poi si chiede esplicitamente l'audit completo indicando la cartella di uscita; il rapporto arriva in tre file con i verdetti.",
+    "perche": "Separa chi cerca da chi valida e tiene un registro di copertura per classe di attacco, che è ciò che manca a una revisione di sicurezza fatta in un solo passaggio.",
+    "quando_no": "Per la revisione ordinaria di una modifica, dove bastano gli strumenti nativi; su sistemi non propri; senza una sandbox di sistema quando si vuole eseguire il codice del bersaglio; con la riserva dei subagent già raggiunta."
+  },
+  "pacchetto:semantic-scholar-mcp": {
+    "come": "Si aggiunge al .mcp.json in radice la configurazione di semantic-scholar-mcp e si usano i suoi strumenti, per esempio export_bibtex e list_tracked_papers.",
+    "perche": "Permette di cercare fra oltre 225 milioni di paper ed esportare BibTeX direttamente, con il tracciamento dei paper visti nella sessione.",
+    "quando_no": "Non proporlo senza Python 3.13 o superiore e `uv` per l'avvio con `uvx`, e non contarci per volumi alti di richieste: senza chiave API i limiti di frequenza sono quelli bassi del servizio pubblico, e l'opzione `DISABLE_SSL_VERIFY` è da usare solo in reti fidate."
+  },
+  "pacchetto:sentry-mcp": {
+    "come": "Si aggiunge al .mcp.json in radice la configurazione del server Sentry MCP (HTTP con OAuth) e si interrogano da Claude gli errori e le release.",
+    "perche": "Porta direttamente in Claude stack trace, breadcrumb e correlazione fra errori e release, eliminando il copia-incolla del contesto di errore.",
+    "quando_no": "Non proporlo ai progetti che non usano Sentry per il monitoraggio degli errori: richiede un login OAuth o un `SENTRY_AUTH_TOKEN` con gli ambiti necessari, gli strumenti di ricerca in linguaggio naturale richiedono inoltre un fornitore di modelli (OpenAI, Azure OpenAI, Anthropic o OpenRouter) con la sua chiave, e la licenza non è riconosciuta come standard (NOASSERTION)."
+  },
+  "pacchetto:separazione-ambienti": {
+    "come": "Lo porta da sé la skill `separazione-ambienti` al gate di inizializzazione o di allineamento, e il progetto ne copia `GUIDA.md` e `FONTI.md` interi in `docs/separazione-ambienti/` con i soli esempi della forma scelta.",
+    "perche": "Un progetto separa test e produzione quasi sempre in un modo che nessuno ha scelto, e quando va male non si sa se il difetto stia nella forma o nella sua esecuzione; la guida confronta le forme su una base comune e conserva il perché della scelta.",
+    "quando_no": "Non passa dal gate dei pacchetti come gli altri e un progetto che registra il rinvio della scelta non lo istanzia finché non la prende; gli esempi sono modelli annotati da adattare e non configurazioni pronte, e non sono stati avviati perché non c'è un'applicazione da costruire."
+  },
+  "pacchetto:serena": {
+    "come": "Si installa con `uv tool install -p 3.13 serena-agent`, si lancia `serena init` e si aggiunge la configurazione in `.mcp.json`, poi si naviga con `find_symbol` e `find_references`.",
+    "perche": "Offre navigazione del codice a livello di simbolo tramite language server su decine di linguaggi, utile quando la ricerca testuale non basta più in repository grandi o multi-linguaggio.",
+    "quando_no": "È un'alternativa più pesante di `code-context` basato su tree-sitter, da scegliere solo quando serve risoluzione semantica cross-file, e la licenza è mista, con applicazione e pacchetto `serena-agent` sotto GPL-3.0-or-later."
+  },
+  "pacchetto:stack-profiles": {
+    "come": "Al gate dei pacchetti l'agente riconosce lo stack dai manifest e, su conferma, copia un solo profilo da `templates/stack-profiles/profiles/<profilo>.md` in `.claude/rules/stack-profile.md`, adattandolo al progetto.",
+    "perche": "Dà alle sessioni convenzioni di stile, comandi tipici e controlli pre-commit già pronti per gli stack ricorrenti, come regola normativa che vincola il codice scritto.",
+    "quando_no": "Su un progetto esistente il profilo non va copiato così com'è, perché può chiedere condizioni come un typecheck pulito che il progetto non rispetta: si confronta ogni prescrizione con ciò che il progetto fa davvero, e in un monorepo se ne istanzia uno solo, quello dello stack dominante."
+  },
+  "pacchetto:subagent-template": {
+    "come": "Si sceglie uno per uno tra `code-reviewer`, `security-auditor`, `debugger` ed `explorer` e si copia il file da `templates/agents/<agente>.md` in `.claude/agents/` del progetto.",
+    "perche": "Evita di scrivere da zero i ruoli agente più comuni, già forniti con frontmatter YAML e system prompt strutturato, per review automatizzata, audit di sicurezza e investigazione dei bug.",
+    "quando_no": "Non conviene prendere `explorer` senza valutarne la sovrapposizione con l'agente nativo Explore di Claude Code, che va dichiarata al gate, e in generale non serve a progetti che non hanno bisogno di subagent riusabili."
+  },
+  "pacchetto:superpowers": {
+    "come": "Si installa per account con `/plugin install superpowers@claude-plugins-official`; da lì l'agente invoca da sé la skill adatta al momento, a partire da `brainstorming` prima di costruire. Nel `CLAUDE.md` del progetto si scrivono i tre punti in cui prevale la regola del progetto.",
+    "perche": "Il sistema ha i pezzi, cioè passi brevi, prove che misurano, alberi di lavoro, ma non un metodo che li metta in fila dalla domanda iniziale al ramo chiuso e che l'agente segua senza che glielo si ricordi.",
+    "quando_no": "Quando il progetto non è sviluppo di codice, quando il carico di avvio è già vicino alla soglia, o quando non si è disposti a scrivere nel `CLAUDE.md` che commit e unione restano manuali."
+  },
+  "pacchetto:taste-skill": {
+    "come": "Si installa con `npx skills add https://github.com/Leonxlnx/taste-skill --skill \"design-taste-frontend\"` oppure in Claude Code con `/plugin marketplace add Leonxlnx/taste-skill` e `/plugin install taste-skill@taste-skill`.",
+    "perche": "Evita pagine e schermate dall'aspetto generico da intelligenza artificiale, scegliendo una direzione artistica, costruendo con immagini reali e correggendo la pagina sugli screenshot di un browser vero.",
+    "quando_no": "Una costruzione dichiara 30-45 minuti e qualche centinaio di migliaia di token, richiede Node 22 o successivo e un browser Chrome, Edge o Chromium, e dalla versione 2.5.0 la copertura di schermate applicative e dashboard non è più dichiarata, quindi per quelle non è la scelta adatta."
+  },
+  "pacchetto:timeline-progetto": {
+    "come": "Si copia tools/costruisci-timeline.py in tools/ del progetto e si lancia python tools/costruisci-timeline.py per generare docs/TIMELINE.html, oppure con --senza-ragione per elencare i passi privi di motivazione.",
+    "perche": "Mette in una sola linea leggibile i fatti del work-log e la ragione tecnologica di ciascun passo, che altrimenti vivono separati fra work-log e registro delle decisioni e nessuno li incrocia a mano.",
+    "quando_no": "Non è pensata per progetti brevi, perché serve nei progetti lunghi dove si rilegge la storia tecnica, e non sostituisce operations-log né le schede didattiche: legge i registri esistenti e non inventa ragioni per i passi che non ne dichiarano una."
+  },
+  "pacchetto:tmux-claude-hatch": {
+    "come": "Si installa come plugin tmux tramite TPM aggiungendolo a `.tmux.conf`, con il plugin Claude Code facoltativo, e si apre una sessione per cartella di progetto in un popup.",
+    "perche": "Con più sessioni Claude Code contemporanee dà un selettore fzf che mostra che cosa fa ciascuna e una campanella per quella che ha finito o chiede attenzione.",
+    "quando_no": "Si offre solo a chi usa tmux e tiene tre o più sessioni Claude Code contemporanee, quindi è inutile senza tmux o con una sessione sola."
+  },
+  "pacchetto:vault-di-progetto": {
+    "come": "Si lancia `python tools/vault-progetto.py crea --ignora` e in Obsidian si apre come vault la cartella `_vault`, poi `verifica` controlla che collegamenti e plugin siano a posto; dopo una passata che sposta i plugin fissati, `aggiorna --rete` li porta alla versione dell'elenco, anche su un vault esistente indicato con `--vault`. Un plugin nuovo si cerca con `cerca`, si misura con `valuta` e entra nell'elenco con `fissa --motivo`.",
+    "perche": "La memoria sta sotto `.claude/`, che Obsidian non mostra, e copiarla in una cartella visibile creerebbe due verità: un vault di soli collegamenti fa navigare e modificare i file veri.",
+    "quando_no": "Non si propone dove Obsidian non è installato, perché il pacchetto non lo installa, né a un progetto con pochi documenti o su una macchina remota senza interfaccia grafica, e non sostituisce `knowledge-wiki` per costruire un sapere da fonti."
+  },
+  "pacchetto:veeam-linux": {
+    "come": "Si istanziano la guida e i due script in docs/ e tools/, si copiano sulla macchina da salvare con scp e si lancia ./veeam-allestisci.sh controlli, poi con il file dei valori corretto le fasi installa, configura ed esegui --attendi, e infine ./veeam-verifica.sh.",
+    "perche": "Evita di sbagliare la scelta della variante del pacchetto Veeam, che non si corregge dopo e decide se si otterrà un'immagine avviabile o solo i file, e raccoglie dieci trappole osservate su macchine reali.",
+    "quando_no": "Non va offerto a un progetto di solo codice, dove il ripristino è un git clone, né per i soli dati, dove basta una copia dei dati; inoltre installa e configura non hanno ancora una corsa completa via script e vanno eseguiti guardando l'uscita, e finché DESTINAZIONE_ESTERNA è vuota il backup non è messo al sicuro."
+  },
+  "pacchetto:vercel-mcp": {
+    "come": "Si aggiunge la configurazione Vercel MCP (HTTP con OAuth) al file .mcp.json nella radice del progetto.",
+    "perche": "Consente di monitorare i deploy, gestire le variabili d'ambiente e controllare lo stato di produzione rispetto alle preview.",
+    "quando_no": "Si propone solo a progetti già deployati su Vercel con workflow di deploy attivo, e il rischio è medio perché può modificare le variabili d'ambiente."
+  },
+  "pacchetto:verifica-link": {
+    "come": "Si copia `verifica-link-progetto.esempio.json` in `tools/verifica-link-progetto.json` adattandolo e si lancia `python tools/verifica-link-progetto.py`, oppure `--check --senza-rete` come fa `chiudi` fra i controlli.",
+    "perche": "Rende verificabile la dichiarazione di aver letto tutte le fonti, controllando che ogni indirizzo scritto nei documenti stia nel registro delle fonti o in un elenco motivato di non fonti.",
+    "quando_no": "Non si propone a un progetto senza registro delle fonti, dove non c'è niente con cui confrontare; dice se una fonte è registrata e non se è stata letta, e non percorre file binari né documenti d'ufficio né vede domini nudi scritti senza schema."
+  },
+  "pacchetto:voicestudio": {
+    "come": "Si installa a parte l'applicazione VoiceStudio, si copia tools/trascrivi.py in tools/, si verifica che il servizio risponda con python tools/trascrivi.py --stato e poi si trascrive con python tools/trascrivi.py riunione.m4a --nome riunione-tecnica.",
+    "perche": "Chiude in locale, senza account e senza mandare l'audio altrove, la via del riconoscimento vocale per le fonti video senza sottotitoli automatici, lasciando su disco il testo con la provenienza dichiarata.",
+    "quando_no": "Non serve dove i sottotitoli automatici esistono già (meglio vtt-to-text.py di community-sources) né a progetti che non raccolgono fonti parlate né producono audio; è sotto AGPL-3.0 con licenze proprie dei modelli, richiede circa due gigabyte di modello e la clonazione di una voce esige il permesso di chi la possiede."
+  },
+  "pacchetto:voicestudio-mcp": {
+    "come": "Si aggiunge in `.mcp.json` una voce verso l'endpoint montato sul servizio VoiceStudio già in esecuzione, impostando prima `OMNIVOICE_MCP_OUTPUT_MODE` a `files` e `OMNIVOICE_MCP_BASE_PATH` all'unica area leggibile.",
+    "perche": "Dà alla sessione i tool per sintetizzare parlato, clonare una voce, trascrivere ed elencare le voci disponibili, tutto sulla macchina.",
+    "quando_no": "Non conviene quando la voce serve solo a trascrivere una fonte, caso in cui lo strumento del pacchetto costa meno e lascia una traccia su disco, e il trasporto non è autenticato e deve restare sulla macchina."
+  },
+  "pacchetto:voltagent-subagents": {
+    "come": "Si aggiunge il marketplace con `/plugin marketplace add VoltAgent/awesome-claude-code-subagents` e si installa un plugin per categoria con `/plugin install <plugin>@voltagent-subagents`.",
+    "perche": "Permette di installare un intero dominio di subagent già curato, per esempio tutti gli specialisti di linguaggio, invece di sceglierli uno a uno.",
+    "quando_no": "Non installare l'intero marketplace se servono pochi subagent: sono 163 in dieci categorie e conviene installare solo i plugin delle categorie necessarie con `claude plugin install`, perché gli agenti di meta-orchestrazione funzionano al meglio con le altre categorie presenti e ogni definizione installata pesa sul contesto."
+  },
+  "pacchetto:vps-baseline": {
+    "come": "Si copia `tools/baseline-vps.sh` sulla macchina con `scp` e lo si esegue con `--verifica`, poi con `--applica --ammessi <indirizzo>` solo dopo aver letto l'esito.",
+    "perche": "Porta una macchina noleggiata da un fornitore cloud dallo stato in cui arriva a uno da cui si può rilasciare, smontando il presupposto che l'immagine del fornitore sia già sicura e distinguendo le tre cose che si chiamano backup.",
+    "quando_no": "Non copre l'applicazione che girerà sopra, né il salvataggio dei dati, né il presidio, e non sostituisce la via di emergenza fuori banda finché la console del pannello non è stata provata."
+  },
+  "pacchetto:wshobson-agents": {
+    "come": "Si aggiunge il marketplace con /plugin marketplace add wshobson/agents e si installa il plugin voluto con /plugin install <plugin>@claude-code-workflows.",
+    "perche": "Fornisce unità curate di agent, skill e comandi slash per dominio (linguaggi, infrastruttura, sicurezza, dati e ML), aggiornate dal marketplace nativo invece di pescare singoli file.",
+    "quando_no": "Non installarlo per intero se serve un solo dominio: il catalogo conta 94 plugin con oltre 200 agenti e 185 skill, quindi si installano i soli plugin pertinenti, e le validazioni LLM del suo `plugin-eval` sono dichiarate sperimentali e non verificate su giudizi umani."
+  },
+  "pacchetto:zotero-mcp": {
+    "come": "Si aggiunge in `.mcp.json` alla radice la configurazione del server Zotero scelto, raccomandato `54yyyu/zotero-mcp`, per aggiungere voci per DOI, cercare semanticamente ed esportare in BibTeX.",
+    "perche": "Dà alla sessione una libreria bibliografica di lavoro collegata a `research-vault/bibliography.bib`, senza gestire a mano le citazioni.",
+    "quando_no": "Si propone solo con il pacchetto `academic-researcher` attivo e una libreria Zotero già in uso, è un server di comunità e non ufficiale Zotero, e se serve l'iniezione di citazioni in `.docx` l'alternativa è `Xevos117/mcp-zotero`."
+  },
+  "skill:alberi-di-lavoro": {
+    "come": "Si carica da sé quando `git worktree list` mostra più di un albero, o si legge `.claude/skills/alberi-di-lavoro/RIFERIMENTO.md` prima di crearne o rimuoverne uno.",
+    "perche": "Con più alberi di lavoro la memoria versionata descrive la branch e non il progetto, e un albero può leggere per giorni la verità di un'altra branch senza che niente lo segnali.",
+    "quando_no": "Non serve in un progetto con un albero solo, e non autorizza a copiare o fondere la memoria fra alberi, che sono proprio le due correzioni che la norma esclude."
+  },
+  "skill:cerca-pacchetto": {
+    "come": "L'agente la invoca prima di scrivere a mano uno strumento, un convertitore o un'integrazione, e lancia `python tools/cerca-pacchetto.py <parole>` sul catalogo e sull'indice dei filoni.",
+    "perche": "Evita di ricostruire in un progetto una capacità che il template ha già pronta o ha già deciso, perché fra un gate e l'altro nessuno rilegge il catalogo.",
+    "quando_no": "Non serve per ciò che è specifico del progetto, e non installa niente da sé: propone, e senza una risposta esplicita non istanzia."
+  },
+  "skill:craft-apps": {
+    "come": "L'agente la invoca prima di produrre o convertire un documento, una presentazione, un PDF, un'immagine, un audio o un disegno, e verifica con `python tools/craft-apps.py` quali applicazioni della suite sono installate.",
+    "perche": "Le applicazioni Craft lavorano in locale, senza account, senza rete e senza token, quindi un artefatto si produce con uno strumento già presente invece di scrivere uno script o installare una libreria.",
+    "quando_no": "Non si usa dove la suite non è installata, perché la skill non installa niente da sé, né per un lavoro a passo unico attraverso il server MCP, che ha un costo di contesto: lì vale la riga di comando."
+  },
+  "skill:crea-agente": {
+    "come": "`/crea-agente <il lavoro da affidare>`: legge il progetto, scrive in cinque righe che cosa ha capito, chiede al massimo cinque cose con la risposta proposta, scrive `.claude/agents/<nome>.md` e lo prova una volta.",
+    "perche": "Un agente scritto senza guardare il progetto ha strumenti di troppo, nessun tetto di turni e una descrizione che non lo fa mai scegliere; e un questionario fisso chiede ciò che il repository dice già.",
+    "quando_no": "Quando un agente del catalogo o nativo fa già quel lavoro, o quando il lavoro capita una volta sola e si delega con un prompt."
+  },
+  "skill:fonti-non-recuperabili": {
+    "come": "Si carica quando un recupero web fallisce con 403, con un rinvio al login o con una pagina di verifica, e si seguono le vie di recupero di `RIFERIMENTO.md` in ordine di costo.",
+    "perche": "Una fonte rilevante che non si riesce a leggere finisce altrimenti annotata come se fosse stata consultata, oppure abbandonata quando un archivio pubblico l'avrebbe restituita.",
+    "quando_no": "Non autorizza a superare un accesso riservato o una protezione: le vie vietate sono elencate, e quando restano solo quelle la fonte si chiede all'utente e si etichetta come non letta."
+  },
+  "skill:gate-pacchetti": {
+    "come": "Si lancia con `/gate-pacchetti` in inizializzazione e in allineamento: riconosce i settori del progetto, li fa correggere e propone i soli pacchetti di quei settori, uno per volta.",
+    "perche": "Con quasi cento voci un elenco proposto riga per riga non viene letto fino in fondo, mentre due o tre settori riconosciuti dai fatti del progetto sì.",
+    "quando_no": "Non si usa per cercare una capacità a metà lavoro, che è il compito di `cerca-pacchetto`, e non attiva niente senza una risposta per ogni voce."
+  },
+  "skill:git-sync": {
+    "come": "Si lancia con `/git-sync` dopo un `git pull` o un merge eseguiti dall'utente, e mostra che cosa è cambiato rispetto all'ultima sessione.",
+    "perche": "Dopo un aggiornamento dal remoto le schede e la memoria che l'agente crede di conoscere possono descrivere il codice di prima.",
+    "quando_no": "Non esegue il pull né alcuna scrittura git, che restano dell'utente, e non sostituisce `sync-context` quando serve misurare la deriva delle schede."
+  },
+  "skill:identita-git": {
+    "come": "Si carica quando si imposta o si verifica `user.name` e `user.email`, si collega un remoto o un alias SSH, un push fallisce per permessi o si usa `gh`, e si segue `RIFERIMENTO.md`.",
+    "perche": "Identità git, chiave SSH, account del client e autenticazione di `gh` sono quattro assi indipendenti, e un commit firmato con quella sbagliata si scopre dopo il push.",
+    "quando_no": "Non serve ripeterla a ogni commit se l'identità locale è già stata verificata in sessione, e non imposta mai la configurazione globale."
+  },
+  "skill:init-project-system": {
+    "come": "Si lancia una volta incollando `.claude/PROMPT-nuovo-progetto.md` nella radice del progetto, oppure con `/init-project-system`: verifica account e identità, crea memoria, contesto e regole, poi passa al gate.",
+    "perche": "Dà a un progetto nuovo lo stesso sistema di memoria, regole e chiusura degli altri in un gesto, invece di ricostruirlo a mano e diverso ogni volta.",
+    "quando_no": "Non si usa su un progetto che il sistema lo ha già, dove vale il prompt di allineamento, e non committa né spinge niente."
+  },
+  "skill:onboard": {
+    "come": "Si lancia con `/onboard`: legge `CLAUDE.md`, la memoria, le schede di contesto e le decisioni, e ne ricava una spiegazione strutturata del progetto.",
+    "perche": "Chi apre il progetto da zero, o ci torna dopo mesi, ottiene il quadro dalla documentazione versionata invece di ricostruirlo dal codice.",
+    "quando_no": "Non serve a riprendere il lavoro dove si era interrotto, che è il compito di `riprendi`, e vale quanto sono aggiornate le schede che legge."
+  },
+  "skill:pipeline-app": {
+    "come": "Si invoca quando l'utente chiede di costruire o allineare la pipeline di un'applicazione: riconosce quali controlli servono prima del commit, quali in CI e se serve un percorso di deploy, e realizza una fase alla volta.",
+    "perche": "Una pipeline copiata intera da un altro progetto porta fasi che qui non servono, mentre una proposta per fasi fa adottare solo quelle che il progetto usa davvero.",
+    "quando_no": "Non si attiva per il solo fatto che esista un repository git, né per un progetto che non distribuisce un'applicazione; OpenNext si valuta solo per Next.js su Cloudflare Workers."
+  },
+  "skill:prove-che-misurano": {
+    "come": "Si carica quando si scrive o si valuta una prova, si chiude un difetto, una verifica manuale smentisce una suite verde o si indaga un guasto, e si applica `RIFERIMENTO.md`.",
+    "perche": "Una prova può essere verde perché non esercita il difetto che dichiara di coprire, e una suite così toglie a chiunque il motivo di controllare.",
+    "quando_no": "Non prescrive framework né linguaggi, e non sostituisce la misura sui dati reali quando la decisione dipende da una loro proprietà che nessun dato costruito mostra."
+  },
+  "skill:repo-status": {
+    "come": "Si invoca chiedendo lo stato del repository: mostra branch, commit recenti, file modificati e differenze non committate.",
+    "perche": "Dà in un colpo d'occhio lo stato di git prima di cominciare, senza lanciare quattro comandi.",
+    "quando_no": "Non verifica se il file di ripresa descrive il presente, che è il compito di `riprendi`, e non scrive niente."
+  },
+  "skill:retrospettiva": {
+    "come": "Si lancia con `/retrospettiva` alla fine di una sessione faticosa, prima di chiudere: rilegge la sessione e propone correzioni all'ambiente di lavoro, cioè un controllo, un puntatore o una regola chiarita.",
+    "perche": "I punti in cui l'agente ha arrancato indicano un difetto dell'ambiente, e dopo il wipe la trascrizione che li mostra non esiste più.",
+    "quando_no": "Non serve dopo una sessione liscia, non corregge il codice e non modifica niente finché l'utente non sceglie."
+  },
+  "skill:riprendi": {
+    "come": "Si lancia con `/riprendi` all'apertura di ogni sessione: esegue `python tools/verifica-ripresa.py`, riporta le divergenze, ricostruisce il punto di ripresa e si ferma al recap.",
+    "perche": "Un file di ripresa vecchio ha lo stesso aspetto di uno aggiornato, e una sessione che gli crede costruisce su una premessa falsa senza accorgersene.",
+    "quando_no": "Non è il posto dove cominciare il lavoro: dopo il recap aspetta, e dopo un `/clear` la testa del file di ripresa arriva già dall'hook di apertura."
+  },
+  "skill:separazione-ambienti": {
+    "come": "Si lancia in inizializzazione, in allineamento o quando cambia il modo di provare e rilasciare, e guida la scelta fra i modi di separare prova e produzione.",
+    "perche": "Un progetto senza una separazione decisa prova in produzione senza saperlo, e la scelta fatta tardi costa una migrazione.",
+    "quando_no": "Non serve a un progetto che non rilascia niente, e non crea ambienti da sé: scrive la decisione e ciò che ne discende."
+  },
+  "skill:studio-didattico": {
+    "come": "Si invoca a ogni refactor o scelta di qualità non ovvia, nei soli progetti che hanno adottato la pratica: aggiunge al registro didattico il confronto fra com'era e com'è, entrando nel codice reale.",
+    "perche": "Le schede tecniche dicono lo stato e non insegnano: chi vuole imparare dalle proprie decisioni ha bisogno del racconto del perché.",
+    "quando_no": "Non fa parte del ciclo di default e non si attiva per ogni commit: dove il progetto non l'ha scelta esplicitamente non si usa."
+  },
+  "skill:sync-context": {
+    "come": "Si invoca a inizio sessione, dopo modifiche significative o dopo un pull: confronta il commit verificato di ogni scheda con HEAD e propone aggiornamenti mirati.",
+    "perche": "Una scheda di contesto ancorata a un commit vecchio descrive codice che non c'è più, e rigenerarla tutta costa più che aggiornarne la parte cambiata.",
+    "quando_no": "Non serve in un progetto senza schede sotto `.claude/context/`, come il template stesso, e non rigenera i documenti: propone il solo delta."
+  },
+  "skill:sync-readme": {
+    "come": "Si invoca quando cambia una capacità pubblica: aggiorna la prosa del README, poi `python tools/sync-readme.py --write --bundle` rigenera indice, inventario e link.",
+    "perche": "Un README scritto a mano diverge dal progetto senza che nessuno se ne accorga, mentre le parti generate si verificano a ogni commit.",
+    "quando_no": "Non si usa per una semplice modifica a un altro file Markdown, e le parti fra marcatori non si riscrivono a mano."
+  }
+}

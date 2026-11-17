@@ -28,7 +28,11 @@ Tre categorie di **difetti**, che fanno uscire con codice 1: ancora mancante, an
 commit del repository, percorso coperto che non corrisponde a nessun file. Poi l'elenco delle schede
 **superate**, cioè con file coperti cambiati dopo l'ancora: è informazione, perché una scheda
 superata subito dopo una modifica al codice è il caso normale, e la procedura per trattarla è
-`sync-context`. Con `--rigoroso` anche le schede superate fanno uscire con codice 1, che è la forma
+`sync-context`. Dal 2026-11-16 elenca anche le schede **da popolare**, cioè quelle che portano
+ancora la riga di istruzione del modello: una ricognizione su trentotto progetti ne ha trovati nove
+con almeno una scheda in quello stato, alcune del tutto vuote, e una scheda vuota con l'ancora a
+posto passava ogni confronto. È informazione e non un difetto, perché fermerebbe la chiusura di
+progetti che non hanno ancora niente da descrivere. Con `--rigoroso` anche le schede superate fanno uscire con codice 1, che è la forma
 da usare quando si dichiara di aver allineato tutto.
 
 ## Uso
@@ -105,6 +109,12 @@ def esiste_su_disco(percorso):
 
 
 SEGNAPOSTO = "PENDING-FIRST-COMMIT"
+ISTRUZIONE_DEL_MODELLO = re.compile(r"^>.*\bPopolare leggendo\b", re.MULTILINE)
+
+
+def da_popolare(testo):
+    """La scheda porta ancora la riga con cui il modello dice a chi la istanzia come riempirla."""
+    return bool(ISTRUZIONE_DEL_MODELLO.search(testo))
 
 
 def repository_senza_commit():
@@ -173,6 +183,11 @@ def self_test():
                lambda a, ps: chiamati.append(ps) or [])
     prova("il confronto riceve solo i percorsi esistenti", chiamati == [["a.ts"]], str(chiamati))
 
+    prova("la riga di istruzione del modello segna la scheda da popolare",
+          da_popolare("---\n---\n# Stack\n\n> Documento di recupero. Popolare leggendo il codice.\n"))
+    prova("la stessa frase in prosa, fuori dalla citazione, non la segna",
+          not da_popolare("# Stack\n\nLa scheda si doveva Popolare leggendo il codice, ed e' stato fatto.\n"))
+
     falliti = sum(0 if ok else 1 for _, ok, _ in casi)
     for nome, ok, dettaglio in casi:
         print(f"  {nome.ljust(62)}  {'ok' if ok else 'FALLITO'}{('  ' + dettaglio[:120]) if not ok else ''}")
@@ -195,10 +210,13 @@ def main():
         return 2
     os.chdir(repo.stdout.strip())
     rigoroso = args.rigoroso
-    difetti, superate = [], []
+    difetti, superate, vuote = [], [], []
     con_frontmatter = non_applicabili = 0
     for f in sorted(glob.glob(".claude/context/**/*.md", recursive=True)):
-        fm = leggi_frontmatter(io.open(f, encoding="utf-8", errors="replace").read())
+        testo = io.open(f, encoding="utf-8", errors="replace").read()
+        if da_popolare(testo):
+            vuote.append(os.path.relpath(f, ".claude/context").replace("\\", "/"))
+        fm = leggi_frontmatter(testo)
         if fm is None or fm[0] is None:
             continue
         con_frontmatter += 1
@@ -215,10 +233,14 @@ def main():
     print(f"superate rispetto all'ancora: {len(superate)}")
     for nome, ancora, cambiati in superate:
         print(f"  {nome} ({ancora[:9]}): {', '.join(cambiati[:6])}{' ...' if len(cambiati) > 6 else ''}")
+    if vuote:
+        print(f"da popolare, con la riga di istruzione del modello ancora presente: {len(vuote)}")
+        for nome in vuote:
+            print(f"  {nome}")
     print(f"difetti: {len(difetti)}")
     for d in difetti:
         print(f"  {d}")
-    if difetti or (rigoroso and superate):
+    if difetti or (rigoroso and (superate or vuote)):
         return 1
     print("nessun difetto" + ("" if superate else ", nessuna scheda superata"))
     return 0

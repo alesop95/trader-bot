@@ -16,6 +16,8 @@ La ricerca comprende i **dati strutturati** e non solo la prosa. L'inventario au
 
 Dentro il repository gli artefatti **non hanno pari autorità**, e questa è la parte che si dimentica. Alcuni sono registrazioni di una misura: il dump di un apparato, un inventario generato, lo snapshot di una fonte viva, l'uscita di uno strumento. Altri sono racconti: un piano, una scheda di governance, un documento di continuità. Per una domanda sulla configurazione attuale la registrazione batte il racconto, e un racconto che nessuna registrazione corrobora va trattato come candidato all'obsolescenza, tanto più se descrive un accordo con un fornitore o un contratto, perché quelli cambiano senza che nessuno rilegga il documento che li descriveva.
 
+L'incertezza riguarda l'attributo osservato: possesso, ubicazione, salute, assegnazione ed esecuzione restano distinti. Un componente censito ma non localizzato non diventa inesistente o da acquistare; un'esclusione definitiva non torna fra le possibilità di un recap senza una nuova istruzione del proprietario. Prima di consigliare un'azione si verifica il campo preciso da cui dipende, non si estende l'incertezza a tutti gli altri.
+
 ## Perché non basta la regola sulle classi di fonti
 
 Dove il progetto ha una regola sulle fonti, quella distingue il repository dal mondo esterno e dice che il repository è autorevole su ciò che il progetto sa, non su com'è il sistema adesso. Questa regola aggiunge la distinzione **interna** al repository, che lì non c'è: fra due file tracciati, entrambi di classe A, uno può essere la fotografia di una misura e l'altro una narrazione invecchiata, e hanno lo stesso aspetto.

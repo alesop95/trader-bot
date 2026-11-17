@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Segnala i file di testo con fini riga miste, cioe' CRLF e LF nello stesso file.
+"""Segnala i file di testo con fini riga miste, ossia CRLF e LF nello stesso file.
 
 Perche' serve. La convenzione Markdown di questo progetto prescrive di conservare la
 fine riga di ciascun file, CRLF o LF, e lo strumento md-unwrap la rispetta per
@@ -155,8 +155,8 @@ def main() -> int:
     )
     for percorso, riga, codice in sporchi:
         print(f"  CONTROLLO {percorso}:{riga}: carattere U+{codice:04X} in un file di testo")
-        print("        nasce da una barra rovesciata letta come escape in una scrittura per script;")
-        print("        nei testi scritti da script i percorsi si scrivono con le barre in avanti")
+        print("        possibile escape di script: verificare la causa; in un report importato il byte puo appartenere alla fonte;")
+        print("        conservare l originale prima di correggere la copia; nei testi scritti da script usare percorsi con barre in avanti")
     if misti:
         print("Le fini riga miste entrano nella storia di git: core.autocrlf e' false e")
         print("non esiste .gitattributes, quindi git registra cio' che trova sul disco.")

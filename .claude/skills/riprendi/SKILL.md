@@ -98,4 +98,6 @@ Il pacchetto `hooks-starter` copre la famiglia degli hook di apertura sessione. 
 python tools/verifica-ripresa.py --breve
 ```
 
+Dal 2026-11-12 l'hook di apertura copre anche il `/clear` e la compattazione, che fanno ripartire la conversazione vuota dentro una sessione già aperta. Claude Code passa all'hook SessionStart il campo `source`, che in quei due casi vale `clear` e `compact`, e ciò che l'hook stampa entra nel contesto prima del primo prompt: `verifica-ripresa.py --dopo-azzeramento` stampa allora la testa del file di ripresa, cioè la sezione più recente fino alla prima linea orizzontale ed entro seimila caratteri, con l'istruzione di riprendere da lì. All'avvio ordinario non stampa niente, perché lì la procedura è questa skill, che prima verifica. Ne segue che il file di ripresa va tenuto con lo stato corrente in testa e la cronologia sotto una linea, e che vale solo se è stato riscritto nel giro, come chiede `chat-non-e-memoria.md`. Dove `hooks-starter` non è attivo basta un hook SessionStart con il matcher `clear|compact` che lanci quel comando. In Codex non esiste un evento equivalente che io abbia verificato: lì la ripresa dopo un azzeramento resta `$riprendi`.
+
 Resta un presidio e non un sostituto della skill: l'hook dice che qualcosa diverge, questa procedura dice che cosa farne.

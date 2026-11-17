@@ -1,0 +1,53 @@
+{
+  "schema": "vault-plugin-1",
+  "plugin": [
+    {
+      "id": "embed-html",
+      "nome": "Embed HTML",
+      "repo": "mnaoumov/obsidian-embed-html",
+      "versione": "2.7.0",
+      "minAppVersion": "1.14.5",
+      "licenza": "MIT",
+      "stato": "base",
+      "motivo": "Incorpora in una nota un file HTML, che serve per le mappe e le guide generate dal sistema; comune ai vault del proprietario il 2026-11-12.",
+      "fissato_il": "2026-11-17",
+      "sha256": {
+        "main.js": "4bb7fd2f37acaaf1608ec9a02535f22775af7099efb73e44e2a9e6d912146693",
+        "manifest.json": "b2436c77357284e98e7d7cb5af9a207a2d779aa91dc3740e3eb9215e501121dd",
+        "styles.css": "4eb753057d162de1a3a1b59e42a5a5771024136faf8fa59dd34761b0dfbb2c2f"
+      }
+    },
+    {
+      "id": "new-3d-graph",
+      "nome": "New 3D Graph",
+      "repo": "apoo711/obsidian-3d-graph",
+      "versione": "2.8.3",
+      "minAppVersion": "1.5.0",
+      "licenza": "MIT",
+      "stato": "base",
+      "motivo": "Grafo dei documenti in tre dimensioni, con filtri: e' la vista delle relazioni fra i documenti che il vault esiste per dare; comune ai vault del proprietario il 2026-11-12.",
+      "fissato_il": "2026-11-17",
+      "sha256": {
+        "main.js": "9a9b346c10c032a119130a5e85f1a8d3eec11859ec138ec474ec9879d8a80bf8",
+        "manifest.json": "54d35313d60e38867e37e128c2c9acd72bdf271f2a7e5072ceee2e846e6890f9",
+        "styles.css": "ee541114387b5cbc3d691515209f6609ea15fa94b562d058e9cd6fb7af6c4f02"
+      }
+    },
+    {
+      "id": "obsidian42-brat",
+      "nome": "BRAT",
+      "repo": "tfthacker/obsidian42-brat",
+      "versione": "2.2.0",
+      "minAppVersion": "1.11.4",
+      "licenza": "MIT",
+      "stato": "base",
+      "motivo": "Installa e aggiorna plugin che non stanno nel catalogo ufficiale; comune ai vault del proprietario il 2026-11-12, che ha indicato di prenderlo.",
+      "fissato_il": "2026-11-17",
+      "sha256": {
+        "main.js": "d2fb579d4e83162aa13fc14f8f87d593bc2294529bddec6ea74011dc0f84b72c",
+        "manifest.json": "42fc033124eada81cbda727061b22e9cc0588bf993366cd9c23ba72fd8e81e01",
+        "styles.css": "47bbeb6e1692083e7ac668e87759c76fce7c3085265808b3d3d365742191d5f9"
+      }
+    }
+  ]
+}

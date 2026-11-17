@@ -9,5 +9,6 @@
   "conversazione": {},
   "rispettaModelloChiesto": true,
   "annuncia": true,
-  "promemoriaDopo": 10
+  "promemoriaDopo": 10,
+  "riservaAgenti": { "settimanale": 0, "cinqueOre": 0, "azione": "nega" }
 }

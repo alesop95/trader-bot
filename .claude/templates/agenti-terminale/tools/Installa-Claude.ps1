@@ -327,3 +327,6 @@ Scrivi '' 'Gray'
 Scrivi 'Promemoria: mcp.json e .credentials.json non sono toccati da questo script.' 'DarkGray'
 Scrivi 'I server MCP di account vanno ricreati a mano su una macchina nuova.' 'DarkGray'
 Scrivi '' 'Gray'
+
+# Progetti MCP autorizzati della macchina: registro privato, nessun token copiato.
+& (Join-Path $PSScriptRoot 'Progetti-Agenti.ps1') -Agente claude -Account $Account -Verifica:$Verifica

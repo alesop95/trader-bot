@@ -1,6 +1,12 @@
+---
+paths:
+  - "**/*.{tsx,jsx,vue,svelte,html,css,scss}"
+  - "**/*.{png,jpg,jpeg}"
+---
+
 # Screenshot per i passi manuali e visivi
 
-> Regola modulare. Stabilisce come l'agente ottiene un riscontro visivo quando una parte dello sviluppo e necessariamente manuale e non osservabile dall'agente: chiede all'utente uno screenshot e lo legge dalla cartella dello strumento di cattura.
+> Regola condizionale dal 2026-11-12: non si carica all'avvio ma quando l'agente tocca un file di interfaccia o un'immagine, secondo il front matter `paths`, e l'indice del `CLAUDE.md` la nomina per le altre situazioni. Stabilisce come l'agente ottiene un riscontro visivo quando una parte dello sviluppo e necessariamente manuale e non osservabile dall'agente: chiede all'utente uno screenshot e lo legge dalla cartella dello strumento di cattura.
 
 ## Quando
 

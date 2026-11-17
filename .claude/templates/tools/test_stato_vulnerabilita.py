@@ -1,3 +1,5 @@
+"""Prove di stato-vulnerabilita.py: un rapporto assente, scaduto o di altro codice non vale come controllo superato."""
+
 import datetime as dt
 import importlib.util
 import json

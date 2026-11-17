@@ -19,6 +19,7 @@ import argparse
 import json
 import re
 import sys
+import time
 import urllib.request
 import urllib.error
 
@@ -30,9 +31,23 @@ def chiedi(base_url, model, api_key, prompt, max_tokens):
     req = urllib.request.Request(url, data=json.dumps(payload).encode(),
                                  headers={"Content-Type": "application/json",
                                           "Authorization": f"Bearer {api_key}"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=300) as resp:
         d = json.load(resp)
-    return d["choices"][0]["message"]["content"]
+    return risposta_di(d)
+
+
+def risposta_di(d):
+    """Il testo della risposta e se e' stata tagliata prima di cominciare.
+
+    Dal 2026-11-12. Un modello che ragiona prima di rispondere spende i token nel ragionamento:
+    con un tetto basso il servizio restituisce un testo vuoto e `finish_reason` uguale a
+    `length`. Misurato quel giorno su un modello da 14 miliardi di parametri servito da Ollama:
+    0 risposte giuste su 12 con 24 token, 12 su 12 con 800. Lo zero non misurava il modello ma
+    il tetto, e una risposta vuota contata come sbagliata ha lo stesso aspetto di un modello
+    scarso. Qui il caso si riconosce e si conta a parte."""
+    scelta = d["choices"][0]
+    testo = scelta["message"].get("content") or ""
+    return testo, (not testo.strip() and scelta.get("finish_reason") == "length")
 
 
 def norma(s):
@@ -55,21 +70,33 @@ def main():
         righe = [json.loads(r) for r in f if r.strip()]
 
     giusti = 0
+    tagliate = 0
     dettaglio = []
+    t0 = time.time()
     for i, el in enumerate(righe, 1):
         try:
-            out = chiedi(a.base_url, a.model, a.api_key, el["prompt"], a.max_tokens)
+            out, tagliata = chiedi(a.base_url, a.model, a.api_key, el["prompt"], a.max_tokens)
         except (urllib.error.URLError, KeyError, TimeoutError) as e:
-            out = f"<errore: {e}>"
+            out, tagliata = f"<errore: {e}>", False
         ok = norma(out) == norma(el["atteso"])
         giusti += ok
-        dettaglio.append({"n": i, "atteso": el["atteso"], "ottenuto": out.strip()[:80], "ok": ok})
+        tagliate += tagliata
+        voce = {"n": i, "atteso": el["atteso"], "ottenuto": out.strip()[:80], "ok": ok}
+        if tagliata:
+            voce["tagliata"] = True
+        dettaglio.append(voce)
 
     tot = len(righe)
     acc = giusti / tot if tot else 0.0
     print(json.dumps({"modello": a.model, "lotto": a.lotto, "totale": tot,
                       "giusti": giusti, "accuratezza": round(acc, 3),
+                      "tagliate": tagliate, "max_tokens": a.max_tokens,
+                      "secondi": round(time.time() - t0, 1),
                       "dettaglio": dettaglio}, ensure_ascii=False, indent=2))
+    if tagliate:
+        print(f"ATTENZIONE: {tagliate} risposte su {tot} sono vuote perche' il tetto di {a.max_tokens} token e' finito "
+              "prima della risposta, tipico di un modello che ragiona. L'accuratezza qui sopra misura il tetto, "
+              "non il modello: ripetere con --max-tokens piu' alto.", file=sys.stderr)
     # La soglia d'uso la decide il progetto: un lavoro meccanico verificabile a valle tollera piu' errori
     # di uno che si fida. Qui si esce 0 sempre: il numero e' il risultato, non un pass/fail.
     return 0

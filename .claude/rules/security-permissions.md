@@ -1,6 +1,16 @@
+---
+paths:
+  - ".claude/settings*.json"
+  - ".claude/hooks/**"
+  - "**/.mcp.json"
+  - "**/mcp*.json"
+  - "**/Dockerfile*"
+  - "**/docker-compose*.{yml,yaml}"
+---
+
 # Sicurezza, permessi e sandboxing
 
-> Regola modulare. Descrive le sei modalità di permesso di Claude Code, le limitazioni del sandbox per sistema operativo, e il rimando alla norma per i due casi che non si presentano a ogni sessione. Si applica a ogni sessione e integra le regole deny già presenti in `.claude/settings.json`.
+> Regola modulare. Descrive le sei modalità di permesso di Claude Code, le limitazioni del sandbox per sistema operativo, e il rimando alla norma per i due casi che non si presentano a ogni sessione. Dal 2026-11-12 è condizionale: non si carica all'avvio ma quando l'agente tocca le impostazioni, gli hook, la configurazione dei server MCP o un contenitore, secondo il front matter `paths`, e l'indice del `CLAUDE.md` la nomina per le altre situazioni. Le regole deny di `.claude/settings.json` valgono comunque, perché le applica il client e non questo testo.
 
 ## Le sei modalità di permesso
 

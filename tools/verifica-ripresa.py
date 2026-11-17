@@ -65,6 +65,7 @@ import importlib.util
 from pathlib import Path
 import hashlib
 import io
+import json
 import os
 import re
 import subprocess
@@ -534,7 +535,92 @@ def confronta(radice=None):
                     " è una voce parcheggiata che aspetta di entrare nel registro a cui appartiene; "
                     "si incolla lì e poi si cancella la nota.")
 
+    consegnati = consegna_in_sospeso(radice)
+    if consegnati:
+        note.append("la passata di allineamento del template ha consegnato qui %d file che aspettano "
+                    "`chiudi-allineamento`: non sono lavoro di questa sessione e `chiudi` si ferma se "
+                    "finiscono nel suo commit. Si chiudono dal template, non da qui." % consegnati)
+
     return divergenze, note
+
+
+def consegna_in_sospeso(radice=None):
+    """Quanti file dell'elenco lasciato dalla passata risultano ancora modificati in questo albero.
+
+    L'elenco lo scrive `allinea-dal-template.py` nella cartella di git del progetto e lo legge
+    anche `verifica-milestone.py`, che ferma `chiudi`. Qui serve solo a dirlo all'apertura della
+    sessione, prima che qualcuno scambi quei file per lavoro lasciato a metà."""
+    base = radice or "."
+    try:
+        r = subprocess.run(["git", "-C", base, "rev-parse", "--git-path", "allineamento-in-sospeso.json"],
+                           capture_output=True)
+        if r.returncode != 0:
+            return 0
+        percorso = r.stdout.decode("utf-8").strip()
+        if not os.path.isabs(percorso):
+            percorso = os.path.join(base, percorso)
+        if not os.path.isfile(percorso):
+            return 0
+        with io.open(percorso, encoding="utf-8-sig") as f:
+            voci = [v for v in json.load(f).get("file", []) if isinstance(v, str) and v]
+        s = subprocess.run(["git", "-C", base, "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+                           capture_output=True)
+        sporchi = [x[3:].decode("utf-8", "replace") for x in s.stdout.split(b"\0") if len(x) > 3]
+    except (OSError, ValueError, AttributeError):
+        return 0
+    cartelle = tuple(v for v in voci if v.endswith("/"))
+    return sum(1 for p in sporchi if p in voci or (cartelle and p.startswith(cartelle)))
+
+
+TETTO_TESTA_RIPRESA = 6000
+
+
+def sorgente_da_stdin():
+    """Il campo `source` che Claude Code passa a un hook SessionStart, oppure stringa vuota."""
+    try:
+        if sys.stdin is None or sys.stdin.isatty():
+            return ""
+        dati = json.loads(sys.stdin.buffer.read().decode("utf-8-sig", "replace") or "{}")
+        return str(dati.get("source", "")) if isinstance(dati, dict) else ""
+    except (ValueError, OSError):
+        return ""
+
+
+def dopo_azzeramento(radice, sorgente):
+    """Il testo da iniettare in una sessione nata da `/clear` o da una compattazione.
+
+    Dal 2026-11-12, su richiesta del proprietario. Dopo `/clear` la conversazione riparte vuota
+    nella stessa finestra, e fino a quel giorno ripartiva senza sapere che cosa stava facendo:
+    l'hook di apertura diceva soltanto se il file di ripresa era attendibile. La documentazione
+    degli hook dichiara che SessionStart scatta anche con `source` uguale a `clear` e `compact`,
+    e che ciò che l'hook stampa entra nel contesto prima del primo prompt, fino a 10.000
+    caratteri. Qui si stampa la testa del file di ripresa, cioè la sezione più recente fino alla
+    prima linea orizzontale, entro un tetto, con l'istruzione di riprendere da lì. All'avvio
+    ordinario non stampa niente: lì la procedura è la skill riprendi, che prima verifica."""
+    if sorgente not in ("clear", "compact"):
+        return ""
+    base = radice or "."
+    percorso = next((os.path.join(base, r) for r in (RIPRESA, RIPRESA_COMPAT)
+                     if os.path.isfile(os.path.join(base, r))), None)
+    if not percorso:
+        return ""
+    with io.open(percorso, encoding="utf-8-sig", errors="replace") as f:
+        testo = f.read()
+    testa = re.split(r"(?m)^---[ 	]*$", testo, maxsplit=1)[0].strip()
+    tagliata = len(testa) > TETTO_TESTA_RIPRESA
+    if tagliata:
+        testa = testa[:TETTO_TESTA_RIPRESA].rsplit("\n", 1)[0]
+    motivo = "un /clear" if sorgente == "clear" else "una compattazione"
+    relativo = os.path.relpath(percorso, base).replace(os.sep, "/")
+    righe = ["=== Ripresa dopo " + motivo + " ===",
+             "ISTRUZIONE PER L'AGENTE: questa conversazione nasce da " + motivo + " dentro una sessione",
+             "già aperta. Lo stato del lavoro è qui sotto, dalla testa di " + relativo + ": riprendi da lì",
+             "senza chiedere all'utente di ripeterlo. Se la riga di verifica dice che il file non descrive",
+             "lo stato corrente, dillo prima di proseguire. Il resto del file è cronologia e si apre solo se serve.",
+             "", testa]
+    if tagliata:
+        righe.append("[testa tagliata a %d caratteri: il seguito sta nel file]" % TETTO_TESTA_RIPRESA)
+    return "\n".join(righe) + "\n"
 
 
 def note_parcheggiate(radice=None):
@@ -583,7 +669,7 @@ def self_test():
         git("init", "-q", radice=d)
         git("config", "user.email", "prova@esempio.invalid", radice=d)
         git("config", "user.name", "Prova", radice=d)
-        os.makedirs(os.path.join(d, "_notes"))
+        os.makedirs(os.path.join(d, "_notes"), exist_ok=True)
         os.makedirs(os.path.join(d, ".claude", "memory"))
         os.makedirs(os.path.join(d, ".claude", "context"))
         io.open(os.path.join(d, RIPRESA), "w", encoding="utf-8").write("# Resume prompt\n")
@@ -789,6 +875,28 @@ def self_test():
             import shutil as _s
             _s.rmtree(tmp, ignore_errors=True)
 
+    # --- ripresa dopo /clear o compattazione
+    d = repo()
+    try:
+        os.makedirs(os.path.join(d, "_notes"), exist_ok=True)
+        with io.open(os.path.join(d, RIPRESA), "w", encoding="utf-8", newline="\n") as f:
+            f.write("## Stato di oggi\n\nlavoro in corso sul modulo X\n\n---\n\n## Cronologia vecchia\n\nnon deve comparire\n")
+        uscita = dopo_azzeramento(d, "clear")
+        prova("dopo /clear la testa del file di ripresa entra nel contesto",
+              "lavoro in corso sul modulo X" in uscita and "ISTRUZIONE PER L'AGENTE" in uscita, uscita)
+        prova("dopo /clear la cronologia sotto la linea resta fuori", "non deve comparire" not in uscita, uscita)
+        prova("dopo una compattazione vale lo stesso", "lavoro in corso sul modulo X" in dopo_azzeramento(d, "compact"))
+        prova("negativo: all'avvio ordinario non stampa niente", dopo_azzeramento(d, "startup") == "" and dopo_azzeramento(d, "") == "")
+        with io.open(os.path.join(d, RIPRESA), "w", encoding="utf-8", newline="\n") as f:
+            f.write("## Testa lunga\n\n" + ("riga di stato\n" * 2000))
+        lunga = dopo_azzeramento(d, "clear")
+        prova("una testa oltre il tetto viene tagliata e lo dichiara",
+              len(lunga) < TETTO_TESTA_RIPRESA + 1000 and "testa tagliata" in lunga, str(len(lunga)))
+        os.remove(os.path.join(d, RIPRESA))
+        prova("senza file di ripresa non stampa niente", dopo_azzeramento(d, "clear") == "")
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
     larghezza = max(len(n) for n, _, _ in esiti)
     falliti = 0
     for nome, ok, dettaglio in esiti:
@@ -810,10 +918,19 @@ def main():
                    help="come --breve, ma esce sempre con zero: vedi la nota in fondo")
     p.add_argument("--radice", help="radice del repository; per difetto la cartella corrente")
     p.add_argument("--self-test", action="store_true")
+    p.add_argument("--dopo-azzeramento", action="store_true",
+                   help="hook SessionStart: se la sessione nasce da /clear o da una compattazione, stampa la testa del file di ripresa")
+    p.add_argument("--sorgente", help="con --dopo-azzeramento: il valore di source, invece di leggerlo da stdin")
     a = p.parse_args()
 
     if a.self_test:
         return self_test()
+
+    if a.dopo_azzeramento:
+        testo = dopo_azzeramento(a.radice, a.sorgente if a.sorgente is not None else sorgente_da_stdin())
+        if testo:
+            sys.stdout.write(testo)
+        return 0
 
     if a.hook:
         a.breve = True

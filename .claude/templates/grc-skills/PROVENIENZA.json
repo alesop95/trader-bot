@@ -1,9 +1,9 @@
 {
   "repository": "github:Sushegaad/Claude-Skills-Governance-Risk-and-Compliance",
   "licenza": "MIT",
-  "tag": "v2.1.0",
-  "commit": "c5c0d4b9a40176d8534f3253a260efd7347b25cc",
-  "copiata": "2026-10-27",
+  "tag": "v2.3.0",
+  "commit": "49b5a8fe04bce5e4b08ee396df1aeea6f87860fb",
+  "copiata": "2026-11-16",
   "skill": [
     "iso27001",
     "nis2",
@@ -17,16 +17,16 @@
     "soc2"
   ],
   "ultima_verifica_a_monte": {
-    "iso27001": "2026-11-03",
-    "nis2": "2026-11-03",
-    "gdpr-compliance": "2026-11-03",
-    "iso27701": "2026-11-03",
-    "tprm": "2026-11-03",
-    "nist-csf": "2026-11-03",
-    "cis-controls": "2026-11-03",
-    "iso42001": "2026-11-03",
-    "eu-ai-act": "2026-11-03",
-    "soc2": "2026-11-03"
+    "iso27001": "2026-11-15",
+    "nis2": "2026-11-15",
+    "gdpr-compliance": "2026-11-15",
+    "iso27701": "2026-11-15",
+    "tprm": "2026-11-06",
+    "nist-csf": "2026-11-15",
+    "cis-controls": "2026-11-15",
+    "iso42001": "2026-11-15",
+    "eu-ai-act": "2026-11-15",
+    "soc2": "2026-11-15"
   },
   "nota_verifica": "Il 2026-11-03 le nove skill presenti sono state confrontate file per file con i bundle del tag v2.1.0 in un progetto istanziato: identiche, salvo un indirizzo segnaposto sostituito in gdpr-compliance/references/privacy-notice.md per la regola di anonimizzazione. soc2 e' stata aggiunta lo stesso giorno dallo stesso tag, su misura e non per completezza: compare in 17 documenti e presso tre controparti distinte nei questionari ricevuti nell'ultimo anno, mentre DORA, TISAX, Cyber Essentials e CIS Controls non compaiono mai. A monte le skill disponibili sono trentasei: le dieci qui presenti sono una selezione misurata, non un arretrato."
 }

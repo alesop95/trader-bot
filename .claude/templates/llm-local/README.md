@@ -23,6 +23,21 @@ python3 tools/offload-lotto.py --base-url http://127.0.0.1:8000/v1 --model <id> 
 
 Gli esiti sono un JSONL che conserva l'elemento e la risposta grezza, non una decisione presa: la verifica a valle resta di chi li usa, perché nemmeno un buon modello locale è esatto sempre. Il lavoro è riprendibile, quindi una corsa interrotta riparte dove si era fermata, ed è la stessa forma del pacchetto `lavoro-a-lotti`, con cui si compone.
 
+## Un modello che sta su un'altra macchina
+
+Il rilevamento di `rileva.sh` guarda colibri dentro la macchina. Spesso però il modello locale sta altrove: un servizio Ollama, LM Studio o compatibile OpenAI su una macchina della rete, magari con una GPU. `tools/rileva-endpoint.py` interroga in sola lettura gli indirizzi candidati, elenca i modelli che ciascuno serve e dice per ogni modello la fascia di compiti da cui cominciare a provarlo; non manda nessun dato del progetto, chiede solo l'elenco. Gli indirizzi vengono da `--endpoint`, dalle variabili `LLM_LOCALI_ENDPOINT` e `OLLAMA_HOST`, dal file `~/.config/llm-locali.txt` con un indirizzo per riga, e dai tre indirizzi locali consueti. L'indirizzo di un servizio della propria rete è un dato della macchina e non entra in un file tracciato.
+
+```bash
+python tools/rileva-endpoint.py
+python tools/rileva-endpoint.py --hook
+```
+
+La seconda forma stampa una riga ed esce sempre con zero: messa in un hook di avvio, dice all'agente che un modello locale c'è, quanti e di quale fascia, senza mostrare l'indirizzo. È ciò che trasforma l'offload in una regola di decisione invece che in un ricordo: davanti a un lavoro meccanico a lotti l'agente sa già se ha un serbatoio gratuito, e lo propone prima di spendere token. Il lotto si manda poi con `offload-lotto.py --base-url <indirizzo>/v1`, perché Ollama e LM Studio espongono la stessa interfaccia di colibri.
+
+La fascia è una stima ricavata dal numero di parametri, con tre soglie scelte a giudizio (sotto 7 miliardi, fra 7 e 20, oltre 20), e non sostituisce la misura. Lo dimostra la prima misura fatta, il 2026-11-12 su un servizio Ollama di rete, con il lotto di esempio di 12 classificazioni su quattro etichette e una corsa per modello: un modello da 3 miliardi ha dato 8 giuste su 12 in circa 12 secondi, uno da 8 miliardi 10 su 12 in circa 19 secondi, uno da 14 miliardi 12 su 12 in circa 94 secondi. Dodici elementi e una corsa non bastano a ordinare i modelli con sicurezza: bastano a dire che su questo compito il più grande non sbaglia e costa cinque volte il tempo.
+
+Lo stesso giorno il modello da 14 miliardi aveva dato prima 0 su 12, e non per colpa sua: è un modello che ragiona prima di rispondere, e con il tetto predefinito di 24 token esauriva i token nel ragionamento e restituiva un testo vuoto. Il banco contava il vuoto come risposta sbagliata, cioè misurava il tetto e non il modello. Da allora `bench-correttezza.py` e `offload-lotto.py` riconoscono il caso, lo contano a parte come risposta tagliata e lo dicono; `offload-lotto.py` non considera fatto un elemento tagliato e lo rifà alla corsa successiva, quindi nel file degli esiti l'ultima riga di un identificativo è quella che vale. Con un modello che ragiona si alza `--max-tokens`, e si mette in conto il tempo.
+
 ## Perché colibri e perché misurare
 
 Letto a monte il 2026-11-09, versione 2.1.0 del 31 ottobre: `coli import` accetta ora direttamente un file GGUF e lo fa girare senza conversione, c'è un'interfaccia di chat `coli ui`, e le cache KV sono passate a float16 su più motori, con `Q36_KV=f32` per restare in float32 dove serve. L'ultima è un cambiamento di comportamento predefinito che tocca proprio ciò che i banchi misurano, cioè memoria massima e byte letti dal disco: le misure registrate qui sono anteriori e vanno rifatte prima di citarle su questa versione. La licenza non è dichiarata nelle note di rilascio e resta quella già registrata.

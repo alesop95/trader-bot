@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Confronta la visibilita' dichiarata dal progetto con quella che il servizio riporta.
+"""Confronta lo stato pubblico o privato dichiarato dal progetto con quello che il servizio riporta.
 
 Perche' esiste. La regola di anonimizzazione si attiva quando il repository e' leggibile
 oltre la cerchia che lo scrive, ma la visibilita' e' un attributo che cambia con un clic e

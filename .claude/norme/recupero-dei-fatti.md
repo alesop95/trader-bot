@@ -35,3 +35,9 @@ Le due cause: due sessioni hanno agito sullo stesso guasto nello stesso minuto, 
 La contesa: per mezza giornata l'indagine ha chiesto perché un programma non ottenesse la risorsa che chiedeva, e la risposta stava in chi la teneva e non la rilasciava.
 
 La scadenza: tre chiamate di inventario del sottosistema di archiviazione non hanno un tempo massimo proprio e, per rispondere, enumerano tutti i dispositivi; un solo dispositivo guasto le blocca per sempre anche quando con la domanda non c'entra niente. Uno script che le usava in una guardia non è fallito, si è fermato: quarantadue minuti con zero CPU, zero I/O, nessuna riga di log e nessun codice di uscita, e l'unico modo di accorgersene era guardare l'elenco dei processi.
+
+## Incertezza di un attributo e diagnosi di una fonte, 16/11/2026
+
+In un progetto istanziato il recap ha trasformato la posizione non confermata di un componente già censito in presunta indisponibilità e ha riproposto un lotto escluso definitivamente. Il proprietario ha dovuto correggere entrambe le frasi, benché le evidenze fossero già nei registri. Possesso, ubicazione, salute, assegnazione e montaggio sono proprietà diverse: il dubbio su una non revoca le altre. Caso recepito dalla lezione L-011 del progetto, con la prescrizione nella regola attiva.
+
+Nella stessa chiusura otto U+0000 in due report PowerShell corrispondevano a campi DriveLetter senza lettera. Il controllo rilevava correttamente i byte ma attribuiva sempre la causa a un escape di script. La lezione L-012 distingue rilevamento e diagnosi: il testo ora dice che è una causa possibile e richiede di verificare la fonte importata. Il blocco del controllo rimane invariato. Due originali sono stati archiviati con SHA-256 prima della rappresentazione leggibile dei caratteri; l'inversione della trasformazione ricostruisce esattamente gli originali.
