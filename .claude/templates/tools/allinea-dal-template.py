@@ -102,6 +102,15 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Righe di innesco che il template ha scritto e poi cambiato: testo esatto della versione
+# superata e skill a cui appartiene. La passata le sostituisce con la riga attuale del modello
+# soltanto dove il progetto le ha lasciate identiche.
+RIGHE_SUPERATE = {
+    "- Apertura di sessione: `python .claude/templates/tools/verifica-pacchetti.py --gate`; "
+    "se dice «Gate dovuto», la prima risposta chiede al proprietario `/gate-pacchetti`: "
+    "skill `gate-pacchetti`.": "gate-pacchetti",
+}
+
 SKILL_SISTEMA = [
     "init-project-system", "sync-context", "git-sync", "repo-status",
     "gate-pacchetti", "riprendi", "onboard",
@@ -442,13 +451,26 @@ def innesco(template: Path, prj: Path, skill: list[str]) -> tuple[bytes | None, 
     s = testo.decode("utf-8").replace("\r\n", "\n")
     # presente vuol dire nominata come skill, fra apici inversi: il nome nudo compare
     # anche dentro quello della vecchia regola, `alberi-di-lavoro.md`, che non innesca niente
+    # Una riga superata si sostituisce con quella attuale del modello, ma solo se è rimasta
+    # identica a come il template l'aveva scritta: una riga che il progetto ha riformulato
+    # resta sua. Senza questo passo una riga già propagata non cambia più, perché la skill
+    # risulta nominata e l'innesco aggiunge soltanto righe mancanti (2026-11-20).
+    superate = []
+    righe_progetto = s.split("\n")
+    for vecchia, nome in RIGHE_SUPERATE.items():
+        if nome in righe_skill and vecchia in righe_progetto:
+            righe_progetto = [righe_skill[nome] if r == vecchia else r for r in righe_progetto]
+            superate.append(nome)
+    s = "\n".join(righe_progetto)
     mancanti = [k for k in skill if k in righe_skill and f"`{k}`" not in s]
-    if not mancanti or intro is None:
+    if (not mancanti or intro is None) and not superate:
         return None, [], ""
     L = s.split("\n")
-    nuove = [righe_skill[k] for k in mancanti]
+    nuove = [righe_skill[k] for k in mancanti] if intro is not None else []
     i_intro = next((i for i, r in enumerate(L) if r.startswith("Norme caricate su richiesta")), None)
-    if i_intro is not None:
+    if not nuove:
+        dove = "riga superata sostituita con quella attuale del modello"
+    elif i_intro is not None:
         j = i_intro + 1
         while j < len(L) and not L[j].startswith("- "):
             j += 1
@@ -476,7 +498,7 @@ def innesco(template: Path, prj: Path, skill: list[str]) -> tuple[bytes | None, 
     if crlf:
         out = out.replace("\n", "\r\n")
     dati = (b"\xef\xbb\xbf" if bom else b"") + out.encode("utf-8")
-    return dati, mancanti, dove
+    return dati, mancanti + superate, dove
 
 
 def righe_proprie(template: Path, candidati: set[str], locale: bytes, percorso: str) -> tuple[list[str], bool]:

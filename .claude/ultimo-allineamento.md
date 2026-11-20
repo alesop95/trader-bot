@@ -2,31 +2,15 @@
 
 <!-- generato da allinea-dal-template.py -->
 
-Commit a monte: `4d722ade6eba9d653b72dc107b2137a5bb748c40`. File interessati dalla passata: 23. Commit e push del progetto restano manuali.
+Commit a monte: `071db2ea0b90ffd5e5f1504242e65508fc36cec4`. File interessati dalla passata: 7. Commit e push del progetto restano manuali.
 
 | Esito | File |
 |---|---|
-| VECCHIO | `.claude/PROJECT-SYSTEM.md` |
-| VECCHIO | `.claude/norme/git-commands-format.md` |
-| VECCHIO | `.claude/rules/git-commands-format.md` |
-| VECCHIO | `.claude/skills/alberi-di-lavoro/RIFERIMENTO.md` |
 | VECCHIO | `.claude/skills/gate-pacchetti/SKILL.md` |
 | VECCHIO | `.claude/skills/riprendi/SKILL.md` |
 | VECCHIO | `.claude/templates/CLAUDE.md` |
-| VECCHIO | `.claude/templates/agenti-terminale/README.md` |
-| VECCHIO | `.claude/templates/agenti-terminale/tools/Avvia-Claude.ps1` |
-| VECCHIO | `.claude/templates/agenti-terminale/tools/Avvia-Codex.ps1` |
-| VECCHIO | `.claude/templates/agenti-terminale/tools/Posta-Sessioni.ps1` |
-| VECCHIO | `.claude/templates/agenti-terminale/tools/Pulisci-Codex.ps1` |
-| VECCHIO | `.claude/templates/agenti-terminale/tools/posta-sessioni.py` |
-| VECCHIO | `.claude/templates/anonymization/tools/Test-Anonymization.py` |
-| VECCHIO | `.claude/templates/lezioni-recepite.json` |
 | VECCHIO | `.claude/templates/tools/allinea-dal-template.py` |
-| VECCHIO | `.claude/templates/tools/guida-grafica.py` |
-| VECCHIO | `.claude/templates/tools/session-end-wipe.ps1` |
-| VECCHIO | `.claude/templates/tools/stato-template.py` |
-| VECCHIO | `.claude/templates/tools/test-identita-personali.py` |
-| NUOVO | `.claude/templates/tools/tests/test_gate_dovuto.py` |
+| VECCHIO | `.claude/templates/tools/tests/test_gate_dovuto.py` |
 | VECCHIO | `.claude/templates/tools/verifica-pacchetti.py` |
 | INNESCO | `CLAUDE.md` |
 
@@ -34,7 +18,7 @@ Conflitti ancora da risolvere: 0.
 
 ## Gate dei pacchetti
 
-Gate dovuto: 106 voci del catalogo su 106 non sono mai state viste dal gate né decise (nessuna tornata registrata). Lanciare /gate-pacchetti.
+Gate dovuto: 106 voci del catalogo su 106 non sono mai state viste dal gate né decise (nessuna tornata registrata). La tornata la avvia /riprendi, oppure /gate-pacchetti.
 
 La riga si ricalcola in ogni momento con `python .claude/templates/tools/verifica-pacchetti.py --gate`. Una tornata dovuta si dice al proprietario nella prima risposta della sessione, perché l'agente non può lanciare `/gate-pacchetti` da sé.
 

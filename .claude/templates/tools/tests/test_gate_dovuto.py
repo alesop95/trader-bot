@@ -98,5 +98,61 @@ class GateDovuto(unittest.TestCase):
         self.assertIn("`beta`", ricevuta)
 
 
+VECCHIA = ("- Apertura di sessione: `python .claude/templates/tools/verifica-pacchetti.py --gate`; "
+           "se dice «Gate dovuto», la prima risposta chiede al proprietario `/gate-pacchetti`: skill `gate-pacchetti`.")
+NUOVA = ("- Apertura di sessione: le righe di `python .claude/templates/tools/verifica-pacchetti.py --riepilogo` "
+         "entrano nella prima risposta; se dicono «Gate dovuto» si avvia la skill `gate-pacchetti`.")
+
+
+class RiepilogoERigaSuperata(GateDovuto):
+    """Dal 2026-11-20: /riprendi mostra che cosa il progetto usa del template e avvia il gate;
+    la riga di innesco che chiedeva di lanciarlo a mano va sostituita dove è già propagata."""
+
+    def test_il_riepilogo_dice_allineamento_adottati_e_gate(self):
+        self.allinea()
+        (self.prj / ".claude/allineamento-template.json").write_text(
+            json.dumps({"template_commit": "abcdef1234567", "allineato_il": "2026-11-20", "strumento": "prova"}),
+            encoding="utf-8")
+        (self.prj / ".claude/pacchetti.json").write_text(json.dumps(
+            {"versione": 1, "pacchetti": {"alfa": {"stato": "rimandato", "data": "2026-11-20", "motivo": "prova"}}}),
+            encoding="utf-8")
+        codice, uscita = self.verifica("--riepilogo")
+        self.assertEqual(codice, 0, uscita)
+        self.assertIn("Template: allineato al commit abcdef1 del 2026-11-20", uscita)
+        self.assertIn("Pacchetti adottati: nessuno registrato", uscita)
+        self.assertIn("Pacchetti rimandati: alfa.", uscita)
+        self.assertIn("Gate dovuto: 1 voci del catalogo su 2", uscita)
+
+    def prepara_innesco(self, riga_progetto):
+        modello = self.tpl / ".claude/templates/CLAUDE.md"
+        modello.write_text("# Modello\n\nNorme caricate su richiesta, una riga per situazione.\n\n" + NUOVA + "\n",
+                           encoding="utf-8", newline="\n")
+        subprocess.run(["git", "-C", str(self.tpl), "add", "-A"], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(self.tpl), "commit", "-q", "-m", "modello"], check=True, capture_output=True)
+        (self.prj / ".claude/skills/gate-pacchetti").mkdir(parents=True)
+        (self.prj / "CLAUDE.md").write_text("# Progetto\n\nNorme caricate su richiesta.\n\n" + riga_progetto + "\n",
+                                            encoding="utf-8", newline="\n")
+
+    def allinea_innesco(self):
+        r = subprocess.run([sys.executable, str(ALLINEA), "--template", str(self.tpl), "--progetto", str(self.prj),
+                            "--applica", "--innesco"], capture_output=True, text=True, encoding="utf-8")
+        self.assertIn(r.returncode, (0, 1), r.stdout + r.stderr)
+        return (self.prj / "CLAUDE.md").read_text(encoding="utf-8")
+
+    def test_la_riga_superata_identica_si_sostituisce(self):
+        self.prepara_innesco(VECCHIA)
+        testo = self.allinea_innesco()
+        self.assertIn(NUOVA, testo)
+        self.assertNotIn(VECCHIA, testo)
+        self.assertEqual(testo.count("skill `gate-pacchetti`"), 1)
+
+    def test_la_riga_riformulata_dal_progetto_resta_sua(self):
+        propria = "- Riga mia sul gate: skill `gate-pacchetti`."
+        self.prepara_innesco(propria)
+        testo = self.allinea_innesco()
+        self.assertIn(propria, testo)
+        self.assertNotIn(NUOVA, testo)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -7,8 +7,8 @@ description: >
   propone i soli pacchetti dei settori riconosciuti, ognuno con che cosa fa, perché a questo
   progetto potrebbe servire e che cosa costa. Si esegue in inizializzazione, a ogni tornata
   di allineamento, e ogni volta che l'obiettivo del progetto cambia. Non installa nulla
-  senza una risposta esplicita e non esegue mai git add, commit o push.
-disable-model-invocation: true
+  senza una risposta esplicita e non esegue mai git add, commit o push. La avvia da sé /riprendi
+  quando `verifica-pacchetti.py --gate` dice «Gate dovuto».
 ---
 
 ## Contesto del progetto (best-effort, pre-iniettato)
@@ -89,6 +89,8 @@ Ne segue una conseguenza operativa per questa skill: il conteggio si tiene attra
 ## Passo 6 - Chiudere dichiarando che cosa è cambiato
 
 Ogni scelta si registra anche in `.claude/pacchetti.json`, con `versione: 1` e una mappa `pacchetti`: per ciascun nome si scrivono `stato` (`adottato`, `rifiutato` o `rimandato`), data e motivo. Per un pacchetto adottato si conserva l'elenco `file`, con coppie `origine` relativa al template e `destinazione` relativa al progetto; una destinazione sotto `.claude/templates/` è soltanto un modello e non conta come istanza. Il registro non contiene valori privati, credenziali o percorsi di altre macchine. Le ricette comuni pubblicate in `.claude/templates/pacchetti-istanza.json` evitano di ripetere l'elenco, ma non sostituiscono la decisione del proprietario.
+
+I pacchetti che `verifica-pacchetti.py --riepilogo` dà come presenti ma mai registrati, cioè installati prima che il registro esistesse o a mano, non si ripropongono come nuovi: si mostrano tutti insieme e si chiede soltanto se registrarli come adottati, con la data di oggi e il motivo «già in uso».
 
 Prima di dichiarare concluso il gate eseguire `python .claude/templates/tools/verifica-pacchetti.py --progetto . --template .`: distingue adozione, presenza dei file, configurazione privata e richiamo ai controlli. Una configurazione presente non equivale a un controllo collaudato. Registri assenti restano scelte non censite; non si trasformano in rifiuti o autorizzazioni dedotte. `allinea` ripristina i file mancanti dei pacchetti dichiarati adottati usando lo stesso confronto e gli stessi conflitti degli altri file, e riporta il lavoro di istanziazione ancora aperto oltre al risultato della propagazione.
 

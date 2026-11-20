@@ -7,7 +7,8 @@ description: >
   soli pacchetti dei settori riconosciuti, ognuno con che cosa fa, perché a questo progetto
   potrebbe servire e che cosa costa. Si esegue in inizializzazione, a ogni tornata di
   allineamento, e ogni volta che l'obiettivo del progetto cambia. Non installa nulla senza una
-  risposta esplicita e non esegue mai git add, commit o push.
+  risposta esplicita e non esegue mai git add, commit o push. La avvia da sé /riprendi quando
+  `verifica-pacchetti.py --gate` dice «Gate dovuto».
 ---
 
 <!-- generato da sync-codex-skills.py; non modificare -->
