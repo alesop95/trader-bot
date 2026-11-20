@@ -1120,6 +1120,48 @@
     "dove": ".claude/skills/prove-che-misurano/RIFERIMENTO.md: una dipendenza importata solo dal punto d'ingresso si prova con la build"
   },
   {
+    "progetto": "9546cca6109b",
+    "id": "L-051",
+    "commit": "f542192",
+    "data": "2026-11-20",
+    "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md: il parametro con predefinito vuoto nell'emulatore"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-052",
+    "commit": "f542192",
+    "data": "2026-11-20",
+    "dove": ".claude/skills/pipeline-app/RIFERIMENTO.md: l'IP dietro un proxy, verificato nei due versi"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-053",
+    "commit": "2130769",
+    "data": "2026-11-19",
+    "dove": ".claude/templates/agenti-terminale/tools/posta-sessioni.py"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-054",
+    "commit": "2130769",
+    "data": "2026-11-19",
+    "dove": ".claude/templates/agenti-terminale/tools/Pulisci-Codex.ps1"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-057",
+    "commit": "f542192",
+    "data": "2026-11-20",
+    "dove": ".claude/rules/git-commands-format.md e norma: lo script interattivo chiude il blocco"
+  },
+  {
+    "progetto": "9546cca6109b",
+    "id": "L-058",
+    "commit": "f542192",
+    "data": "2026-11-20",
+    "dove": ".claude/skills/alberi-di-lavoro/RIFERIMENTO.md: i controlli di chiudi in un albero secondario"
+  },
+  {
     "progetto": "9781581909d7",
     "id": "L-001",
     "commit": "",
@@ -1426,6 +1468,13 @@
     "commit": "",
     "data": "2026-11-10",
     "dove": ".claude/PROJECT-SYSTEM.md sezione 24: misurare il margine dei progetti prima di far crescere una regola sempre attiva; .claude/rules/security-permissions.md alleggerita di 1667 caratteri spostando due sezioni in .claude/norme/security-permissions.md."
+  },
+  {
+    "progetto": "e8225edf83b5",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-20",
+    "dove": "verifica-pacchetti.py: --gate e --registra-tornata, campo tornate nel registro .claude/pacchetti.json; stato-template.py e allinea-dal-template.py: sezione «Gate dei pacchetti» nella ricevuta, aggiornata anche dalle corse che non consegnano; templates/CLAUDE.md: riga di innesco del controllo all'apertura di sessione; gate-pacchetti e riprendi: registrazione della tornata e controllo in ripresa; test_gate_dovuto.py. Verificato dal vivo su due cloni usa e getta allineati in blocco, con sessioni claude -p."
   },
   {
     "progetto": "f00655740f68",

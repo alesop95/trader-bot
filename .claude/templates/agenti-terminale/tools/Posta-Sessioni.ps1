@@ -1,5 +1,13 @@
 # Punto comune ai launcher: nessun protocollo privato dei due agenti.
 function Prepara-PostaSessioni([string]$Agente, [int]$Account, [string]$Progetto, [string]$Posta) {
+  # La cassetta registra il percorso del progetto in un posto che ogni sessione della macchina legge,
+  # e che il wipe non tocca. Fuori da un progetto istanziato dal template non si apre affatto: il
+  # 2026-11-17 un avvio da una cartella di documenti privati ne ha scritto il nome nella cassetta,
+  # leggibile anche dalle sessioni dei progetti aziendali (decisione del proprietario, stesso giorno).
+  if (-not (Test-Path -LiteralPath (Join-Path $Progetto '.claude\PROJECT-SYSTEM.md'))) {
+    Write-Host 'Cartella fuori dai progetti del template: nessuna cassetta, niente scritto fuori da qui.' -ForegroundColor DarkGray
+    return $null
+  }
   $tool = Join-Path $PSScriptRoot 'posta-sessioni.py'
   if (-not (Test-Path -LiteralPath $tool)) { throw "Manca la cassetta comune: $tool" }
   # La cassetta vive in territorio del sistema operativo, fuori da entrambi i dischi di
@@ -25,8 +33,16 @@ function Prepara-PostaSessioni([string]$Agente, [int]$Account, [string]$Progetto
   # Una soglia larga sbaglia per eccesso di prudenza, cioe' lascia qualche morto in elenco; una
   # soglia stretta sbaglia togliendo dall'elenco chi c'e', che e' l'errore peggiore dei due.
   & python $tool --root $Posta congeda --inattivi-da 168 | Out-Null
-  $registrazione = & python $tool --root $Posta registra --nome $nome --agente $Agente --progetto $Progetto
-  if ($LASTEXITCODE -ne 0) { throw "Registrazione nella cassetta fallita: $registrazione" }
+  # Poi toglie le sessioni finite, con i loro messaggi: congedate o cadute con il processo morto.
+  & python $tool --root $Posta pulisci | Out-Null
+  $registrazione = & python $tool --root $Posta registra --nome $nome --agente $Agente --progetto $Progetto --pid $PID
+  # La cassetta e' un servizio accessorio: se non registra, la sessione parte senza, e lo dice.
+  # Fino al 2026-11-17 qui c'era un throw, e una cartella con un'emoji nel nome ha impedito di
+  # avviare tutti e tre gli account: un wrapper che non parte e' peggio di una cassetta mancante.
+  if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Cassetta non disponibile, la sessione parte senza: $registrazione"
+    return $null
+  }
   $env:PROJECT_AGENT_MAILBOX_ROOT = $Posta
   $env:PROJECT_AGENT_MAILBOX_ID = $nome
   $env:PROJECT_AGENT_MAILBOX_TOOL = $tool
@@ -54,6 +70,8 @@ function Congeda-PostaSessioni() {
   if (-not $env:PROJECT_AGENT_MAILBOX_ROOT) { return }
   try {
     & python $env:PROJECT_AGENT_MAILBOX_TOOL --root $env:PROJECT_AGENT_MAILBOX_ROOT congeda --nome $env:PROJECT_AGENT_MAILBOX_ID | Out-Null
+    # Una sessione finita non resta nella cassetta: si toglie subito, con i suoi messaggi.
+    & python $env:PROJECT_AGENT_MAILBOX_TOOL --root $env:PROJECT_AGENT_MAILBOX_ROOT pulisci | Out-Null
   } catch {
     Write-Host "Congedo dalla cassetta non riuscito: $_" -ForegroundColor DarkYellow
   }

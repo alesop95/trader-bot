@@ -42,6 +42,7 @@ Norme caricate su richiesta, una riga per situazione con le parole con cui si pr
 - Il progetto è un'applicazione da distribuire e si deve decidere se servono controlli al commit, CI dopo il push, prove del runtime o CD, anche una sola fase: skill `pipeline-app`, solo se istanziata al gate dei pacchetti.
 - Va prodotto, modificato o convertito un artefatto visivo o documentale, cioè un documento, una presentazione, un PDF, un'immagine, un'animazione, un audio o un impaginato, oppure si sta per scrivere uno script o installare una libreria per farlo: skill `craft-apps`, che prima verifica in locale le applicazioni Craft installate e le usa senza rete né token.
 - Si imposta o si verifica user.name e user.email, si collega o si cambia il remoto o l'alias SSH, si inizializza un repository, un push fallisce per permessi, `/status` mostra un account Claude diverso da quello atteso, si autentica o si usa `gh`: skill `identita-git`.
+- Apertura di sessione: `python .claude/templates/tools/verifica-pacchetti.py --gate`; se dice «Gate dovuto», la prima risposta chiede al proprietario `/gate-pacchetti`: skill `gate-pacchetti`.
 
 ## Apprendimenti recenti
 

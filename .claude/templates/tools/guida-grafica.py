@@ -168,7 +168,7 @@ def genera(dati: dict, voci: list, skill: list, righe_filoni: list) -> str:
         if v["settore"] not in settori:
             settori.append(v["settore"])
     p = ['<!DOCTYPE html>', '<html lang="it">', '<head>', '<meta charset="utf-8">', '<meta name="viewport" content="width=device-width, initial-scale=1">',
-         '<title>template-claude-developing - Guida grafica</title>', '<style>', STILE.rstrip(), '</style>', '</head>', '<body>', '<main>',
+         '<title>Guida grafica del template</title>', '<style>', STILE.rstrip(), '</style>', '</head>', '<body>', '<main>',
          '<div class="eye">Generata da tools/guida-grafica.py, non si modifica a mano</div>',
          '<h1>Come si usa il template</h1>',
          '<p class="sub">Tre viste dello stesso sistema: le fasi in cui lo si usa, il modo in cui gli strumenti si passano il lavoro, e che cosa offre settore per settore. Affianca la guida d\'uso, che spiega; il dettaglio di ogni voce sta nel riferimento.</p>',

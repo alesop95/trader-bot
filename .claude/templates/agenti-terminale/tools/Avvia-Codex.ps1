@@ -157,7 +157,7 @@ elseif (-not $Resto -or $Resto.Count -eq 0) {
 if ($Progetto -and -not $NoPosta) {
   . (Join-Path $PSScriptRoot 'Posta-Sessioni.ps1')
   $cassetta = Prepara-PostaSessioni 'codex' $Account $Progetto $Posta
-  $argomenti += @('--add-dir', $cassetta)
+  if ($cassetta) { $argomenti += @('--add-dir', $cassetta) }
 }
 
 # --- Riserva dei subagent ---------------------------------------------------

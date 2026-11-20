@@ -20,7 +20,7 @@ try {
   if (-not $NoPosta) {
     . (Join-Path $PSScriptRoot 'Posta-Sessioni.ps1')
     $cassetta=Prepara-PostaSessioni 'claude' $Account $Progetto $Posta
-    $extra+=@('--add-dir',$cassetta)
+    if ($cassetta) { $extra+=@('--add-dir',$cassetta) }
   }
   & claude @extra @Resto
 }

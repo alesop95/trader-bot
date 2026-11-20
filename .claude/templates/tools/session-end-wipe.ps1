@@ -636,6 +636,31 @@ else {
   else { Write-Log 'Blocco 4 saltato: scrub-claude-json.js o node non disponibili.' }
 }
 
+# --- 5) cassetta delle sessioni: le sessioni finite si tolgono anche da li' ---
+# La cassetta comune fra sessioni Claude e Codex vive in ProgramData, fuori dalla home dell'account,
+# e fino al 2026-11-17 nessun wipe la toccava: le registrazioni delle sessioni finite, con il
+# percorso del progetto, restavano per sempre, cioe' un secondo magazzino accanto a quello che
+# questo script pulisce (decisione del proprietario, stesso giorno). Si tolgono le sessioni congedate
+# e quelle il cui processo di launcher e' morto, con i loro messaggi; le vive restano e continuano
+# a parlarsi. Lo strumento si trova dalle variabili del launcher o dal percorso del template.
+$postaRoot = $env:PROJECT_AGENT_MAILBOX_ROOT
+if (-not $postaRoot -and $env:ProgramData) { $postaRoot = Join-Path $env:ProgramData 'agenti-posta' }
+$postaTool = $env:PROJECT_AGENT_MAILBOX_TOOL
+if (-not $postaTool) {
+  $tplFile = Join-Path $HOME '.config\template-claude-path.txt'
+  if (Test-Path -LiteralPath $tplFile) {
+    $tplRadice = Get-Content -LiteralPath $tplFile | Where-Object { $_.Trim() } | Select-Object -First 1
+    if ($tplRadice) { $postaTool = Join-Path $tplRadice.Trim() '.claude\templates\agenti-terminale\tools\posta-sessioni.py' }
+  }
+}
+if ($postaRoot -and (Test-Path -LiteralPath $postaRoot) -and $postaTool -and (Test-Path -LiteralPath $postaTool) -and (Get-Command python -ErrorAction SilentlyContinue)) {
+  $argPosta = @($postaTool, '--root', $postaRoot, 'pulisci')
+  if ($DryRun) { $argPosta += '--prova' }
+  try { Write-Log ('Cassetta delle sessioni: ' + ((& python @argPosta 2>&1 | Out-String).Trim())) }
+  catch { Write-Log ('Cassetta delle sessioni non pulita: ' + $_.Exception.Message) }
+}
+else { Write-Log 'Blocco 5 saltato: cassetta o posta-sessioni.py non trovati.' }
+
 Write-Log ("Rimossi {0} elementi, conservati {1}." -f $script:rimossi, $script:conservati)
 if ($script:perCategoria.Count) { Write-Log ('Rimossi per categoria: ' + (($script:perCategoria.Keys | ForEach-Object { '{0} {1}' -f $_, $script:perCategoria[$_] }) -join ', ') + '.') }
 Write-Log 'Fatto.'

@@ -175,6 +175,15 @@ PIVA =re.compile(r"\b(?:P\.?\s?IVA|partita iva|cod\.?\s?fisc|codice fiscale)\b[^
 DOMINI_DOC = ("example.com", "example.org", "example.net", "example.edu", ".example")
 
 # Segnaposto legittimi per la posta: persona-a@, referente-esempio-1@, e simili.
+# Le annotazioni OData, cioe' un nome di proprieta' seguito da @odata. e da un termine come nextLink
+# nelle risposte Redfish o count in Microsoft Graph, hanno la forma di un indirizzo email e non lo
+# sono; qui non si scrivono per intero perche' il controllo delle identita' le fermerebbe. Un progetto istanziato le
+# escludeva con una chiave scritta a mano nella propria copia, che l'allineamento non poteva piu'
+# aggiornare (2026-11-17); qui si escludono per termine, cosi' che un dominio vero come odata.org
+# resti un indirizzo.
+ODATA_TERMINI = {"context", "nextlink", "deltalink", "count", "type", "id", "etag", "editlink", "readlink",
+                 "navigationlink", "associationlink", "mediareadlink", "mediaeditlink", "mediacontenttype",
+                 "mediaetag", "metadataetag"}
 MAIL_PLACEHOLDER = re.compile(r"^(persona|referente|collaboratore|consulente|tirocinante)-", re.I)
 
 
@@ -366,7 +375,8 @@ def analizza(pat, files):
                 dominio = mail.split("@")[-1].lower()
                 if (mail.lower() in mail_ok
                         or MAIL_PLACEHOLDER.match(locale)
-                        or dominio.endswith(DOMINI_DOC)):
+                        or dominio.endswith(DOMINI_DOC)
+                        or (dominio.startswith("odata.") and dominio[6:] in ODATA_TERMINI)):
                     continue
                 aggiungi("EMAIL PERSONALE", f, ln, riga, mail, origine)
 
@@ -488,7 +498,19 @@ def autotest():
         if len(voci) != 1 or voci[0][2] != ip_prova:
             errori += 1
             print("analizza, versione Chrome: atteso il solo IP endpoint, ottenuti %d" % len(voci))
-    totale = len(casi_iban) + len(casi_carta) + 3
+        # Un'annotazione OData non e' un indirizzo; un indirizzo vero sulla stessa riga, e uno su un
+        # dominio che comincia per odata ma non e' un termine OData, restano riscontri.
+        annotazione = "Members" + "@odata" + ".nextLink"
+        vero = "prova" + "@dominio" + ".it"
+        dominio_odata = "info" + "@odata" + ".org"
+        with io.open(f, "w", encoding="utf-8") as fh:
+            fh.write("%s, scrivere a %s o a %s\n" % (annotazione, vero, dominio_odata))
+        trovati, _ = analizza(pat, [(f, "tracciato")])
+        voci = sorted(v[2] for v in trovati.get("EMAIL PERSONALE", []))
+        if voci != sorted([vero, dominio_odata]):
+            errori += 1
+            print("analizza, annotazione OData: attesi i soli due indirizzi veri, ottenuti %s" % voci)
+    totale = len(casi_iban) + len(casi_carta) + 4
     # esclusione per decisione: toglie solo la categoria dichiarata, sotto il solo prefisso.
     # I valori di prova si compongono a tempo di esecuzione e non stanno scritti per intero in
     # questo file, che è tracciato: scritti per intero, lo strumento trova sé stesso in ogni

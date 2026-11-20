@@ -257,22 +257,47 @@ def sezione_attese(attesi):
     return testo
 
 
-def innesta_attese(testo, attesi):
-    """Aggiorna la sola sezione delle attese dentro una ricevuta gia' scritta.
+TITOLO_GATE = "## Gate dei pacchetti"
+
+
+def sezione_gate(gate):
+    """La sezione che dice se una tornata del gate dei pacchetti è dovuta.
+
+    Dal 2026-11-20 (L-002 di un progetto istanziato): l'allineamento in blocco porta il catalogo
+    ma non esegue il gate, riservato al proprietario, e nessun punto letto in sessione
+    lo diceva. `gate` è il dizionario con `riga` e `nuovi` calcolato da
+    verifica-pacchetti.py; None quando il catalogo non c'è."""
+    if not gate:
+        return ""
+    testo = "\n" + TITOLO_GATE + "\n\n" + gate["riga"] + "\n\n"
+    testo += (
+        "La riga si ricalcola in ogni momento con "
+        "`python .claude/templates/tools/verifica-pacchetti.py --gate`. Una tornata dovuta "
+        "si dice al proprietario nella prima risposta della sessione, perché l'agente non "
+        "può lanciare `/gate-pacchetti` da sé.\n"
+    )
+    if gate.get("nuovi"):
+        testo += "\nVoci mai viste: " + ", ".join("`%s`" % n for n in gate["nuovi"]) + ".\n"
+    return testo
+
+
+def innesta_attese(testo, attesi, gate=None):
+    """Aggiorna le sole sezioni del gate e delle attese dentro una ricevuta gia' scritta.
 
     Serve quando la passata non consegna nessun file: rigenerare la ricevuta
     cancellerebbe il verbale dell'ultima consegna, e riscriverla identica a ogni
     corsa lascerebbe il progetto "incompleto" per sempre, come misurato il
     2026-11-09 sul primo progetto con un'attesa aperta.
     """
-    corpo = testo.split(TITOLO_ATTESE)[0].rstrip("\n")
-    sezione = sezione_attese(attesi)
+    tagli = [i for i in (testo.find(TITOLO_GATE), testo.find(TITOLO_ATTESE)) if i >= 0]
+    corpo = (testo[: min(tagli)] if tagli else testo).rstrip("\n")
+    sezione = sezione_gate(gate) + sezione_attese(attesi)
     if not sezione:
         return corpo + "\n"
     return corpo + "\n" + sezione
 
 
-def ricevuta(esiti, commit, attesi=None):
+def ricevuta(esiti, commit, attesi=None, gate=None):
     written = [
         e
         for e in esiti
@@ -280,7 +305,7 @@ def ricevuta(esiti, commit, attesi=None):
         in ("NUOVO", "VECCHIO", "SUPERATO", "MERGE", "RISOLTO", "INNESCO", "SPOSTATO", "RIMOSSO")
     ]
     attesi = list(attesi or [])
-    if not written and not attesi:
+    if not written and not attesi and not (gate and gate.get("nuovi")):
         return None
     conflicts = [e["file"] for e in esiti if e["esito"] == "CONFLITTO"]
     text = (
@@ -292,6 +317,7 @@ def ricevuta(esiti, commit, attesi=None):
     text += "\nConflitti ancora da risolvere: %d.\n" % len(conflicts)
     if conflicts:
         text += "\n" + "\n".join("`%s`" % p for p in conflicts) + "\n"
+    text += sezione_gate(gate)
     text += sezione_attese(attesi)
     return text
 

@@ -903,15 +903,27 @@ def main():
     # Le attese dei filoni viaggiano nella ricevuta perche' il registro resta a monte:
     # un progetto che non le legge ripropone una decisione gia' presa (L-018, 2026-11-09).
     attesi = stato_template.attese(tpl, prj)
-    consegna = stato_template.ricevuta(effettivi, stato_template.git(tpl, "rev-parse", "HEAD"), attesi)
-    # Se questa corsa non ha consegnato niente, la ricevuta non si rigenera: si aggiorna
-    # la sola sezione delle attese dentro quella esistente, perche' il resto e' il verbale
-    # dell'ultima consegna vera e rigenerarlo lo cancellerebbe.
+    # Il gate dei pacchetti viaggia nella ricevuta per la stessa ragione: l'allineamento in
+    # blocco porta il catalogo e non esegue il gate, riservato al proprietario, e senza una
+    # riga letta in sessione un progetto non lo faceva mai (L-002 di un progetto istanziato, 2026-11-20).
+    try:
+        stato_gate = pacchetti.gate(prj, catalogo)
+    except (OSError, ValueError, TypeError) as errore:
+        stato_gate = None
+        esiti.append({"file": pacchetti.REGISTRO, "esito": "CONFLITTO", "nota": "gate non calcolabile: " + str(errore)})
+    gate_ricevuta = {"riga": pacchetti.riga_gate(stato_gate), "nuovi": stato_gate["nuovi"]} if stato_gate else None
+    consegna = stato_template.ricevuta(effettivi, stato_template.git(tpl, "rev-parse", "HEAD"), attesi, gate_ricevuta)
+    # Se questa corsa non ha consegnato niente, la ricevuta non si rigenera: si aggiornano
+    # le sole sezioni del gate e delle attese dentro quella esistente, perche' il resto e' il
+    # verbale dell'ultima consegna vera e rigenerarlo lo cancellerebbe. Si aggiornano anche
+    # quando non c'e' niente da dire, perche' una sezione rimasta dalla corsa precedente
+    # direbbe ancora dovuta una tornata gia' fatta.
     scritti = [e for e in effettivi if e["esito"] not in ("CONFLITTO", "PACCHETTI", "ADATTATO", "LOCALE", "UGUALE")]
     ricevuta_esistente = prj / ".claude/ultimo-allineamento.md"
-    if consegna and not scritti and ricevuta_esistente.is_file():
+    if (not scritti and ricevuta_esistente.is_file()
+            and "<!-- generato da allinea-dal-template.py -->" in ricevuta_esistente.read_text(encoding="utf-8-sig")):
         consegna = stato_template.innesta_attese(
-            ricevuta_esistente.read_text(encoding="utf-8-sig"), attesi
+            ricevuta_esistente.read_text(encoding="utf-8-sig"), attesi, gate_ricevuta
         )
     if consegna:
         relativo = ".claude/ultimo-allineamento.md"

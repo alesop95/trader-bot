@@ -374,7 +374,19 @@ foreach ($r in $radiciValide) {
       continue
     }
     if ($DryRun) { Scrivi ("    [dry-run] codex delete {0} --force" -f $s.Id) 'DarkGray'; continue }
-    & codex delete $s.Id --force 2>&1 | Out-Null
+    # Con ErrorActionPreference a Stop, in Windows PowerShell 5.1 una riga di stderr di un comando
+    # nativo rediretta con 2>&1 diventa un errore che ferma lo script: il 2026-11-19 un solo
+    # "failed to delete session" ha interrotto la pulizia di tutte le radici dopo la seconda
+    # sessione. L'esito si legge dal codice di uscita, e un fallimento si dice e non ferma le altre.
+    $precedente = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $uscita = (& codex delete $s.Id --force 2>&1 | Out-String).Trim()
+    $codice = $LASTEXITCODE
+    $ErrorActionPreference = $precedente
+    if ($codice -ne 0) {
+      Scrivi ("    non eliminata {0} (uscita {1}): {2}" -f $s.Id, $codice, $uscita) 'Yellow'
+      continue
+    }
     Scrivi ("    eliminata sessione {0}" -f $s.Id) 'DarkGray'
   }
 
