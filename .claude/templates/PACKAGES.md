@@ -4,7 +4,7 @@
 
 ## Come si usa
 
-Il catalogo si attraversa per settore e non per riga, e la differenza non è di comodità: con 107 voci, un gate che le proponga una per una è un gate che nessuno arriva in fondo a leggere, e un gate che ne proponga tre scelte a occhio è un gate che ne nasconde decine. La procedura autoritativa è la skill `gate-pacchetti`, che questo file alimenta; qui sta il criterio che quella skill applica.
+Il catalogo si attraversa per settore e non per riga, e la differenza non è di comodità: con 108 voci, un gate che le proponga una per una è un gate che nessuno arriva in fondo a leggere, e un gate che ne proponga tre scelte a occhio è un gate che ne nasconde decine. La procedura autoritativa è la skill `gate-pacchetti`, che questo file alimenta; qui sta il criterio che quella skill applica.
 
 Il criterio è che il settore si riconosce dall'obiettivo del progetto, e i pacchetti si propongono solo dentro i settori riconosciuti. Prima di aprire una tabella l'agente dice quali settori ha riconosciuto e da che cosa li ha riconosciuti, cioè dal fatto che il progetto abbia già codice o parta da zero, che raccolga fonti o le produca, che il suo dominio sia scientifico, che scriva prosa destinata a qualcuno, che abbia un tracciatore di problemi, che sia grande abbastanza da non leggersi per intero. Quel riconoscimento si dichiara e si fa correggere: è un'ipotesi sul progetto, e chi lo conosce è l'utente, non l'agente. Un settore che l'utente aggiunge si attraversa come gli altri; uno che toglie si salta dichiarandolo, così che la prossima tornata sappia che era stato escluso e non dimenticato.
 
@@ -22,7 +22,7 @@ Una seconda regola attraversa i settori allo stesso modo, e riguarda i pacchetti
 
 ## Catalogo
 
-Il catalogo è diviso per settore, e la divisione è il modo in cui il gate lo attraversa. Un progetto appartiene a due o tre settori, non a dieci, e riconoscerli dal suo obiettivo prima di aprire una tabella è ciò che trasforma un elenco di 107 voci in tre domande. Ogni settore apre con la frase che dice a chi serve e che cosa chiedere per saperlo; le righe dentro restano quelle di sempre, con la colonna che dichiara il trigger concreto.
+Il catalogo è diviso per settore, e la divisione è il modo in cui il gate lo attraversa. Un progetto appartiene a due o tre settori, non a dieci, e riconoscerli dal suo obiettivo prima di aprire una tabella è ciò che trasforma un elenco di 108 voci in tre domande. Ogni settore apre con la frase che dice a chi serve e che cosa chiedere per saperlo; le righe dentro restano quelle di sempre, con la colonna che dichiara il trigger concreto.
 
 ### Fondamenta e igiene del progetto
 
@@ -228,6 +228,14 @@ Riguardano il lavoro parallelo e il modo di tenerne traccia: più agenti su più
 | `psmux` | Tmux nativo per Windows (no WSL, no Cygwin); legge il `.tmux.conf` esistente; first-class support per le agent teams di Claude Code in pannelli separati | Windows senza WSL2 con 3 o più sessioni Claude Code in parallelo | Tool esterno per l'utente; nessun file nel progetto | MIT; repo psmux/psmux |
 | `tmux-claude-hatch` | Plugin tmux, più un plugin Claude Code facoltativo, che apre una sessione Claude Code in un popup per cartella di progetto; un selettore fzf elenca le sessioni in corso e che cosa sta facendo ciascuna, e una campanella segnala quella che ha finito o chiede attenzione | Setup con tmux e 3 o più sessioni Claude Code contemporanee | Plugin tmux (TPM): configurazione in `.tmux.conf`; nessun file nel progetto | MIT; repo craftzdog/tmux-claude-hatch, già tmux-claude-session-manager |
 | `claudecode.nvim` | Plugin Neovim che implementa il protocollo MCP WebSocket delle estensioni ufficiali (VS Code, JetBrains) in Lua pura; toggle floating window, auto-reload buffer quando Claude modifica file su disco | Workflow primario in Neovim | Configurazione nel `init.lua` dell'utente; nessun file nel progetto | MIT; repo coder/claudecode.nvim; alternativa con toggle più semplice: greggh/claude-code.nvim |
+
+### Strategia e gestione d'impresa
+
+Servono a un progetto il cui oggetto è un'impresa: impostarne o rivederne la strategia, scrivere un piano industriale o un budget, leggerne i numeri, preparare una trasformazione. Si riconosce dall'obiettivo dichiarato, non dagli strumenti: un progetto software per un cliente non sta qui solo perché il cliente è un'azienda, mentre ci sta un progetto che deve decidere che cosa quell'azienda debba fare.
+
+| Pacchetto | Cosa fa | Quando offrirlo | Cosa istanzia | Note |
+|---|---|---|---|---|
+| `stratega-impresa` | Famiglia di sette skill che fanno ragionare l'agente come uno stratega d'impresa senior. La skill d'ingresso `stratega-impresa` porta un caso dalla diagnosi alle scelte, al piano, all'esecuzione e al controllo, con un metodo in sei mosse per la roadmap di trasformazione, e instrada verso sei filoni: scenari e modelli di business, pianificazione strategica, analisi economica e controllo, mercato e vendite, processi e persone, strategia e azione. Ogni filone ha `SKILL.md` con modelli mentali e indice, capitoli caricati solo quando servono, glossario, schemi decisionali e un file di potenziamento con gli strumenti open source verificati | Il progetto deve impostare o rivedere la strategia di un'impresa, scrivere un piano industriale, un budget legato agli obiettivi o una roadmap di trasformazione, o leggere bilancio e margini per prendere decisioni. Non si propone a un progetto che usa un'impresa solo come contesto, per esempio il software gestionale di un cliente, né dove basti un singolo calcolo finanziario | `templates/stratega-impresa/skills/<skill>/` in `.claude/skills/<skill>/`, sette cartelle da installare insieme, perché la skill d'ingresso instrada per nome di cartella | Le sette descrizioni pesano 3.291 caratteri all'avvio. Contenuto distillato da un corso executive di strategia e management frequentato dal proprietario, riscritto e anonimizzato: i rimandi `[Lxx]` e `[Mxxx]` sono identificativi neutri, e ciò che la skill aggiunge di suo è marcato come integrazione. Gli strumenti open source di `potenziamento.md` sono esterni alla teoria e registrati nelle fonti a monte. Nessun valore della macchina d'origine |
 
 ## Un pacchetto dichiara i valori della macchina che lo ha prodotto
 

@@ -459,6 +459,11 @@
     "perche": "Dà alle sessioni convenzioni di stile, comandi tipici e controlli pre-commit già pronti per gli stack ricorrenti, come regola normativa che vincola il codice scritto.",
     "quando_no": "Su un progetto esistente il profilo non va copiato così com'è, perché può chiedere condizioni come un typecheck pulito che il progetto non rispetta: si confronta ogni prescrizione con ciò che il progetto fa davvero, e in un monorepo se ne istanzia uno solo, quello dello stack dominante."
   },
+  "pacchetto:stratega-impresa": {
+    "come": "Si invoca la skill `stratega-impresa` con la domanda e i dati dell'impresa: fa la diagnosi, carica i filoni che servono e, per un percorso pluriennale, segue `metodo-roadmap.md`; per una domanda di dettaglio si invoca direttamente il filone, per esempio `analisi-economica-controllo`.",
+    "perche": "Dà all'agente il metodo e la teoria di uno stratega d'impresa senior, dalla diagnosi alla roadmap di trasformazione, con la provenienza di ogni affermazione dichiarata e strumenti open source verificati accanto alla teoria.",
+    "quando_no": "Non usarlo in un progetto che tratta un'impresa solo come cliente o contesto, come il software gestionale di un'azienda, né per un singolo calcolo finanziario: lì basta il filone o lo strumento, non la famiglia di sette skill."
+  },
   "pacchetto:subagent-template": {
     "come": "Si sceglie uno per uno tra `code-reviewer`, `security-auditor`, `debugger` ed `explorer` e si copia il file da `templates/agents/<agente>.md` in `.claude/agents/` del progetto.",
     "perche": "Evita di scrivere da zero i ruoli agente più comuni, già forniti con frontmatter YAML e system prompt strutturato, per review automatizzata, audit di sicurezza e investigazione dei bug.",

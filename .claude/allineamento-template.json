@@ -1,7 +1,7 @@
 {
-    "template_commit":  "071db2ea0b90ffd5e5f1504242e65508fc36cec4",
-    "template_albero_claude":  "062cd9533bd1e503f2a6d8c727f53ada82c4266d",
-    "data_commit_template":  "2026-11-20",
-    "allineato_il":  "2026-11-20",
+    "template_commit":  "86c508e6b1bfdee8d5a51bdfb74e9c737831bc2e",
+    "template_albero_claude":  "411dbecf6e8d17799f3508c932e3eb38da46de0a",
+    "data_commit_template":  "2026-11-23",
+    "allineato_il":  "2026-11-23",
     "strumento":  "allinea-tutti.ps1"
 }

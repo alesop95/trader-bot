@@ -242,6 +242,17 @@
       "data": "2026-11-12"
     },
     {
+      "id": "github:ag-ross/PyCIB",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/scenari-modelli-business/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: scenari-modelli-business); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v1.0.0",
+      "licenza": "AGPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:agents365-ai/drawio-skill",
       "pacchetto": "drawio-skill",
       "scheda": "docs/piano-potenziamento-2026-11.md",
@@ -362,6 +373,17 @@
       "cartella": "skills/frontend-design",
       "verificato": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
       "data": "2026-10-21"
+    },
+    {
+      "id": "github:apache/superset",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo, pianificazione-strategica, strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "6.1.0",
+      "licenza": "Apache-2.0",
+      "data": "2026-11-23"
     },
     {
       "id": "github:Apoo711/obsidian-3d-graph",
@@ -824,6 +846,17 @@
       "data": "2026-11-16"
     },
     {
+      "id": "github:Dolibarr/dolibarr",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "24.0.3",
+      "licenza": "GPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:dougwyu/claude-zotero-skills",
       "motivo": "Elencato come candidato o alternativa nel documento di ricerca datato di academic-researcher; il catalogo non lo adotta",
       "pacchetto": "academic-researcher",
@@ -890,6 +923,17 @@
       "data": "2026-11-12"
     },
     {
+      "id": "github:espocrm/espocrm",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "10.1.4",
+      "licenza": "AGPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:every-app/open-seo",
       "pacchetto": "filone seo",
       "scheda": "docs/piano-potenziamento-2026-11.md",
@@ -899,6 +943,17 @@
       "verificato": "v0.1.27",
       "licenza": "MIT",
       "data": "2026-11-12"
+    },
+    {
+      "id": "github:excalidraw/excalidraw",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/scenari-modelli-business/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: scenari-modelli-business); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v0.18.1",
+      "licenza": "MIT",
+      "data": "2026-11-23"
     },
     {
       "id": "github:executablebooks/markdown-it-py",
@@ -922,6 +977,39 @@
       "licenza": "MIT",
       "rinominata": "flonat/flonat-research",
       "data": "2026-10-21"
+    },
+    {
+      "id": "github:frappe/crm",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v16.3.0",
+      "licenza": "AGPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:frappe/erpnext",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v15.126.0",
+      "licenza": "GPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:frappe/hrms",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/processi-persone/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: processi-persone); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v16.60.0",
+      "licenza": "GPL-3.0",
+      "data": "2026-11-23"
     },
     {
       "id": "github:Future-House/paper-qa",
@@ -1134,6 +1222,17 @@
       "data": "2026-11-12"
     },
     {
+      "id": "github:JerBouma/FinanceToolkit",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v2.3.5",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:jeremylongshore/tons-of-skills-marketplace",
       "pacchetto": "agent-catalog",
       "scheda": ".claude/templates/agent-catalog/README.md",
@@ -1156,6 +1255,17 @@
       "data": "2026-11-12"
     },
     {
+      "id": "github:jgraph/drawio",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/scenari-modelli-business/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: scenari-modelli-business); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v32.7.4",
+      "licenza": "Apache-2.0",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:jgraph/drawio-mcp",
       "pacchetto": "docs",
       "scheda": "docs/filoni-verticali.md",
@@ -1165,6 +1275,17 @@
       "verificato": "1202e16d96afe98f8d8b24e7356370f0b127d754",
       "licenza": "Apache-2.0",
       "data": "2026-11-16"
+    },
+    {
+      "id": "github:jncohen/supply-chain-simulation",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/strategia-azione/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "commit",
+      "verificato": "9d2ed201029116c1465562db47fa4900744906fc",
+      "licenza": "CC0-1.0",
+      "data": "2026-11-23"
     },
     {
       "id": "github:JonasBaath/mcp-refchecker",
@@ -1255,6 +1376,17 @@
       "data": "2026-10-21"
     },
     {
+      "id": "github:kanboard/kanboard",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/processi-persone/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: processi-persone); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v1.2.58",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:karanb192/awesome-claude-code-mods",
       "motivo": "Catalogo di mod di Claude Code con scanner dei livelli di accesso, fonte del pacchetto mods-claude-code.",
       "pacchetto": "catalogo",
@@ -1331,6 +1463,17 @@
       "verificato": "v4.80.0",
       "licenza": "NOASSERTION",
       "data": "2026-11-16"
+    },
+    {
+      "id": "github:Leantime/leantime",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/pianificazione-strategica/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: pianificazione-strategica, strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v3.17.0",
+      "licenza": "AGPL-3.0",
+      "data": "2026-11-23"
     },
     {
       "id": "github:Leonxlnx/imagegen-skills",
@@ -1422,6 +1565,17 @@
       "data": "2026-10-27"
     },
     {
+      "id": "github:matomo-org/matomo",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "6.0.0",
+      "licenza": "GPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:matplotlib/matplotlib",
       "motivo": "Libreria su cui si appoggiano skill scientifiche della raccolta K-Dense; la mappa generata di scientific-skills ne riporta la licenza.",
       "pacchetto": "scientific-skills",
@@ -1464,6 +1618,39 @@
       "verificato": "12.2.0",
       "licenza": "MIT",
       "data": "2026-11-09"
+    },
+    {
+      "id": "github:mesa/mesa",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/strategia-azione/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v3.5.3",
+      "licenza": "Apache-2.0",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:meta/prophet",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/scenari-modelli-business/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: scenari-modelli-business); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v1.5.0",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:metabase/metabase",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v0.65.6",
+      "licenza": "NOASSERTION",
+      "data": "2026-11-23"
     },
     {
       "id": "github:microsoft/markitdown",
@@ -1565,6 +1752,17 @@
       "data": "2026-11-16"
     },
     {
+      "id": "github:mwouts/world_trade_data",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v0.1.1",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:nanyang12138/Academic-MCP-Server",
       "motivo": "Aggregatore MCP con Sci-Hub elencato nel documento di ricerca del 2026-07-01 di academic-researcher e da non usare; il catalogo non lo adotta.",
       "pacchetto": "academic-researcher",
@@ -1653,6 +1851,17 @@
       "data": "2026-11-12"
     },
     {
+      "id": "github:numpy/numpy-financial",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo, pianificazione-strategica, strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v1.1.0",
+      "licenza": "BSD-3-Clause",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:nutlope/hallmark",
       "pacchetto": "catalogo",
       "scheda": ".claude/templates/PACKAGES.md",
@@ -1695,6 +1904,17 @@
       "scadenza": 90,
       "verificato": "2026-11-17",
       "data": "2026-11-17"
+    },
+    {
+      "id": "github:odoo/odoo",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/analisi-economica-controllo/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: analisi-economica-controllo); licenza e stato verificati il 2026-11-23",
+      "controllo": "commit",
+      "verificato": "9827bb54f011f4bcf73c6ffe752c61079a28e4be",
+      "licenza": "NOASSERTION",
+      "data": "2026-11-23"
     },
     {
       "id": "github:olafgeibig/knowledge-mcp",
@@ -1741,6 +1961,39 @@
       "data": "2026-10-21"
     },
     {
+      "id": "github:opencats/OpenCATS",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/processi-persone/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: processi-persone); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v0.12.0",
+      "licenza": "NOASSERTION",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:operately/operately",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/pianificazione-strategica/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: pianificazione-strategica, strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "1.10.0",
+      "licenza": "NOASSERTION",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:opf/openproject",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/pianificazione-strategica/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: pianificazione-strategica, strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v17.8.3",
+      "licenza": "GPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:oraios/serena",
       "motivo": "Server MCP di navigazione semantica del codice via language server, configurato da codebase-learning in .mcp.json e base del pacchetto.",
       "pacchetto": "catalogo",
@@ -1751,6 +2004,28 @@
       "data": "2026-10-21",
       "ruolo": "server-mcp",
       "licenza": "NOASSERTION"
+    },
+    {
+      "id": "github:orangehrm/orangehrm",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/processi-persone/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: processi-persone); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v5.9.1",
+      "licenza": "GPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:oslokommune/okr-tracker",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/pianificazione-strategica/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: pianificazione-strategica, strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v5.3.0",
+      "licenza": "MIT",
+      "data": "2026-11-23"
     },
     {
       "id": "github:ourresearch/openalex-mcp-server",
@@ -1829,6 +2104,17 @@
       "verificato": "v6.6",
       "licenza": "NOASSERTION",
       "data": "2026-11-12"
+    },
+    {
+      "id": "github:plausible/analytics",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v3.2.1",
+      "licenza": "AGPL-3.0",
+      "data": "2026-11-23"
     },
     {
       "id": "github:PleasePrompto/notebooklm-mcp",
@@ -2020,6 +2306,17 @@
       "data": "2026-11-16"
     },
     {
+      "id": "github:SDXorg/pysd",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/strategia-azione/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v3.14.3",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:shiyu-coder/Kronos",
       "pacchetto": "filone trading",
       "scheda": "docs/piano-potenziamento-2026-11.md",
@@ -2098,6 +2395,28 @@
       "data": "2026-11-16"
     },
     {
+      "id": "github:SuiteCRM/SuiteCRM",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v7.15.2",
+      "licenza": "AGPL-3.0",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:super-productivity/super-productivity",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/processi-persone/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: processi-persone); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v20.1.0",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:Sushegaad/Claude-Skills-Governance-Risk-and-Compliance",
       "pacchetto": "grc-skills",
       "scheda": ".claude/templates/grc-skills/README.md",
@@ -2153,6 +2472,17 @@
       "data": "2026-11-17"
     },
     {
+      "id": "github:tgherzog/wbgapi",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "commit",
+      "verificato": "4d0d2c925a8dac359df5a2d9e82001ff6feeecda",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:thedotmack/claude-mem",
       "motivo": "Memoria persistente cross-sessione consigliata dal catalogo come tool esterno installato con npx claude-mem install.",
       "pacchetto": "catalogo",
@@ -2197,6 +2527,17 @@
       "data": "2026-11-13"
     },
     {
+      "id": "github:transentis/bptk_py",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/strategia-azione/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: strategia-azione); licenza e stato verificati il 2026-11-23",
+      "controllo": "commit",
+      "verificato": "840fb9b61504c5a6e463e72a73c07e0b8cff6d5e",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
       "id": "github:travisvn/awesome-claude-skills",
       "motivo": "Lista curata di skill per Claude elencata nel documento di ricerca del 2026-07-01 come fonte di candidati.",
       "pacchetto": "academic-researcher",
@@ -2228,6 +2569,28 @@
       "data": "2026-10-21",
       "ruolo": "strumenti",
       "licenza": "MIT"
+    },
+    {
+      "id": "github:umami-software/umami",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v3.5.0",
+      "licenza": "MIT",
+      "data": "2026-11-23"
+    },
+    {
+      "id": "github:uncomtrade/comtradeapicall",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/mercato-vendite/potenziamento.md",
+      "ruolo": "librerie",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: mercato-vendite); licenza e stato verificati il 2026-11-23",
+      "controllo": "commit",
+      "verificato": "d8b19588986405df8c3c94062bd73fd08b9110cd",
+      "licenza": "MIT",
+      "data": "2026-11-23"
     },
     {
       "id": "github:upstash/context7",
@@ -2273,6 +2636,17 @@
       "data": "2026-11-09",
       "ruolo": "skill-e-agenti",
       "licenza": "MIT"
+    },
+    {
+      "id": "github:wekan/wekan",
+      "pacchetto": "stratega-impresa",
+      "scheda": ".claude/templates/stratega-impresa/skills/processi-persone/potenziamento.md",
+      "ruolo": "strumenti",
+      "motivo": "strumento open source esterno alla teoria, citato in potenziamento.md del pacchetto stratega-impresa (filoni: processi-persone); licenza e stato verificati il 2026-11-23",
+      "controllo": "release",
+      "verificato": "v13.28",
+      "licenza": "MIT",
+      "data": "2026-11-23"
     },
     {
       "id": "github:WenyuChiou/ai-research-skills",
@@ -3016,6 +3390,7 @@
   "spediti": {
     "skills": [
       "alberi-di-lavoro",
+      "analisi-economica-controllo",
       "artefatto",
       "assumptions",
       "bib-sync",
@@ -3052,13 +3427,16 @@
       "lockin",
       "matrix",
       "mcp-tool-scaffold",
+      "mercato-vendite",
       "nis2",
       "nist-csf",
       "notebooklm-bridge",
       "onboard",
       "ooda",
+      "pianificazione-strategica",
       "pipeline-app",
       "premortem",
+      "processi-persone",
       "prove-che-misurano",
       "rea-indagine",
       "redteam",
@@ -3069,6 +3447,7 @@
       "riprendi",
       "roadmap",
       "roast",
+      "scenari-modelli-business",
       "secondorder",
       "security-review",
       "senior-researcher",
@@ -3078,6 +3457,8 @@
       "soc2",
       "steal",
       "steelman",
+      "stratega-impresa",
+      "strategia-azione",
       "studio-didattico",
       "sync-context",
       "sync-readme",
