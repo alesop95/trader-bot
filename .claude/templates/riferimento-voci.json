@@ -633,5 +633,10 @@
     "come": "Si invoca quando cambia una capacità pubblica: aggiorna la prosa del README, poi `python tools/sync-readme.py --write --bundle` rigenera indice, inventario e link.",
     "perche": "Un README scritto a mano diverge dal progetto senza che nessuno se ne accorga, mentre le parti generate si verificano a ogni commit.",
     "quando_no": "Non si usa per una semplice modifica a un altro file Markdown, e le parti fra marcatori non si riscrivono a mano."
+  },
+  "skill:progetti-su-vm": {
+    "come": "Si carica quando il progetto gira su una VM o su un server: dice di sviluppare in una cartella dedicata sulla postazione con la macchina che riceve per pull, come spostarvi un progetto sviluppato sulla macchina e come irrobustire la macchina con gli strumenti comuni indicati da ~/.progetti-su-vm.json.",
+    "perche": "Lo sviluppo diretto sulla macchina remota lascia modifiche mai committate, note e credenziali mescolate al codice, e una macchina irrobustita a caso si chiude fuori o si annulla da sola.",
+    "quando_no": "Non serve a un progetto che non gira su una macchina remota, e non sceglie da sé indirizzi o regole: li legge dal file della macchina e dal proprietario."
   }
 }

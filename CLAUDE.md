@@ -42,6 +42,7 @@ Norme caricate su richiesta, una riga per situazione con le parole con cui si pr
 - Si imposta o si verifica user.name e user.email, si collega o si cambia il remoto o l'alias SSH, si inizializza un repository, un push fallisce per permessi, `/status` mostra un account Claude diverso da quello atteso, si autentica o si usa `gh`: skill `identita-git`.
 - Va prodotto, modificato o convertito un artefatto visivo o documentale, cioè un documento, una presentazione, un PDF, un'immagine, un'animazione, un audio o un impaginato, oppure si sta per scrivere uno script o installare una libreria per farlo: skill `craft-apps`, che prima verifica in locale le applicazioni Craft installate e le usa senza rete né token.
 - Apertura di sessione: le righe di `python .claude/templates/tools/verifica-pacchetti.py --riepilogo` entrano nella prima risposta; se dicono «Gate dovuto» si avvia la skill `gate-pacchetti`.
+- Il progetto gira su una VM o su un server, si sta sviluppando sulla macchina remota, si sposta lo sviluppo sulla postazione, si rilascia sulla macchina, si ammette un client o un nome, si irrobustisce la macchina: skill `progetti-su-vm`.
 
 ## Vincoli di team
 

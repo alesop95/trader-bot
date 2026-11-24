@@ -93,7 +93,11 @@ param(
   [int]$AttendiPid = 0,
   # Interno: la sessione che l'hook ha chiuso. E' chiusa con certezza, quindi non si
   # protegge nemmeno come candidata di un processo vivo senza file di sessione.
-  [string]$SessioneChiusa
+  [string]$SessioneChiusa,
+  # Interno: il motivo del SessionEnd, che la copia rilanciata non legge piu' dal payload.
+  [string]$Motivo,
+  # Solo per le prove: una radice di quarantena finta al posto di %USERPROFILE%\quarantena-sessioni.
+  [string]$QuarantenaProva
 )
 $ErrorActionPreference = 'SilentlyContinue'
 
@@ -142,6 +146,23 @@ try {
     }
   }
 } catch { $script:payloadHook = $null }
+
+# Chiusura canonica o crash. Il 2026-11-24 una scorciatoia di sistema ha fatto chiudere a
+# Windows Terminal tutte le schede insieme: ogni sessione ha scattato il proprio SessionEnd
+# e in tre minuti il wipe aveva cancellato, senza cestino, proprio le trascrizioni che
+# servivano per riprendere (L-018 di un progetto istanziato). Le si e' recuperate solo
+# perche' una copia shadow di un backup era ancora montata. Da allora il wipe cancella
+# soltanto dopo una chiusura voluta, cioe' i motivi che Claude Code documenta per /clear,
+# per il logout e per l'uscita dal prompt; ogni altro motivo, 'other' compreso e anche un
+# motivo assente, sposta in una quarantena datata fuori dagli account (blocco 0.5). Il
+# lancio manuale resta un gesto voluto e cancella come prima.
+$motiviCanonici = @('clear', 'logout', 'prompt_input_exit')
+$script:motivo = if ($Motivo) { $Motivo } elseif ($script:payloadHook) { [string]$script:payloadHook.reason } else { '' }
+$script:crash = ($script:payloadHook -or $AttendiPid) -and ($motiviCanonici -notcontains $script:motivo)
+# Giorni per cui la quarantena si conserva: le cartelle di data piu' vecchie le toglie la
+# prima chiusura canonica successiva. Abbastanza per accorgersi di un crash dopo un fine
+# settimana, non tanto da farne un secondo magazzino.
+$giorniQuarantena = 14
 
 # --- diario ------------------------------------------------------------------
 # L'hook SessionEnd gira senza che nessuno ne veda l'output, quindi un rifiuto a partire
@@ -308,7 +329,9 @@ if ($script:payloadHook -and -not $DryRun -and -not $List -and -not $AttendiPid)
     if ($BaseProva) { $extra += (' -BaseProva "{0}"' -f $BaseProva) }
     if ($TempProva) { $extra += (' -TempProva "{0}"' -f $TempProva) }
     if ($McpProva) { $extra += (' -McpProva "{0}"' -f $McpProva) }
+    if ($QuarantenaProva) { $extra += (' -QuarantenaProva "{0}"' -f $QuarantenaProva) }
     if ($Forza) { $extra += ' -Forza' }
+    $extra += (' -Motivo "{0}"' -f $(if ($script:motivo -match '^[A-Za-z_]{1,40}$') { $script:motivo } else { 'sconosciuto' }))
     if ($script:payloadHook.session_id -match '^[0-9a-fA-F-]{8,64}$') { $extra += (' -SessioneChiusa {0}' -f $script:payloadHook.session_id) }
     $riga = ('"{0}" -NoProfile -ExecutionPolicy Bypass -File "{1}" -AttendiPid {2}{3}' -f (Join-Path $PSHOME 'powershell.exe'), $PSCommandPath, $claudePid, $extra)
     $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = $riga } -ErrorAction SilentlyContinue
@@ -433,6 +456,110 @@ function Test-DentroPerimetro($path) {
   return $false
 }
 
+# --- blocco 0.5: la quarantena ---------------------------------------------------
+# Sta fuori da ogni home di account e fuori dalle radici che il wipe puo' rimuovere, in
+# %USERPROFILE%\quarantena-sessioni\<data>\<ora>-<account>\, con i percorsi relativi alla
+# home conservati: una trascrizione sta in ...\projects\<slug>\<id>.jsonl esattamente come
+# stava nell'account, ed e' quello che Riapri-Sessione.ps1 si aspetta. La stessa radice la
+# usa Pulisci-Codex.ps1 per le sessioni di Codex.
+$script:quarRoot = if ($QuarantenaProva) { $QuarantenaProva.TrimEnd('\', '/') } else { Join-Path $env:USERPROFILE 'quarantena-sessioni' }
+$nomeAccountQ = Split-Path -Leaf $base
+if ($nomeAccountQ -ne '.claude') { $nomeAccountQ = $nomeAccountQ -replace '^\.', '' } else { $nomeAccountQ = 'claude' }
+$adessoQ = Get-Date
+$script:quarDir = Join-Path $script:quarRoot ('{0}\{1}-{2}' -f $adessoQ.ToString('yyyy-MM-dd'), $adessoQ.ToString('HHmmss'), $nomeAccountQ)
+$script:spostati = 0
+function Test-SottoRadice($path, $radice) {
+  $pieno = [System.IO.Path]::GetFullPath($path).TrimEnd($script:sep)
+  $r = [System.IO.Path]::GetFullPath($radice).TrimEnd($script:sep)
+  return $pieno.StartsWith($r + $script:sep, [StringComparison]::OrdinalIgnoreCase)
+}
+function Initialize-Quarantena {
+  if ($DryRun -or (Test-Path -LiteralPath $script:quarDir)) { return }
+  New-Item -ItemType Directory -Force -Path $script:quarDir | Out-Null
+  $leggimi = Join-Path $script:quarRoot 'LEGGIMI.txt'
+  if (-not (Test-Path -LiteralPath $leggimi)) {
+    Set-Content -LiteralPath $leggimi -Encoding utf8 -Value @(
+      'Quarantena delle sessioni di Claude Code e di Codex, scritta da session-end-wipe.ps1 e da Pulisci-Codex.ps1.',
+      'Qui finiscono le trascrizioni che il wipe avrebbe cancellato dopo una chiusura non canonica (crash del terminale, finestra chiusa).',
+      'Ogni cartella <ora>-<account> riproduce la home dell''account: una sessione si riapre con Riapri-Sessione.ps1 del pacchetto agenti-terminale.',
+      'Le cartelle di data piu'' vecchie di 14 giorni le toglie la prima chiusura canonica successiva.')
+  }
+}
+# Sposta un elemento della home dell'account nella quarantena, al suo percorso relativo.
+# Move-Item non sposta una cartella fra due volumi in PowerShell 5.1: in quel caso copia e
+# poi rimuove, e rimuove solo se la copia c'e'.
+function Move-InQuarantena($path) {
+  $rel = [System.IO.Path]::GetFullPath($path).Substring([System.IO.Path]::GetFullPath($base).TrimEnd($script:sep).Length).TrimStart($script:sep)
+  $dest = Join-Path $script:quarDir $rel
+  $script:spostati++
+  if ($DryRun) { Write-Log "  [dry-run] in quarantena: $path"; return }
+  Initialize-Quarantena
+  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
+  try { Move-Item -LiteralPath $path -Destination $dest -Force -ErrorAction Stop }
+  catch {
+    Copy-Item -LiteralPath $path -Destination $dest -Recurse -Force
+    if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $path -Recurse -Force }
+    else { Write-Log "  quarantena non riuscita, lasciato al suo posto: $path" }
+  }
+}
+# Le sessioni orfane: un sessions\<pid>.json il cui processo non c'e' piu' e che non e'
+# della sessione che sta chiudendo. Il file lo toglie il wipe di quella stessa sessione,
+# quindi se e' ancora li' la sessione e' finita senza che il suo hook girasse, cioe' con
+# un terminale ucciso. Le sue tracce vanno in quarantena anche dentro una chiusura canonica
+# di un'altra sessione, che altrimenti le cancellerebbe come residui.
+$script:orfane = @{}
+$sessDirO = Join-Path $base 'sessions'
+if (Test-Path -LiteralPath $sessDirO) {
+  $chiusaO = if ($SessioneChiusa) { $SessioneChiusa } elseif ($script:payloadHook) { [string]$script:payloadHook.session_id } else { '' }
+  foreach ($f in @(Get-ChildItem -LiteralPath $sessDirO -Filter '*.json' -File -Force)) {
+    if ($f.Name -notmatch '^(\d+)\.json$') { continue }
+    if (Get-Process -Id ([int]$Matches[1]) -ErrorAction SilentlyContinue) { continue }
+    $sid = $null
+    try { $sid = [string]((Get-Content -LiteralPath $f.FullName -Raw) | ConvertFrom-Json).sessionId } catch { }
+    if ($sid -and $sid -ne $chiusaO -and (Test-NomeDiSessione $sid)) { $script:orfane[$sid] = $f.FullName }
+  }
+}
+if ($script:crash) {
+  Write-Log ("Chiusura non canonica (motivo '{0}'): cio' che si toglierebbe dalla home dell'account va in quarantena in {1}." -f $script:motivo, $script:quarDir)
+}
+elseif ($script:orfane.Count -gt 0 -and -not $List) {
+  Write-Log ("Sessioni orfane, finite senza il proprio hook: {0}. Le loro tracce vanno in quarantena in {1}." -f ($script:orfane.Keys -join ', '), $script:quarDir)
+  foreach ($sid in @($script:orfane.Keys)) {
+    $bersagli = @()
+    if (Test-Path -LiteralPath $projects) {
+      foreach ($slugO in @(Get-ChildItem -LiteralPath $projects -Directory -Force)) {
+        $bersagli += @(Get-ChildItem -LiteralPath $slugO.FullName -Force | Where-Object { $_.Name -eq "$sid.jsonl" -or $_.Name -eq $sid })
+      }
+    }
+    foreach ($st in 'file-history', 'session-env', 'todos', 'tasks') {
+      $dirO = Join-Path $base $st
+      if (Test-Path -LiteralPath $dirO) { $bersagli += @(Get-ChildItem -LiteralPath $dirO -Force | Where-Object { $_.Name -eq $sid -or $_.Name.StartsWith($sid + '-') -or $_.Name.StartsWith($sid + '.') }) }
+    }
+    foreach ($b in $bersagli) { Move-InQuarantena $b.FullName }
+    if (-not $DryRun -and (Test-Path -LiteralPath $script:quarDir)) {
+      Copy-Item -LiteralPath $script:orfane[$sid] -Destination (Join-Path $script:quarDir ('sessions-' + (Split-Path -Leaf $script:orfane[$sid]))) -Force
+    }
+  }
+}
+# history.jsonl si riscrive invece di rimuoversi: in crash se ne mette prima una copia intera.
+if ($script:crash -and -not $DryRun -and (Test-Path -LiteralPath (Join-Path $base 'history.jsonl'))) {
+  Initialize-Quarantena
+  Copy-Item -LiteralPath (Join-Path $base 'history.jsonl') -Destination $script:quarDir -Force
+}
+# Scadenza: solo una chiusura canonica toglie le cartelle di data vecchie, e solo dentro una
+# radice che porta il LEGGIMI.txt scritto qui, cosi' che un percorso sbagliato non diventi
+# una rimozione ricorsiva altrove.
+if (-not $script:crash -and -not $List -and (Test-Path -LiteralPath (Join-Path $script:quarRoot 'LEGGIMI.txt'))) {
+  $sogliaQ = (Get-Date).Date.AddDays(-$giorniQuarantena)
+  foreach ($dq in @(Get-ChildItem -LiteralPath $script:quarRoot -Directory -Force | Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' })) {
+    [datetime]$dataQ = [datetime]::MinValue
+    if (-not [datetime]::TryParseExact($dq.Name, 'yyyy-MM-dd', [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$dataQ)) { continue }
+    if ($dataQ -ge $sogliaQ) { continue }
+    if ($DryRun) { Write-Log "  [dry-run] quarantena scaduta: $($dq.FullName)" }
+    else { Remove-Item -LiteralPath $dq.FullName -Recurse -Force; Write-Log "Quarantena scaduta tolta: $($dq.Name)" }
+  }
+}
+
 $script:rimossi = 0
 $script:conservati = 0
 $script:perCategoria = [ordered]@{}
@@ -451,6 +578,9 @@ function Remove-Target($path) {
   if (-not (Test-DentroPerimetro $path)) {
     Stop-Wipe ("RIFIUTO: '{0}' e fuori dalle radici consentite ({1}). Nessuna rimozione oltre questo punto." -f $path, ($script:radiciConsentite -join ' ; '))
   }
+  # In crash cio' che sta nella home dell'account si sposta in quarantena invece di sparire;
+  # scratchpad e log MCP no, perche' per riprendere una sessione non servono.
+  if ($script:crash -and (Test-SottoRadice $path $base)) { Move-InQuarantena $path; return }
   $script:rimossi++
   $cat = Get-Categoria $path
   if ($script:perCategoria.Contains($cat)) { $script:perCategoria[$cat]++ } else { $script:perCategoria[$cat] = 1 }
@@ -610,7 +740,10 @@ if (-not $keepPathPrefixes) {
 }
 $nomeAccount = Split-Path -Leaf $base
 if ($nomeAccount -ne '.claude') { $nomeAccount = $nomeAccount -replace '^\.claude-', '' }
-if (-not $keepPathPrefixes) {
+if ($script:crash) {
+  Write-Log 'Blocco 4 saltato: chiusura non canonica, .claude.json resta com''e'' e lo pulira'' la prossima chiusura canonica.'
+}
+elseif (-not $keepPathPrefixes) {
   Write-Log 'Blocco 4 saltato: keepPathPrefixes non compilato e non derivabile dai prefissi slug, .claude.json resta intatto.'
 }
 elseif ($script:protezione -and $script:protezione.AccountVivi.ContainsKey($nomeAccount)) {
@@ -662,5 +795,6 @@ if ($postaRoot -and (Test-Path -LiteralPath $postaRoot) -and $postaTool -and (Te
 else { Write-Log 'Blocco 5 saltato: cassetta o posta-sessioni.py non trovati.' }
 
 Write-Log ("Rimossi {0} elementi, conservati {1}." -f $script:rimossi, $script:conservati)
+if ($script:spostati) { Write-Log ("Spostati in quarantena {0} elementi, in {1}: si riaprono con Riapri-Sessione.ps1." -f $script:spostati, $script:quarDir) }
 if ($script:perCategoria.Count) { Write-Log ('Rimossi per categoria: ' + (($script:perCategoria.Keys | ForEach-Object { '{0} {1}' -f $_, $script:perCategoria[$_] }) -join ', ') + '.') }
 Write-Log 'Fatto.'

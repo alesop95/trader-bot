@@ -9,7 +9,7 @@ soltanto le fasi d'uso e gli archi dell'intreccio sono autorati, in
 `.claude/templates/guida-grafica.json`, perche' sono un giudizio e non un inventario.
 
 La pagina e' autonoma: nessuno script, nessuna risorsa esterna, il grafo e' SVG in linea.
-L'aspetto e' quello delle altre pagine di `docs/` del template, che e' un progetto privato;
+L'aspetto e' quello delle altre pagine di `docs/` del template, che ha un aspetto proprio;
 un progetto dell'organizzazione rigenera la propria con il design system dell'organizzazione.
 
 Uso:

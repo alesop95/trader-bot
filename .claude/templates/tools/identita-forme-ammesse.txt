@@ -30,10 +30,10 @@ alpha@example.test
 other@example.test
 fixture@example.invalid
 
-# Aggiunte il 2026-11-10: i segnaposto del disco privato. Da oggi un percorso che comincia
-# per E: si ferma per la sua forma, come un indirizzo, perché dice che esiste un progetto
-# privato anche quando quel nome non sta in nessun elenco: è così che un progetto creato
-# domani resta coperto senza che nessuno aggiorni niente. Questi sono i segnaposto generici
+# Aggiunte il 2026-11-10: i segnaposto dei percorsi fuori perimetro. Da oggi un percorso
+# fuori perimetro si ferma per la sua forma, come un indirizzo, anche quando il nome della
+# cartella non sta in nessun elenco: è così che una cartella creata
+# domani resta coperta senza che nessuno aggiorni niente. Questi sono i segnaposto generici
 # già usati negli esempi del template, che non nominano niente di reale.
 e:/x
 e:\x

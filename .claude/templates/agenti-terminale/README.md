@@ -46,7 +46,10 @@ codex-account2
 | `.claude/templates/agenti-terminale/tools/Installa-Claude.ps1` + `merge-claude-settings.js` | installa il wipe di fine sessione nelle radici Claude e registra l'hook nel `settings.json` preservando ogni altra chiave |
 | `.claude/templates/agenti-terminale/tools/Installa-Codex.ps1` | crea le radici Codex, vi scrive la configurazione di riferimento e il puntatore `AGENTS.md` |
 | `.claude/templates/agenti-terminale/tools/Avvia-Codex.ps1` | avvio su radice isolata, con vincolo sulla cartella di lavoro e pulizia all'uscita |
-| `.claude/templates/agenti-terminale/tools/Pulisci-Codex.ps1` | wipe degli store: conserva solo le sessioni vive, riconosciute dal lock sui thread, e tocca i database solo a radice ferma |
+| `.claude/templates/agenti-terminale/tools/Pulisci-Codex.ps1` | wipe degli store: conserva solo le sessioni vive, riconosciute dal lock sui thread, tocca i database solo a radice ferma, e copia in quarantena le sessioni di un avvio finito senza uscita ordinata |
+| `.claude/templates/agenti-terminale/tools/Recupera-DaShadow.ps1` | dopo un crash, copia le trascrizioni dei due agenti dalla copia shadow più recente anteriore a un'ora data in una cartella fuori dalla portata del wipe |
+| `.claude/templates/agenti-terminale/tools/Riapri-Sessione.ps1` | rimette una trascrizione, dalla quarantena o da un recupero, nel suo account e la riapre subito con il lanciatore |
+| `.claude/templates/agenti-terminale/recupero-dopo-crash.md` | la procedura dopo un crash dei terminali: quarantena, copia shadow, riavvio, ripresa delle sessioni e messaggio di ripresa |
 | `.claude/templates/agenti-terminale/tools/Installa-Comandi.ps1` | scrive nel profilo PowerShell i comandi brevi per tutte le radici presenti |
 | `.claude/templates/agenti-terminale/tools/Consumo-Agenti.ps1` | consumo di token di **tutte** le radici dei due agenti, radici di default comprese |
 | `.claude/templates/agenti-terminale/tools/riserva-agenti.py` | riserva dei subagent sul limite del piano, per tutte le radici dei due agenti: scrive la soglia, decide per il wrapper Codex, registra l'ultima lettura |
@@ -72,6 +75,14 @@ Il pacchetto porta con sé la regola `.claude/templates/agenti-terminale/rules/c
 Le attuazioni differiscono: Codex ha il comando nativo `/delete`, che cancella la sessione ed esce; Claude Code non ha un equivalente e la rimozione va fatta a mano sul magazzino dell'account.
 
 È il completamento del wipe, non un suo doppione: **il wipe copre l'incuria, questa regola copre la volontà.**
+
+## Crash dei terminali: quarantena invece di cancellazione
+
+Dal 2026-11-24 il wipe distingue la chiusura voluta da quella subita. Il caso che l'ha imposto: Windows Terminal ha chiuso tutte le schede insieme, ogni sessione Claude ha scattato il proprio hook di fine sessione con il motivo `other`, e il wipe ne ha cancellato le trascrizioni in tre minuti; le si è recuperate solo da una copia shadow che un backup teneva ancora montata (L-018 di un progetto istanziato). Ora `session-end-wipe.ps1` cancella soltanto dopo i motivi `clear`, `logout` e `prompt_input_exit`, e dopo ogni altro sposta in `%USERPROFILE%\quarantena-sessioni\<data>\<ora>-<account>\`; mette in quarantena anche le tracce di una sessione il cui hook non è partito, riconosciuta dal suo `sessions\<pid>.json` rimasto con il processo morto. `Avvia-Codex.ps1` lascia un segnale di avvio in corso che solo l'uscita ordinata toglie, e `Pulisci-Codex.ps1` copia in quarantena le sessioni scritte dopo un avvio rimasto orfano o finito con un codice diverso da zero. La quarantena scade dopo quattordici giorni. La procedura completa, con i due strumenti di recupero e il messaggio da dare a ogni sessione riaperta, sta in `recupero-dopo-crash.md`; la regola di provare una modifica al terminale con una scheda fittizia aperta sta in `rules/chiusura-delle-sessioni.md`.
+
+I due lanciatori dichiarano `PositionalBinding=$false`, così ogni argomento non nominato arriva all'agente. Prima, in `codex-account2 resume <id>` la parola `resume` si legava al parametro `-Posta` e l'identificativo partiva da solo come prompt di una sessione nuova, e lo stesso faceva `--resume` con Claude: il 2026-11-24 quattro riaperture dopo il crash sono partite vuote senza che niente lo segnalasse.
+
+Il wipe di Linux, `session-end-wipe.sh`, non ha ancora la quarantena: è una pendenza aperta, e fino ad allora su Linux una chiusura per crash cancella come una canonica.
 
 ## Mappa di istanziazione
 

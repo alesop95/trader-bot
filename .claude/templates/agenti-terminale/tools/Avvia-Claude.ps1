@@ -1,5 +1,7 @@
 # Launcher Claude con la stessa cassetta e stato progetto usati da Codex.
-[CmdletBinding()]
+# PositionalBinding=$false: ogni argomento non nominato va a Claude. Senza, '--resume' si
+# legava a -Posta e l'identificativo partiva da solo come prompt (misurato il 2026-11-24).
+[CmdletBinding(PositionalBinding=$false)]
 param(
   [Parameter(Mandatory=$true)][ValidateRange(1,99)][int]$Account,
   [string]$Progetto=(Get-Location).Path,

@@ -2,11 +2,33 @@
 
 <!-- generato da allinea-dal-template.py -->
 
-Commit a monte: `fb2337cc78c297b74c6745bdf13451f167ee65b5`. File interessati dalla passata: 1. Commit e push del progetto restano manuali.
+Commit a monte: `99b13ffc66bf1b78a067f9adebe007b3af546df4`. File interessati dalla passata: 23. Commit e push del progetto restano manuali.
 
 | Esito | File |
 |---|---|
+| VECCHIO | `.claude/rules/git-commands-format.md` |
+| NUOVO | `.claude/skills/progetti-su-vm/RIFERIMENTO.md` |
+| NUOVO | `.claude/skills/progetti-su-vm/SKILL.md` |
+| VECCHIO | `.claude/templates/CLAUDE.md` |
+| VECCHIO | `.claude/templates/agenti-terminale/README.md` |
+| NUOVO | `.claude/templates/agenti-terminale/recupero-dopo-crash.md` |
+| VECCHIO | `.claude/templates/agenti-terminale/rules/chiusura-delle-sessioni.md` |
+| NUOVO | `.claude/templates/agenti-terminale/tests/test-pulisci-codex-quarantena.ps1` |
+| VECCHIO | `.claude/templates/agenti-terminale/tools/Avvia-Claude.ps1` |
+| VECCHIO | `.claude/templates/agenti-terminale/tools/Avvia-Codex.ps1` |
+| VECCHIO | `.claude/templates/agenti-terminale/tools/Pulisci-Codex.ps1` |
+| NUOVO | `.claude/templates/agenti-terminale/tools/Recupera-DaShadow.ps1` |
+| NUOVO | `.claude/templates/agenti-terminale/tools/Riapri-Sessione.ps1` |
+| VECCHIO | `.claude/templates/fonti-a-monte.json` |
+| VECCHIO | `.claude/templates/lezioni-recepite.json` |
+| VECCHIO | `.claude/templates/riferimento-voci.json` |
+| VECCHIO | `.claude/templates/tools/allinea-dal-template.py` |
+| VECCHIO | `.claude/templates/tools/guida-grafica.py` |
+| VECCHIO | `.claude/templates/tools/identita-forme-ammesse.txt` |
+| VECCHIO | `.claude/templates/tools/session-end-wipe.ps1` |
 | VECCHIO | `.claude/templates/tools/test-identita-personali.py` |
+| VECCHIO | `.claude/templates/tools/tests/test-wipe-per-sessione.ps1` |
+| INNESCO | `CLAUDE.md` |
 
 Conflitti ancora da risolvere: 0.
 

@@ -116,7 +116,7 @@ SKILL_SISTEMA = [
     "gate-pacchetti", "riprendi", "onboard",
     "prove-che-misurano", "fonti-non-recuperabili", "alberi-di-lavoro",
     "separazione-ambienti", "identita-git", "cerca-pacchetto", "craft-apps",
-    "retrospettiva",
+    "retrospettiva", "progetti-su-vm",
 ]
 IGNORA = {"__pycache__", ".pytest_cache"}
 CODICE = {".py", ".ps1", ".sh", ".js", ".mjs"}

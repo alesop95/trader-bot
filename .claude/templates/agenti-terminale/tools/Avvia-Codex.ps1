@@ -65,7 +65,10 @@
   Scheda di riferimento: docs\10_CODEX_CLI_E_WORKSPACE_OPENAI.md
   Sola lettura sul sistema tranne per cio' che scrive Codex stesso.
 #>
-[CmdletBinding()]
+# PositionalBinding=$false: ogni argomento non nominato va a Codex. Senza, in
+# `codex-account2 resume <id>` la parola 'resume' si legava a -Posta e l'identificativo
+# partiva da solo come prompt di una sessione nuova (misurato il 2026-11-24).
+[CmdletBinding(PositionalBinding=$false)]
 param(
   [Parameter(Mandatory = $true)]
   [ValidateRange(1, 99)]
@@ -185,7 +188,22 @@ if ($python -and (Test-Path -LiteralPath $riservaTool)) {
   catch { }
 }
 
+# --- Segnale di avvio in corso ------------------------------------------------
+# Lo si toglie solo nel finally qui sotto. Se la finestra viene uccisa, il finally non
+# gira e il segnale resta con il processo morto: Pulisci-Codex.ps1 lo riconosce e copia in
+# quarantena le sessioni scritte da quell'istante prima di eliminarle (L-018, 2026-11-24).
+$avvioCodex = Get-Date
+$segnale = Join-Path $radice ("avvii-in-corso\{0}.json" -f $PID)
+try {
+  $me = Get-CimInstance Win32_Process -Filter "ProcessId=$PID" -ErrorAction Stop
+  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $segnale) | Out-Null
+  $contenuto = '{{"pid":{0},"procStart":"{1}","avvio":"{2}"}}' -f $PID, $me.CreationDate.ToFileTimeUtc(), $avvioCodex.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
+  Set-Content -LiteralPath $segnale -Value $contenuto -Encoding ascii
+}
+catch { $segnale = $null }
+
 # --- Esecuzione -------------------------------------------------------------
+$codiceCodex = 0
 try {
   $tutti = @($argomenti) + @($Resto | Where-Object { $_ })
   if ($tutti.Count -gt 0) {
@@ -194,8 +212,10 @@ try {
   else {
     & codex
   }
+  $codiceCodex = $LASTEXITCODE
 }
 finally {
+  if ($segnale) { Remove-Item -LiteralPath $segnale -Force -ErrorAction SilentlyContinue }
   if (Get-Command Congeda-PostaSessioni -ErrorAction SilentlyContinue) { Congeda-PostaSessioni }
   Remove-Item Env:PROJECT_AGENT_MAILBOX_ROOT,Env:PROJECT_AGENT_MAILBOX_ID,Env:PROJECT_AGENT_MAILBOX_TOOL,Env:PROJECT_TEMPLATE_ROOT -ErrorAction SilentlyContinue
   # Il finally copre anche Ctrl+C e un'uscita per errore, che sono i casi in cui
@@ -209,8 +229,15 @@ finally {
     $pulizia = Join-Path $PSScriptRoot 'Pulisci-Codex.ps1'
     if (Test-Path -LiteralPath $pulizia) {
       Write-Host 'Pulizia degli store di sessione...' -ForegroundColor Cyan
-      if ($ConservaSessioni) { & $pulizia -Account $Account }
-      else { & $pulizia -Account $Account -Tutto }
+      # Un codice di uscita diverso da zero non e' un'uscita ordinata: le sessioni scritte
+      # da questo avvio vanno in quarantena prima di sparire. Copiarle in piu' non costa nulla.
+      $extraPulizia = @{}
+      if ($codiceCodex -ne 0) {
+        $extraPulizia['CrashDa'] = $avvioCodex
+        Write-Host ("Codex e' uscito con codice {0}: le sessioni di questo avvio vanno in quarantena." -f $codiceCodex) -ForegroundColor Yellow
+      }
+      if ($ConservaSessioni) { & $pulizia -Account $Account @extraPulizia }
+      else { & $pulizia -Account $Account -Tutto @extraPulizia }
     }
     else {
       # Il percorso cercato va STAMPATO, non solo il fatto che manchi: la causa

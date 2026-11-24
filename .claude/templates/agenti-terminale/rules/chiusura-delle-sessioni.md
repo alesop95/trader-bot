@@ -42,3 +42,9 @@ Il caso che le distingue si è presentato davvero: una sessione chiusa per error
 **Non rende una sessione irrecuperabile lato server.** Ciò che è stato inviato al modello vive secondo la politica di conservazione dell'area di lavoro, che è una configurazione lato fornitore e non si tocca da qui. Cancellare la sessione locale e credere di aver cancellato la conversazione è l'errore da non fare.
 
 **Non sostituisce il wipe.** Copre solo ciò che si è deciso di chiudere; tutto il resto, comprese le sessioni interrotte, i log e gli store effimeri, resta materia del wipe.
+
+## Le chiusure che nessuno ha deciso
+
+Una sessione può anche chiudersi senza che nessuno lo voglia, quando muore il terminale che la ospita. Il 2026-11-24 una scorciatoia di sistema che apriva un terminale elevato, creata da una sessione e premuta più volte, ha fatto chiudere a Windows Terminal tutte le schede insieme, quattro sessioni Claude e una Codex, e il wipe ne ha cancellato le trascrizioni in tre minuti (L-018 di un progetto istanziato). Da allora il wipe sposta in quarantena dopo ogni chiusura non canonica, e la procedura di recupero sta in `.claude/templates/agenti-terminale/recupero-dopo-crash.md`.
+
+Ne discende una prescrizione che vale prima del danno. Una modifica che tocca il terminale o la shell condivisi da tutte le sessioni, cioè una scorciatoia di sistema, un'attività pianificata elevata, il profilo PowerShell, le impostazioni di Windows Terminal o una variabile d'ambiente di sistema, si prova con una scheda fittizia aperta accanto, per esempio un `ping -t 127.0.0.1`, e con nessuna sessione di lavoro attiva. Superata la prova la scheda fittizia è ancora viva; se si è chiusa, la modifica rompe i terminali e si toglie prima di aprire altro. La sessione che prepara la modifica non la prova su sé stessa: la consegna, la fa provare così e lo scrive nella voce del lavoro, perché è l'unica sessione che non può vedere la propria chiusura.

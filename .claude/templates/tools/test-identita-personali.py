@@ -51,11 +51,11 @@ QUESTO = "test-identita-personali.py"
 LIMITE_BYTE = 2 * 1024 * 1024
 AMMESSE = Path(".claude") / "templates" / "tools" / "identita-forme-ammesse.txt"
 PERCORSO_TEMPLATE = Path.home() / ".config" / "template-claude-path.txt"
-# Il disco privato e' un dato personale quanto un indirizzo: un percorso che comincia per E: dice
-# che esiste un progetto privato, e lo dice anche quando quel nome non sta in nessun elenco. E' la
-# sola forma che vale per verso: in un repository aziendale ferma, in uno personale no, perche'
-# li' nominare il proprio disco e' legittimo. Senza di essa un progetto creato domani su E: non
-# sarebbe coperto finche' qualcuno non ne scrivesse il nome a mano in un elenco.
+# Un percorso di un'unita' della postazione fuori dal perimetro aziendale e' un dato personale
+# quanto un indirizzo, e lo resta anche quando il nome della cartella non sta in nessun elenco. E'
+# la sola forma che vale per verso: in un repository aziendale ferma, in uno personale no, perche'
+# li' citarla e' legittimo. Senza di essa una cartella nata domani non sarebbe coperta finche'
+# qualcuno non ne scrivesse il nome a mano in un elenco.
 FORMA_DISCO_PRIVATO = ("percorso privato", re.compile(r"[Ee]:[\\/][A-Za-z0-9._-]+"))
 FORME = [
     ("indirizzo", re.compile(r"[A-Za-z0-9._%+@-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", re.I)),
@@ -240,8 +240,8 @@ def testi_in_stage(radice: Path):
     """I file in stage letti dall'indice, cioe' il contenuto che il commit avra' davvero.
 
     I binari si saltano come in `testi_tracciati`: nei byte di un PDF o di un font una forma
-    come quella di un percorso privato compare per caso (il 2026-11-24 un font incorporato in un
-    PDF generato conteneva «e:/J» e fermava ogni commit che lo includeva)."""
+    come quella di un percorso compare per caso (il 2026-11-24 un font incorporato in un PDF
+    generato conteneva per caso quella forma e fermava ogni commit che lo includeva)."""
     nomi = git(radice, "diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR").stdout.decode("utf-8", errors="replace")
     for rel in [p for p in nomi.split("\0") if p]:
         if Path(rel).name in (QUESTO, AMMESSE.name):
@@ -270,7 +270,7 @@ def testi_tracciati(radice: Path):
 
 
 def cerca_forme_aziendali(radice: Path, stage: bool) -> list:
-    """Il percorso del disco privato dentro un repository aziendale, per forma e non per elenco.
+    """Il percorso fuori perimetro dentro un repository aziendale, per forma e non per elenco.
     Gira solo nel verso aziendale, perche' in un repository personale quel percorso e' legittimo:
     e' la stessa asimmetria con cui lo strumento tratta gia' le due identita'."""
     ammesse = forme_ammesse(radice)
@@ -321,8 +321,8 @@ def controlla(radice: Path, esplicito: str = "", stage: bool = False, tracciati:
     lavoro = voci_di_lavoro(voci)
     dentro = nell_ambito(radice, ambiti(voci))
     if (stage or tracciati) and dentro:
-        # Nel verso aziendale il percorso del disco privato si ferma per la sua forma e senza
-        # elenco: e' cosi' che un progetto privato nato dopo l'ultimo censimento resta coperto.
+        # Nel verso aziendale il percorso fuori perimetro si ferma per la sua forma e senza
+        # elenco: e' cosi' che una cartella nata dopo l'ultimo censimento resta coperta.
         forme = cerca_forme_aziendali(radice, stage)
         for rel, n, nome in forme:
             print("   %s:%d ha la forma di un %s e non e' fra gli esempi ammessi" % (rel, n, nome))
@@ -430,7 +430,7 @@ def autotest() -> int:
         caso("un nome di file di chiave si ferma per la sua forma", rc == 1 and "forma di un chiave" in out)
         (r / ".claude" / "rules" / "identita.md").write_text("il vault sta in E:\\progetto-privato\\dati\n", encoding="utf-8")
         rc, out = esegui()
-        caso("un percorso del disco privato si ferma per la sua forma", rc == 1 and "forma di un percorso privato" in out)
+        caso("un percorso fuori perimetro si ferma per la sua forma", rc == 1 and "forma di un percorso privato" in out)
         caso("il percorso non si stampa", "progetto-privato" not in out)
         ammesse.write_text(ammesse.read_text(encoding="utf-8") + "e:\\un-progetto\n", encoding="utf-8")
         (r / ".claude" / "rules" / "identita.md").write_text("per esempio E:\\un-progetto.\n", encoding="utf-8")
@@ -484,7 +484,7 @@ def autotest() -> int:
         caso("--stage ferma un percorso privato mai censito, per la forma", rc == 1 and "forma di un percorso privato" in out)
         caso("--stage non stampa il percorso", "altro-privato" not in out)
         (r / "doc.md").write_text("nessun dato\n", encoding="utf-8")
-        (r / "font.bin").write_bytes(b"%PDF\0\x01" + b"e:/J" + b"\0" * 16)
+        (r / "font.bin").write_bytes(b"%PDF\0\x01" + b"e:" + b"/J" + b"\0" * 16)
         subprocess.run(["git", "-C", str(r), "add", "doc.md", "font.bin"], check=True)
         caso("--stage salta i binari: una forma caduta per caso nei byte non ferma", esegui(str(elenco), stage=True)[0] == 0)
         subprocess.run(["git", "-C", str(r), "rm", "-q", "--cached", "font.bin"], check=True)
@@ -523,7 +523,7 @@ def autotest() -> int:
         (r / "vecchio.md").write_text("il mio vault sta in E:\\mio-progetto\\dati\n", encoding="utf-8")
         subprocess.run(["git", "-C", str(r), "add", "vecchio.md"], check=True)
         subprocess.run(["git", "-C", str(r), "commit", "-q", "-m", "v", "--no-verify"], check=True)
-        caso("in un repository personale il percorso del disco privato e' legittimo", esegui(str(elenco), tracciati=True)[0] == 0)
+        caso("in un repository personale il percorso fuori perimetro e' legittimo", esegui(str(elenco), tracciati=True)[0] == 0)
         (r / "vecchio.md").write_text("persona.privata@posta.example, che qui e' legittima\n", encoding="utf-8")
         subprocess.run(["git", "-C", str(r), "add", "vecchio.md"], check=True)
         subprocess.run(["git", "-C", str(r), "commit", "-q", "-m", "w", "--no-verify"], check=True)

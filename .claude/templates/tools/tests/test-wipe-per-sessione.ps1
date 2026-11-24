@@ -43,6 +43,7 @@ $accT = Join-Path $T '.claude-accountT'
 $accU = Join-Path $T '.claude-accountU'
 $tmpR = Join-Path $T 'tmpclaude'
 $mcpR = Join-Path $T 'mcpcache'
+$quarR = Join-Path $T 'quarantena'
 $A = 'aaaaaaaa-1111-2222-3333-444444444444'
 $B = 'bbbbbbbb-1111-2222-3333-444444444444'
 $C = 'cccccccc-1111-2222-3333-444444444444'
@@ -81,9 +82,11 @@ function Installa($acc, [switch]$ConLibreria) {
   Copy-Item -LiteralPath $scrub -Destination $h -Force
   if ($ConLibreria) { Copy-Item -LiteralPath $lib -Destination $h -Force }
 }
-function Esegui($acc, [switch]$Forza) {
-  $argomenti = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $acc 'hooks\session-end-wipe.ps1'), '-BaseProva', $acc, '-TempProva', $tmpR, '-McpProva', $mcpR)
+function Esegui($acc, [switch]$Forza, [string]$Crash) {
+  $argomenti = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $acc 'hooks\session-end-wipe.ps1'), '-BaseProva', $acc, '-TempProva', $tmpR, '-McpProva', $mcpR, '-QuarantenaProva', $quarR)
   if ($Forza) { $argomenti += '-Forza' }
+  # La copia distaccata con un PID gia' uscito e un motivo: e' cio' che arriva dopo un SessionEnd.
+  if ($Crash) { $argomenti += @('-AttendiPid', '999999', '-Motivo', $Crash) }
   # scrub-claude-json.js scrive il suo riepilogo su stderr: non e' un errore.
   $ErrorActionPreference = 'Continue'
   $out = & powershell @argomenti 2>&1
@@ -193,9 +196,9 @@ try {
     ('Set-Content -LiteralPath $f -Encoding ascii -Value (' + [char]39 + '{"pid":' + [char]39 + ' + $padre.ProcessId + ' + [char]39 + ',"sessionId":"' + $D + '","procStart":"' + [char]39 + ' + $padre.CreationDate.ToFileTimeUtc() + ' + [char]39 + '"}' + [char]39 + ')'))
   Set-Content -LiteralPath $prelude -Value $righePrelude -Encoding ascii
   $payload = Join-Path $T 'payload.json'
-  Set-Content -LiteralPath $payload -Value ('{"session_id":"' + $D + '","hook_event_name":"SessionEnd","reason":"exit"}') -Encoding ascii
+  Set-Content -LiteralPath $payload -Value ('{"session_id":"' + $D + '","hook_event_name":"SessionEnd","reason":"prompt_input_exit"}') -Encoding ascii
   $wipeV = Join-Path $accV 'hooks\session-end-wipe.ps1'
-  $lancio = 'powershell -NoProfile -ExecutionPolicy Bypass -File "' + $wipeV + '" -BaseProva "' + $accV + '" -TempProva "' + $tmpR + '" -McpProva "' + $mcpR + '"'
+  $lancio = 'powershell -NoProfile -ExecutionPolicy Bypass -File "' + $wipeV + '" -BaseProva "' + $accV + '" -TempProva "' + $tmpR + '" -McpProva "' + $mcpR + '" -QuarantenaProva "' + $quarR + '"'
   foreach ($modo in 'manuale', 'hook') {
     Scrivi (Join-Path $accV "projects\E--v\$D.jsonl") ('{"type":"queue-operation","timestamp":"' + (Get-Date).ToUniversalTime().ToString('o') + '"}') $null
     $cmd = Join-Path $T "lancia-$modo.cmd"
@@ -263,6 +266,50 @@ try {
   Atteso 'il verbale recente di un altro account non e'' protetto' (-not (Test-Path (Join-Path $accX "projects\E--altro\$G.jsonl")))
   Atteso 'il diario riporta le rimozioni per categoria' ($logW -match 'Rimossi per categoria: ')
   if (-not ((Test-Path (Join-Path $accW "projects\$slugW\$E.jsonl")) -and -not (Test-Path (Join-Path $accX "projects\E--altro\$G.jsonl")))) { Write-Host '--- diario di W:'; Write-Host $logW; Write-Host '--- diario di X:'; Write-Host $logX }
+  Atteso 'nessuna quarantena dopo chiusure canoniche e manuali' (-not (Test-Path (Join-Path $quarR (Get-Date -Format 'yyyy-MM-dd'))))
+
+  # --- 8. chiusura non canonica: quarantena invece di cancellazione ------------------
+  $accY = Join-Path $T '.claude-accountY'
+  $H = '12121212-1111-2222-3333-444444444444'
+  Scrivi (Join-Path $accY 'settings.json') '{}' $null
+  Scrivi (Join-Path $accY "projects\E--y\$H.jsonl") '{"type":"queue-operation","cwd":"E:\\y"}' $vecchio
+  Cartella (Join-Path $accY "projects\E--y\$H") $vecchio
+  Cartella (Join-Path $accY "file-history\$H") $vecchio
+  Scrivi (Join-Path $accY '.claude.json') $cfg $null
+  Installa $accY -ConLibreria
+  $r = Esegui $accY -Crash 'other'
+  $logY = [string](Get-Content (Join-Path $accY 'session-end-wipe.log') -Raw -ErrorAction SilentlyContinue)
+  $runY = @(Get-ChildItem -LiteralPath (Join-Path $quarR (Get-Date -Format 'yyyy-MM-dd')) -Directory -Filter '*-claude-accountY' -ErrorAction SilentlyContinue)
+  Write-Host 'scenario 8, chiusura con motivo other'
+  Atteso 'il diario dice chiusura non canonica' ($logY -match 'Chiusura non canonica \(motivo ''other''\)')
+  Atteso 'la trascrizione non e'' piu'' nell''account' (-not (Test-Path (Join-Path $accY "projects\E--y\$H.jsonl")))
+  Atteso 'trascrizione, sottocartella e file-history sono in quarantena al percorso relativo' ($runY.Count -eq 1 -and (Test-Path (Join-Path $runY[0].FullName "projects\E--y\$H.jsonl")) -and (Test-Path (Join-Path $runY[0].FullName "projects\E--y\$H\x.txt")) -and (Test-Path (Join-Path $runY[0].FullName "file-history\$H")))
+  Atteso '.claude.json non si tocca in crash' ((Get-Content (Join-Path $accY '.claude.json') -Raw) -match 'lastCost')
+  Atteso 'la radice di quarantena porta il LEGGIMI' (Test-Path (Join-Path $quarR 'LEGGIMI.txt'))
+  if ($runY.Count -ne 1) { Write-Host '--- diario di Y:'; Write-Host $logY }
+
+  # --- 9. sessione orfana dentro una chiusura canonica --------------------------------
+  $accZ = Join-Path $T '.claude-accountZ'
+  $I = '34343434-1111-2222-3333-444444444444'
+  $J = '56565656-1111-2222-3333-444444444444'
+  Scrivi (Join-Path $accZ 'settings.json') '{}' $null
+  Scrivi (Join-Path $accZ "projects\E--z\$I.jsonl") '{"type":"queue-operation"}' $vecchio
+  Scrivi (Join-Path $accZ "projects\E--z\$J.jsonl") '{"type":"queue-operation"}' $vecchio
+  Scrivi (Join-Path $accZ 'sessions\99998.json') ('{"pid":99998,"sessionId":"' + $I + '"}') $vecchio
+  Installa $accZ -ConLibreria
+  $r = Esegui $accZ
+  $logZ = [string](Get-Content (Join-Path $accZ 'session-end-wipe.log') -Raw -ErrorAction SilentlyContinue)
+  $runZ = @(Get-ChildItem -LiteralPath (Join-Path $quarR (Get-Date -Format 'yyyy-MM-dd')) -Directory -Filter '*-claude-accountZ' -ErrorAction SilentlyContinue)
+  Write-Host 'scenario 9, sessione orfana in una chiusura canonica'
+  Atteso 'il diario nomina la sessione orfana' ($logZ -match ('Sessioni orfane.*' + $I))
+  Atteso 'la trascrizione orfana e'' in quarantena, la chiusa normale e'' cancellata' ($runZ.Count -eq 1 -and (Test-Path (Join-Path $runZ[0].FullName "projects\E--z\$I.jsonl")) -and -not (Test-Path (Join-Path $runZ[0].FullName "projects\E--z\$J.jsonl")) -and -not (Test-Path (Join-Path $accZ "projects\E--z\$J.jsonl")))
+  if ($runZ.Count -ne 1) { Write-Host '--- diario di Z:'; Write-Host $logZ }
+
+  # --- 10. scadenza della quarantena ------------------------------------------------
+  Cartella (Join-Path $quarR '2020-01-01\120000-claude-accountY') $vecchio
+  $r = Esegui $accZ
+  Write-Host 'scenario 10, scadenza della quarantena'
+  Atteso 'una chiusura canonica toglie le cartelle di data oltre la scadenza e lascia quella di oggi' (-not (Test-Path (Join-Path $quarR '2020-01-01')) -and (Test-Path (Join-Path $quarR (Get-Date -Format 'yyyy-MM-dd'))))
 }
 finally {
   if ($senzaFile) { Stop-Process -Id $senzaFile.Id -Force -ErrorAction SilentlyContinue; Get-CimInstance Win32_Process -Filter "ParentProcessId=$($senzaFile.Id)" -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } }

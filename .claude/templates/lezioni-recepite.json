@@ -1,5 +1,26 @@
 [
   {
+    "progetto": "37e514c406fc",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-24",
+    "dove": ".claude/skills/progetti-su-vm/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "37e514c406fc",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-24",
+    "dove": ".claude/skills/progetti-su-vm/RIFERIMENTO.md"
+  },
+  {
+    "progetto": "37e514c406fc",
+    "id": "L-003",
+    "commit": "",
+    "data": "2026-11-24",
+    "dove": ".claude/skills/progetti-su-vm/RIFERIMENTO.md"
+  },
+  {
     "progetto": "51462580c4f1",
     "id": "L-001",
     "commit": "",
@@ -431,7 +452,7 @@
     "id": "L-048",
     "commit": "d915d1a",
     "data": "2026-11-12",
-    "dove": "nomi dei progetti privati tolti dai file propagati in d915d1a, controllo per forma esteso in e9acf12"
+    "dove": "esempi resi generici nei file propagati in d915d1a, controllo per forma esteso in e9acf12"
   },
   {
     "progetto": "7bdce874415c",
@@ -1286,6 +1307,13 @@
     "commit": "",
     "data": "2026-11-16",
     "dove": ".claude/skills/cerca-pacchetto/SKILL.md, sezione sul confine dei dati letto sul flusso"
+  },
+  {
+    "progetto": "ae8dd2775ccf",
+    "id": "L-018",
+    "commit": "",
+    "data": "2026-11-24",
+    "dove": ".claude/templates/tools/session-end-wipe.ps1, agenti-terminale/tools/Pulisci-Codex.ps1, Avvia-Codex.ps1, Avvia-Claude.ps1, Recupera-DaShadow.ps1, Riapri-Sessione.ps1, agenti-terminale/recupero-dopo-crash.md, agenti-terminale/rules/chiusura-delle-sessioni.md"
   },
   {
     "progetto": "b3f9f458b450",

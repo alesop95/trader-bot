@@ -84,7 +84,12 @@ param(
   [switch]$IncludiDefault,
   [int]$GiorniAttivita = 0,
   [string[]]$Prefissi,
-  [switch]$Deroga
+  [switch]$Deroga,
+  # Interno, lo passa Avvia-Codex.ps1 quando Codex e' uscito con un codice diverso da
+  # zero: le sessioni scritte da quell'istante in poi vanno in quarantena prima di sparire.
+  [datetime]$CrashDa = [datetime]::MinValue,
+  # Solo per le prove: una radice di quarantena finta.
+  [string]$QuarantenaProva
 )
 
 Set-StrictMode -Version Latest
@@ -228,6 +233,63 @@ function Test-DemoneVivo($radice) {
   }).Count)
 }
 
+# --- quarantena dopo un crash, dal 2026-11-24 ----------------------------------
+# Il 2026-11-24 Windows Terminal ha chiuso insieme tutte le schede (L-018 di un progetto
+# istanziato). Le sessioni Codex sono sopravvissute solo perche' nessuna pulizia e' partita
+# dopo: la prima uscita ordinaria di un'altra sessione Codex dello stesso account le avrebbe
+# cancellate con -Tutto, come residui di sessioni non vive. Da allora Avvia-Codex.ps1
+# scrive <radice>\avvii-in-corso\<pid>.json all'avvio e lo toglie solo nel proprio
+# finally: un segnale rimasto con il processo morto e' un avvio finito senza uscita
+# ordinata, e le sessioni scritte da quel momento si copiano in quarantena prima che la
+# pulizia le elimini. La quarantena e' la stessa del wipe di Claude Code,
+# %USERPROFILE%\quarantena-sessioni\<data>\<ora>-codex-account<N>\, con il percorso relativo
+# alla radice conservato; ogni chiusura canonica del wipe di Claude toglie le date scadute.
+$quarRoot = if ($QuarantenaProva) { $QuarantenaProva.TrimEnd('\', '/') } else { Join-Path $env:USERPROFILE 'quarantena-sessioni' }
+$adessoQ = Get-Date
+
+# Gli avvii finiti senza uscita ordinata: { soglia = istante di avvio piu' vecchio, file = segnali }.
+function Get-AvviiOrfani($radice) {
+  $dir = Join-Path $radice 'avvii-in-corso'
+  $esito = [pscustomobject]@{ Soglia = [datetime]::MaxValue; File = @() }
+  if (-not (Test-Path -LiteralPath $dir)) { return $esito }
+  foreach ($f in @(Get-ChildItem -LiteralPath $dir -Filter '*.json' -File -ErrorAction SilentlyContinue)) {
+    $m = $null
+    try { $m = (Get-Content -LiteralPath $f.FullName -Raw) | ConvertFrom-Json } catch { }
+    # Con StrictMode una proprieta' assente e' un errore: si leggono per nome.
+    $campo = { param($n) if ($m -and $m.PSObject.Properties[$n]) { [string]$m.PSObject.Properties[$n].Value } else { '' } }
+    $vivo = $false
+    $pidM = & $campo 'pid'
+    if ($pidM -match '^\d+$') {
+      $p = Get-CimInstance Win32_Process -Filter ("ProcessId={0}" -f [int]$pidM) -ErrorAction SilentlyContinue
+      if ($p -and [string]$p.CreationDate.ToFileTimeUtc() -eq (& $campo 'procStart')) { $vivo = $true }
+    }
+    if ($vivo) { continue }
+    $avvio = $f.LastWriteTime
+    $avvioM = & $campo 'avvio'
+    if ($avvioM) { try { $avvio = [datetime]::Parse($avvioM, [Globalization.CultureInfo]::InvariantCulture) } catch { } }
+    if ($avvio -lt $esito.Soglia) { $esito.Soglia = $avvio }
+    $esito.File += $f.FullName
+  }
+  return $esito
+}
+
+function Copy-InQuarantena($radice, $nome, $file) {
+  $rel = $file.Substring($radice.TrimEnd('\').Length).TrimStart('\')
+  $dest = Join-Path $quarRoot ('{0}\{1}-{2}\{3}' -f $adessoQ.ToString('yyyy-MM-dd'), $adessoQ.ToString('HHmmss'), $nome.TrimStart('.'), $rel)
+  if ($DryRun) { Scrivi "    [dry-run] in quarantena: $file" 'DarkGray'; return }
+  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
+  Copy-Item -LiteralPath $file -Destination $dest -Force
+  $leggimi = Join-Path $quarRoot 'LEGGIMI.txt'
+  if (-not (Test-Path -LiteralPath $leggimi)) {
+    Set-Content -LiteralPath $leggimi -Encoding utf8 -Value @(
+      'Quarantena delle sessioni di Claude Code e di Codex, scritta da session-end-wipe.ps1 e da Pulisci-Codex.ps1.',
+      'Qui finiscono le trascrizioni che il wipe avrebbe cancellato dopo una chiusura non canonica (crash del terminale, finestra chiusa).',
+      'Ogni cartella <ora>-<account> riproduce la home dell''account: una sessione si riapre con Riapri-Sessione.ps1 del pacchetto agenti-terminale.',
+      'Le cartelle di data piu'' vecchie di 14 giorni le toglie la prima chiusura canonica successiva.')
+  }
+  Scrivi "    in quarantena: $dest" 'Yellow'
+}
+
 function Remove-Percorso($percorso, $etichetta) {
   if (-not (Test-Path -LiteralPath $percorso)) { return }
   if ($DryRun) { Scrivi "    [dry-run] rimuoverei $etichetta : $percorso" 'DarkGray'; return }
@@ -305,6 +367,7 @@ if ($Lista) {
     foreach ($s in $tutteLeSessioni) {
       $tag = 'WIPE'
       if ($s.Viva) { $tag = 'VIVA' }
+      elseif ((Get-AvviiOrfani $s.Percorso).Soglia -le (Get-Item -LiteralPath $s.File).LastWriteTime) { $tag = 'QUAR' }
       elseif (-not $nienteDaPreservare -and (Test-Preservare $s.Cartella)) { $tag = 'KEEP' }
       $c = $s.Cartella
       if (-not $c) { $c = '(cartella di lavoro non determinata -> preservata per prudenza)' }
@@ -364,6 +427,19 @@ foreach ($r in $radiciValide) {
   $daRimuovere = @($sessioniRadice | Where-Object { -not $_.Viva -and ($Tutto -or $nienteDaPreservare -or -not (Test-Preservare $_.Cartella)) })
   Scrivi ("  sessioni: {0} totali, {1} vive conservate, {2} da rimuovere" -f $sessioniRadice.Count, $vive.Count, $daRimuovere.Count) 'White'
   foreach ($v in $vive) { Scrivi ("    viva, non si tocca: {0}  {1}" -f $v.Id, $v.Cartella) 'DarkGray' }
+
+  # Prima di eliminare: le sessioni di un avvio finito male vanno in quarantena. Si copia
+  # il rollout e non lo si sposta, perche' l'eliminazione resta a `codex delete`, che tiene
+  # allineati gli indici; per riprenderla il file si rimette al suo posto (Riapri-Sessione.ps1).
+  $orfani = Get-AvviiOrfani $r.Percorso
+  $soglia = $orfani.Soglia
+  if ($CrashDa -ne [datetime]::MinValue -and $CrashDa -lt $soglia) { $soglia = $CrashDa }
+  if ($soglia -ne [datetime]::MaxValue) {
+    $daSalvare = @($sessioniRadice | Where-Object { -not $_.Viva -and (Get-Item -LiteralPath $_.File).LastWriteTime -ge $soglia })
+    Scrivi ("  uscita non ordinata dal {0}: {1} sessioni scritte da allora vanno in quarantena" -f $soglia.ToString('yyyy-MM-dd HH:mm'), $daSalvare.Count) 'Yellow'
+    foreach ($s in $daSalvare) { Copy-InQuarantena $r.Percorso $r.Nome $s.File }
+    if (-not $DryRun) { foreach ($f in $orfani.File) { Remove-Item -LiteralPath $f -Force -ErrorAction SilentlyContinue } }
+  }
 
   # Le sessioni si rimuovono con il comando supportato, non cancellando file:
   # sono indicizzate da thread_history_1.sqlite e state_5.sqlite.
