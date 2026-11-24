@@ -237,12 +237,19 @@ def forme_nel_testo(rel: str, testo: str, ammesse: set, forme: list) -> list:
 
 
 def testi_in_stage(radice: Path):
-    """I file in stage letti dall'indice, cioe' il contenuto che il commit avra' davvero."""
+    """I file in stage letti dall'indice, cioe' il contenuto che il commit avra' davvero.
+
+    I binari si saltano come in `testi_tracciati`: nei byte di un PDF o di un font una forma
+    come quella di un percorso privato compare per caso (il 2026-11-24 un font incorporato in un
+    PDF generato conteneva «e:/J» e fermava ogni commit che lo includeva)."""
     nomi = git(radice, "diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR").stdout.decode("utf-8", errors="replace")
     for rel in [p for p in nomi.split("\0") if p]:
         if Path(rel).name in (QUESTO, AMMESSE.name):
             continue
-        yield rel, git(radice, "show", ":" + rel).stdout.decode("utf-8", errors="ignore")
+        grezzo = git(radice, "show", ":" + rel).stdout
+        if b"\0" in grezzo[:8192]:
+            continue
+        yield rel, grezzo.decode("utf-8", errors="ignore")
 
 
 def testi_tracciati(radice: Path):
@@ -476,6 +483,12 @@ def autotest() -> int:
         rc, out = esegui(str(elenco), stage=True)
         caso("--stage ferma un percorso privato mai censito, per la forma", rc == 1 and "forma di un percorso privato" in out)
         caso("--stage non stampa il percorso", "altro-privato" not in out)
+        (r / "doc.md").write_text("nessun dato\n", encoding="utf-8")
+        (r / "font.bin").write_bytes(b"%PDF\0\x01" + b"e:/J" + b"\0" * 16)
+        subprocess.run(["git", "-C", str(r), "add", "doc.md", "font.bin"], check=True)
+        caso("--stage salta i binari: una forma caduta per caso nei byte non ferma", esegui(str(elenco), stage=True)[0] == 0)
+        subprocess.run(["git", "-C", str(r), "rm", "-q", "--cached", "font.bin"], check=True)
+        (r / "font.bin").unlink()
         (r / "doc.md").write_text("contatto: persona.privata@posta.example\n", encoding="utf-8")
         subprocess.run(["git", "-C", str(r), "add", "doc.md"], check=True)
         subprocess.run(["git", "-C", str(r), "config", "user.email", "io@privato.example"], check=True)
