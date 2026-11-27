@@ -116,7 +116,7 @@ SKILL_SISTEMA = [
     "gate-pacchetti", "riprendi", "onboard",
     "prove-che-misurano", "fonti-non-recuperabili", "alberi-di-lavoro",
     "separazione-ambienti", "identita-git", "cerca-pacchetto", "craft-apps",
-    "retrospettiva", "progetti-su-vm",
+    "retrospettiva", "progetti-su-vm", "analisi-codice",
 ]
 IGNORA = {"__pycache__", ".pytest_cache"}
 CODICE = {".py", ".ps1", ".sh", ".js", ".mjs"}
@@ -940,7 +940,7 @@ def main():
     # verbale dell'ultima consegna vera e rigenerarlo lo cancellerebbe. Si aggiornano anche
     # quando non c'e' niente da dire, perche' una sezione rimasta dalla corsa precedente
     # direbbe ancora dovuta una tornata gia' fatta.
-    scritti = [e for e in effettivi if e["esito"] not in ("CONFLITTO", "PACCHETTI", "ADATTATO", "LOCALE", "UGUALE")]
+    scritti = any(e["esito"] in stato_template.ESITI_CONSEGNATI for e in effettivi)
     ricevuta_esistente = prj / ".claude/ultimo-allineamento.md"
     if (not scritti and ricevuta_esistente.is_file()
             and "<!-- generato da allinea-dal-template.py -->" in ricevuta_esistente.read_text(encoding="utf-8-sig")):

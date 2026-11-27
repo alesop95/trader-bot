@@ -35,8 +35,12 @@
 .PARAMETER DryRun
   Stampa ogni rimozione che verrebbe fatta, senza farne nessuna.
 
+.PARAMETER SoloTemporanei
+  Pulisce immagini generate, visualizzazioni e file temporanei degli account.
+  Conserva conversazioni, database e attivita' fuori progetto. Combinabile con -DryRun.
+
 .PARAMETER Tutto
-  Azzera anche i database di stato, sessions\ e tmp\, ignorando la preservazione,
+  Azzera anche i database di stato e sessions\, ignorando la preservazione,
   ma solo nelle radici dove nessun thread e' vivo e nessun demone app-server e' in
   esecuzione: un database SQLite cancellato sotto un processo che lo tiene aperto
   puo' restare incoerente. Dove non si puo', lo dice e salta.
@@ -81,6 +85,7 @@ param(
   [switch]$Lista,
   [switch]$DryRun,
   [switch]$Tutto,
+  [switch]$SoloTemporanei,
   [switch]$IncludiDefault,
   [int]$GiorniAttivita = 0,
   [string[]]$Prefissi,
@@ -128,6 +133,7 @@ $logFile = Join-Path $env:USERPROFILE 'Documents\Codex\pulisci-codex.log'
 
 function Scrivi($testo, $colore) {
   Write-Host $testo -ForegroundColor $colore
+  if ($SoloTemporanei) { return }
   try { Add-Content -LiteralPath $logFile -Value ("{0}  {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $testo) -ErrorAction SilentlyContinue } catch { }
 }
 
@@ -226,9 +232,10 @@ function Get-ThreadVivi($radice) {
 
 # Il demone app-server di una radice gira dall'eseguibile sotto <radice>\packages,
 # quindi si riconosce dal percorso; tiene aperti i database di stato.
-function Test-DemoneVivo($radice) {
+function Test-DemoneVivo($radice, [switch]$Stretto) {
   $pref = (Join-Path $radice 'packages') + '\'
-  return [bool](@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+  $erroreCim = if ($Stretto) { 'Stop' } else { 'SilentlyContinue' }
+  return [bool](@(Get-CimInstance Win32_Process -ErrorAction $erroreCim | Where-Object {
     $_.ExecutablePath -and $_.ExecutablePath.TrimStart('\', '?').StartsWith($pref, 'OrdinalIgnoreCase')
   }).Count)
 }
@@ -297,6 +304,64 @@ function Remove-Percorso($percorso, $etichetta) {
   Scrivi "    rimosso $etichetta" 'DarkGray'
 }
 
+. (Join-Path $PSScriptRoot '..\..\tools\wipe-temporanei-perimetro.ps1')
+
+function Remove-TemporaneoCodex($percorso, $radice) {
+  if (-not (Test-Path -LiteralPath $percorso)) { return }
+  try {
+    if (-not (Test-TemporaneoLocale $percorso $radice)) {
+      Scrivi "    saltato, percorso con collegamenti o fuori radice: $percorso" 'Yellow'
+      return
+    }
+    if ($DryRun) { Scrivi "    [dry-run] rimuoverei temporaneo: $percorso" 'DarkGray'; return }
+    Remove-Item -LiteralPath $percorso -Recurse -Force -ErrorAction Stop
+    Scrivi "    rimosso temporaneo: $percorso" 'DarkGray'
+  }
+  catch {
+    Scrivi "    temporaneo non rimosso: $percorso ($($_.Exception.Message))" 'Yellow'
+    $script:temporaneiFalliti++
+  }
+}
+
+function Clear-TemporaneiCodex($r) {
+  $radice = $r.Percorso
+  $vivi = Get-ThreadVivi $radice
+  try { $demone = Test-DemoneVivo $radice -Stretto }
+  catch {
+    Scrivi "    temporanei rimandati: rilevamento processi non disponibile ($($_.Exception.Message))" 'Yellow'
+    $script:temporaneiFalliti++
+    return
+  }
+  # La radice desktop non ha necessariamente un demone in packages.
+  $desktopAperto = $r.Nome -eq '.codex (app desktop)' -and (Get-Process -Name Codex -ErrorAction SilentlyContinue)
+  if ($desktopAperto) { Scrivi '    temporanei desktop rimandati: Codex in esecuzione' 'Yellow'; return }
+  $ferma = -not ($vivi.Count -or $demone)
+  $immagini = Join-Path $radice 'generated_images'
+  $store = Get-Item -LiteralPath $immagini -Force -ErrorAction SilentlyContinue
+  $account = Get-Item -LiteralPath $radice -Force
+  if ($store -and $store.PSIsContainer -and -not (($store.Attributes -bor $account.Attributes) -band [IO.FileAttributes]::ReparsePoint)) {
+    foreach ($item in Get-ChildItem -LiteralPath $immagini -Force) {
+      $id = [guid]::Empty
+      $thread = $item.PSIsContainer -and [guid]::TryParseExact($item.Name, 'D', [ref]$id)
+      if ($ferma -or ($thread -and -not $vivi.ContainsKey($item.Name))) {
+        Remove-TemporaneoCodex $item.FullName $radice
+      }
+      else { Scrivi "    temporaneo in uso o con sessione incerta: $($item.FullName)" 'DarkGray' }
+    }
+    if (-not $DryRun -and -not (Get-ChildItem -LiteralPath $immagini -Force)) {
+      try { [IO.Directory]::Delete($immagini, $false) }
+      catch [IO.IOException] { Scrivi "    cartella immagini non svuotata: $immagini" 'Yellow' }
+    }
+  }
+  elseif ($store) { Scrivi "    saltato store immagini non ordinario: $immagini" 'Yellow' }
+  if ($ferma) {
+    foreach ($nome in 'tmp', 'visualizations') { Remove-TemporaneoCodex (Join-Path $radice $nome) $radice }
+  }
+  else { Scrivi '    temporanei comuni rimandati: account in uso' 'DarkGray' }
+}
+
+$script:temporaneiFalliti = 0
+
 # --- radici da trattare -----------------------------------------------------
 
 # Scoperta automatica: si enumerano le radici realmente presenti nel profilo.
@@ -338,6 +403,7 @@ foreach ($r in $radici) {
     continue
   }
   $radiciValide += $r
+  if ($SoloTemporanei) { continue }
   $vivi = Get-ThreadVivi $r.Percorso
   foreach ($s in (Get-Sessioni $r.Percorso)) {
     $tutteLeSessioni += [pscustomobject]@{
@@ -352,6 +418,16 @@ foreach ($r in $radici) {
 }
 
 if ($radiciValide.Count -eq 0) { Stop-Pulizia 'nessuna radice Codex valida fra quelle indicate.' }
+
+if ($SoloTemporanei) {
+  if ($Lista) { $DryRun = $true }
+  foreach ($r in $radiciValide) {
+    Scrivi ("--- {0}" -f $r.Nome) 'Cyan'
+    Clear-TemporaneiCodex $r
+  }
+  if ($script:temporaneiFalliti) { exit 1 }
+  exit 0
+}
 
 $configurato = Test-Configurato
 
@@ -466,6 +542,8 @@ foreach ($r in $radiciValide) {
     Scrivi ("    eliminata sessione {0}" -f $s.Id) 'DarkGray'
   }
 
+  Clear-TemporaneiCodex $r
+
   # Store effimeri, sempre.
   Remove-Percorso (Join-Path $r.Percorso 'history.jsonl') 'history.jsonl'
   Remove-Percorso (Join-Path $r.Percorso 'log') 'log\'
@@ -476,7 +554,7 @@ foreach ($r in $radiciValide) {
   if ($vive.Count -gt 0) { $inUso += ('{0} sessioni vive' -f $vive.Count) }
   if ($Tutto -and (Test-DemoneVivo $r.Percorso)) { $inUso += 'il demone app-server e'' in esecuzione' }
   if ($Tutto -and $inUso) {
-    Scrivi ("  database di stato, sessions\ e tmp\ non toccati: {0}. Si azzerano a radice ferma." -f ($inUso -join ', ')) 'Yellow'
+    Scrivi ("  database di stato e sessions\ non toccati: {0}. Si azzerano a radice ferma." -f ($inUso -join ', ')) 'Yellow'
   }
   elseif ($Tutto) {
     foreach ($db in @('state_5', 'logs_2', 'goals_1', 'memories_1', 'memories_v2_1', 'queue_1', 'thread_history_1')) {
@@ -485,7 +563,6 @@ foreach ($r in $radiciValide) {
       }
     }
     Remove-Percorso (Join-Path $r.Percorso 'sessions') 'sessions\'
-    Remove-Percorso (Join-Path $r.Percorso 'tmp') 'tmp\'
   }
 
   # Verifica che cio' che deve sopravvivere sia sopravvissuto. Un wipe che porta

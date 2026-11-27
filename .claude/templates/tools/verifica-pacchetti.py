@@ -62,7 +62,7 @@ def piano(project, recipes, available):
 
 def audit(project, recipes, catalog):
     choices = decisioni(project)
-    names = sorted(set(re.findall(r"^\| `([a-z0-9][a-z0-9-]*)`", catalog, re.M)) | set(choices) | set(recipes.get("ricette", {})))
+    names = sorted(set(voci_catalogo(catalog, solo_opzionali=True)) | set(choices) | set(recipes.get("ricette", {})))
     result = []
     for name in names:
         entry = choices.get(name)
@@ -91,8 +91,20 @@ def audit(project, recipes, catalog):
     return result
 
 
-def voci_catalogo(catalog):
-    return sorted(set(re.findall(r"^\| `([a-z0-9][a-z0-9-]*)`", catalog, re.M)))
+def voci_catalogo(catalog, *, solo_opzionali=False):
+    """Il campo «Quando offrirlo» identifica le voci con un altro canale di attivazione."""
+    names = set()
+    for riga in catalog.splitlines():
+        nome = re.match(r"^\| `([a-z0-9][a-z0-9-]*)`", riga)
+        if not nome:
+            continue
+        celle = re.split(r"(?<!\\)\|", riga)
+        if solo_opzionali and len(celle) > 3 and re.match(
+            r"^\s*Non passa dal gate(?: dei pacchetti)?:", celle[3]
+        ):
+            continue
+        names.add(nome[1])
+    return sorted(names)
 
 
 def gate(project, catalog):
@@ -105,9 +117,9 @@ def gate(project, catalog):
     propone soltanto i settori che riconosce e il resto resterebbe non censito per sempre:
     per questo ogni tornata registra in `tornate` l'elenco delle voci che ha visto, e il
     debito sono le voci comparse dopo l'ultima tornata e mai decise."""
-    names = voci_catalogo(catalog)
-    if not names:
+    if not voci_catalogo(catalog):
         return None
+    names = voci_catalogo(catalog, solo_opzionali=True)
     path = project / REGISTRO
     data = json.loads(path.read_text(encoding="utf-8-sig")) if path.is_file() else {}
     decided = set(data.get("pacchetti") or {})
@@ -126,7 +138,9 @@ def riga_gate(state):
     if state is None:
         return "Gate dei pacchetti non calcolabile: catalogo assente."
     if not state["dovuto"]:
-        return "Gate in pari: tutte le %d voci del catalogo sono state viste dalla tornata del %s." % (state["voci"], state["ultima"])
+        if not state["voci"]:
+            return "Gate in pari: il catalogo non richiede scelte di pacchetto."
+        return "Gate in pari: tutte le %d voci soggette al gate sono già state viste o decise." % state["voci"]
     quando = "ultima tornata registrata il %s" % state["ultima"] if state["ultima"] else "nessuna tornata registrata"
     return ("Gate dovuto: %d voci del catalogo su %d non sono mai state viste dal gate né decise (%s). "
             "La tornata la avvia /riprendi, oppure /gate-pacchetti." % (len(state["nuovi"]), state["voci"], quando))
@@ -134,9 +148,9 @@ def riga_gate(state):
 
 def registra_tornata(project, catalog, data):
     """Scrive nel registro la tornata appena conclusa con le voci del catalogo viste."""
-    names = voci_catalogo(catalog)
-    if not names:
+    if not voci_catalogo(catalog):
         raise ValueError("catalogo assente: nessuna tornata da registrare")
+    names = voci_catalogo(catalog, solo_opzionali=True)
     path = project / REGISTRO
     registry = json.loads(path.read_text(encoding="utf-8-sig")) if path.is_file() else {"versione": 1, "pacchetti": {}}
     registry.setdefault("tornate", []).append({"data": data, "catalogo": names})
@@ -186,8 +200,9 @@ def riepilogo(project, template):
         # @dataclass cerca il modulo in sys.modules mentre lo si esegue
         sys.modules[spec.name] = cerca
         spec.loader.exec_module(cerca)
+        opzionali = set(voci_catalogo(catalog, solo_opzionali=True))
         for voce in cerca.leggi_catalogo(template / ".claude/templates/PACKAGES.md"):
-            if voce.nome not in choices and cerca.adottato(voce, project, template / ".claude/templates"):
+            if voce.nome in opzionali and voce.nome not in choices and cerca.adottato(voce, project, template / ".claude/templates"):
                 presenti.add(voce.nome)
     except (OSError, ImportError, AttributeError) as error:
         righe.append("Riconoscimento dei pacchetti installati non riuscito: %s." % error)

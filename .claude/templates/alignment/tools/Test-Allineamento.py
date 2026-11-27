@@ -53,6 +53,8 @@
 # Uso:
 #   python <percorso>/Test-Allineamento.py               report completo
 #   python <percorso>/Test-Allineamento.py --silenzioso  solo il verdetto finale
+#   python <percorso>/Test-Allineamento.py --hook        come hook di avvio: esce sempre con 0
+#       (con un codice diverso da zero Claude Code scrive «hook failed» e scarta il verdetto)
 #   python <percorso>/Test-Allineamento.py --giorni 30   orizzonte delle scadenze mostrate
 #   python <percorso>/Test-Allineamento.py --radice X     radice del repository
 #   python <percorso>/Test-Allineamento.py --registro Y   percorso del registro JSON
@@ -747,4 +749,7 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    codice = main()
+    # Un hook di avvio che esce con 1 non blocca la sessione ma ne perde l'uscita: Claude
+    # Code mostra «hook failed» senza testo, e il rosso, che e' il caso che conta, sparisce.
+    sys.exit(0 if '--hook' in sys.argv else codice)

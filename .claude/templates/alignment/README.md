@@ -73,6 +73,7 @@ Infine si registra l'esecuzione in un hook `SessionStart` di `settings.json`, ac
 ```
 python tools/Test-Allineamento.py                report completo
 python tools/Test-Allineamento.py --silenzioso   solo il verdetto
+python tools/Test-Allineamento.py --silenzioso --hook   nell'hook SessionStart: esce sempre con 0
 python tools/Test-Allineamento.py --giorni 30    orizzonte delle scadenze mostrate
 python tools/Test-Allineamento.py --registro X   registro in una posizione diversa
 python tools/Test-Allineamento.py --radice Y     radice del repository

@@ -39,6 +39,11 @@
     "perche": "Automatizza lo scheduling del ripasso con ripetizione dilazionata invece di tracciarlo solo in `LEARNER_PROFILE.md`, senza telemetria.",
     "quando_no": "Si offre solo a progetti con `learning-agent` attivo e richiede Anki desktop con l'add-on AnkiConnect; se basta solo il loop di ripasso esiste l'alternativa minimale mcp-ankiconnect di samefarrar."
   },
+  "pacchetto:analisi-codice": {
+    "come": "Si scrive `analisi-codice.json` nella radice dal modello del pacchetto, si scaricano i sorgenti con `sorgenti.py`, poi ogni domanda diventa una ricerca con `ricerca.py nuova`, `mappa` e `genera`, lanciati da `.claude/templates/analisi-codice/tools/`.",
+    "perche": "Risponde a una domanda su un sistema composto da più repository con un'analisi su più livelli: ogni occorrenza degli oggetti coinvolti con link permanente a riga e commit introduttivo, difetti con il commit da `git blame`, pagine con il design system del progetto e sezioni comprimibili.",
+    "quando_no": "Non serve per una domanda su un file solo, a cui basta leggerlo; la ricerca è testuale e non trova le chiamate costruite a runtime, la classificazione per tipo conosce solo gli oggetti di Odoo, e i sorgenti si leggono da GitHub."
+  },
   "pacchetto:anonymization": {
     "come": "Si copia `patterns.example.json` nel layer privato come `_notes/.anonymization-patterns.json` con i valori veri e si lancia `python tools/Test-Anonymization.py`, che il progetto può far eseguire a ogni chiusura.",
     "perche": "Cerca nei file del repository i dati che identificano persone, luoghi e infrastrutture reali, categoria distinta dai segreti, e trova anche i residui ereditati che un controllo sul solo diff non vede mai.",
@@ -548,6 +553,11 @@
     "come": "L'agente la invoca prima di scrivere a mano uno strumento, un convertitore o un'integrazione, e lancia `python tools/cerca-pacchetto.py <parole>` sul catalogo e sull'indice dei filoni.",
     "perche": "Evita di ricostruire in un progetto una capacità che il template ha già pronta o ha già deciso, perché fra un gate e l'altro nessuno rilegge il catalogo.",
     "quando_no": "Non serve per ciò che è specifico del progetto, e non installa niente da sé: propone, e senza una risposta esplicita non istanzia."
+  },
+  "skill:analisi-codice": {
+    "come": "L'agente la carica quando l'utente chiede a che cosa serve un oggetto del codice, perché un utente vede o non vede qualcosa, o dove è usata una cosa, e conduce la ricerca con gli strumenti del pacchetto `analisi-codice`.",
+    "perche": "Una domanda su un oggetto del codice si chiude solo seguendolo in tutti i punti del sistema in cui compare, e la skill fissa un ciclo ripetibile con controlli che rifiutano di pubblicare link rotti o prosa non conforme.",
+    "quando_no": "Non si usa per una domanda a cui risponde la lettura di un file solo, né per insegnare una repository a chi la apre, compito di `codebase-learning`."
   },
   "skill:craft-apps": {
     "come": "L'agente la invoca prima di produrre o convertire un documento, una presentazione, un PDF, un'immagine, un audio o un disegno, e verifica con `python tools/craft-apps.py` quali applicazioni della suite sono installate.",

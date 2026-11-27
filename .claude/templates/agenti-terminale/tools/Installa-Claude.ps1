@@ -105,7 +105,9 @@ $toolsTemplate = Join-Path $Template '.claude\templates\tools'
 $srcWipe = Join-Path $toolsTemplate 'session-end-wipe.ps1'
 $srcScrub = Join-Path $toolsTemplate 'scrub-claude-json.js'
 $srcStato = Join-Path $toolsTemplate 'stato-magazzino.ps1'
-foreach ($f in @($srcWipe, $srcScrub, $srcStato)) {
+$srcPerimetro = Join-Path $toolsTemplate 'wipe-temporanei-perimetro.ps1'
+$srcRegolaArtefatti = Join-Path $Template '.claude\rules\artefatti-temporanei.md'
+foreach ($f in @($srcWipe, $srcScrub, $srcStato, $srcPerimetro, $srcRegolaArtefatti)) {
   if (-not (Test-Path -LiteralPath $f)) {
     Scrivi "MANCA la copia di riferimento: $f" 'Red'
     Scrivi 'Le copie di riferimento vivono nel template, non in questo repository.' 'Yellow'
@@ -246,6 +248,24 @@ foreach ($r in $radici) {
   if ($serveScrub) {
     if ($Verifica) { $azioni += 'companion da copiare' }
     else { Copy-Item -LiteralPath $srcScrub -Destination $dstScrub -Force; $azioni += 'companion copiato' }
+  }
+
+  $dstPerimetro = Join-Path $hooksDir 'wipe-temporanei-perimetro.ps1'
+  if (-not (Test-Path -LiteralPath $dstPerimetro) -or $Forza) {
+    if ($Verifica) { $azioni += 'guardia temporanei da copiare' }
+    else { Copy-Item -LiteralPath $srcPerimetro -Destination $dstPerimetro -Force; $azioni += 'guardia temporanei copiata' }
+  }
+
+  $dstRegolaArtefatti = Join-Path $r.Percorso 'rules\artefatti-temporanei.md'
+  $serveRegolaArtefatti = (-not (Test-Path -LiteralPath $dstRegolaArtefatti)) -or
+    ((Get-FileHash -LiteralPath $srcRegolaArtefatti).Hash -ne (Get-FileHash -LiteralPath $dstRegolaArtefatti).Hash)
+  if ($serveRegolaArtefatti) {
+    if ($Verifica) { $azioni += 'regola artefatti da copiare' }
+    else {
+      New-Item -ItemType Directory -Path (Split-Path -Parent $dstRegolaArtefatti) -Force | Out-Null
+      Copy-Item -LiteralPath $srcRegolaArtefatti -Destination $dstRegolaArtefatti -Force
+      $azioni += 'regola artefatti copiata'
+    }
   }
 
   # --- il resoconto dei residui, in sola lettura e senza configurazione -----

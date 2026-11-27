@@ -1,0 +1,14 @@
+{
+  "sistema": "NOME-BREVE-DEL-SISTEMA",
+  "descrizione": "Che cosa si analizza, per esempio: Istanza X (Odoo 12)",
+  "organizzazione": "Organizzazione proprietaria, oppure si toglie la chiave",
+  "cartella_desktop": "Analisi codice NOME, oppure si toglie la chiave per non creare collegamenti",
+  "sorgenti": {
+    "composizione": {"repo": "proprietario/repository-di-composizione", "ramo": "ramo-di-produzione", "percorso": "percorso/del/Dockerfile"},
+    "repository": [{"repo": "proprietario/repository-in-piu", "ramo": "ramo", "famiglia": "core"}],
+    "famiglie": {"proprietario-della-personalizzazione": "personalizzazione", "oca": "oca"},
+    "facoltative": ["oca", "core"],
+    "senza_prefisso": ["proprietario-della-personalizzazione"],
+    "storia_completa": ["nome-locale-del-repository-di-cui-serve-il-blame"]
+  }
+}

@@ -70,6 +70,7 @@ MARCATORE_BUNDLE = os.path.join(".claude", "PROMPT-nuovo-progetto.md")
 # Le capacità che non si scelgono, con il motivo. Aggiungerne una è una decisione: significa
 # dichiarare che vale in ogni progetto e che nessun gate deve proporla.
 SEMPRE_ATTIVE = {
+    "regola:artefatti-temporanei": "destinazione esplicita e pulizia delle copie di consegna, in ogni progetto",
     "regola:chat-non-e-memoria": "persistenza di ciò che nasce in sessione, vale in ogni progetto",
     "regola:git-commands-format": "forma dei comandi consegnati all'utente, vale in ogni progetto",
     "regola:documenti-personali": "documenti personali mai letti senza richiesta espressa, vale in ogni progetto",
@@ -81,6 +82,7 @@ SEMPRE_ATTIVE = {
     "regola:disclosure-progressiva": "accesso per livelli ai documenti voluminosi, in ogni progetto: si carica da sé davanti a un documento, e token-economy ne tiene la prescrizione breve",
     "regola:token-economy": "economia del contesto, vale in ogni sessione",
     "skill:craft-apps": "skill di sistema in ogni progetto: verifica in locale le app Craft prima di produrre un artefatto",
+    "skill:analisi-codice": "skill di sistema in ogni progetto: analisi d'impatto del codice su più livelli quando si chiede dove o perché un oggetto è usato",
     "skill:cerca-pacchetto":"skill di sistema in ogni progetto: e' essa stessa l'ingresso al catalogo fra un gate e l'altro",
 }
 

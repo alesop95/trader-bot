@@ -34,6 +34,10 @@ Sempre da `scripts\Avvia-Codex.ps1 -Account <N>`, mai digitando `codex` a mano. 
 
 Se un progetto ha una propria memoria documentale, si legge quella, e la si aggiorna lì. Niente di ciò che deve sopravvivere alla sessione vive qui dentro.
 
+## Artefatti consegnati all'utente
+
+Chiedi la cartella di destinazione prima di generare un artefatto per l'utente, incluse le immagini, se non è già indicata. Quando lo strumento produce una copia nella radice dell'account, verifica la consegna nella cartella concordata e rimuovi i temporanei di quella generazione, comprese le immagini sotto `generated_images`. La regola di progetto è `.claude/rules/artefatti-temporanei.md`.
+
 ## Perimetro di esecuzione
 
 `approval_policy = "on-request"` e `sandbox_mode = "workspace-write"`: le operazioni sicure sono ammesse, quelle verso l'esterno restano manuali.

@@ -19,6 +19,7 @@ Uso
     python .claude/templates/tools/test-agenti-terminale.py
 """
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -26,15 +27,25 @@ from pathlib import Path
 RADICE = Path(__file__).resolve().parents[3]
 PACCHETTO = RADICE / ".claude" / "templates" / "agenti-terminale"
 PROVE = [
-    ("riserva-agenti.py --autotest", [str(PACCHETTO / "tools" / "riserva-agenti.py"), "--autotest"]),
-    ("tests/test_configura_progetti.py", ["-m", "unittest", "discover", "-s", str(PACCHETTO / "tests")]),
+    ("riserva-agenti.py --autotest", [sys.executable, str(PACCHETTO / "tools" / "riserva-agenti.py"), "--autotest"]),
+    ("tests/test_configura_progetti.py", [sys.executable, "-m", "unittest", "discover", "-s", str(PACCHETTO / "tests")]),
 ]
 
 
 def main():
     errori = 0
-    for nome, argomenti in PROVE:
-        esito = subprocess.run([sys.executable] + argomenti, capture_output=True, text=True,
+    prove = list(PROVE)
+    if sys.platform == "win32":
+        powershell = shutil.which("powershell")
+        if not powershell:
+            print("PowerShell non trovato")
+            return 1
+        prove.append(("tests/test-temporanei-agenti.ps1", [
+            powershell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
+            str(PACCHETTO / "tests" / "test-temporanei-agenti.ps1"),
+        ]))
+    for nome, argomenti in prove:
+        esito = subprocess.run(argomenti, capture_output=True, text=True,
                                encoding="utf-8", errors="replace")
         uscita = (esito.stdout + esito.stderr).strip()
         ultima = (uscita.splitlines() or ["nessuna uscita"])[-1]

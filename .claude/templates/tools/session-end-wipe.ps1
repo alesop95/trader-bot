@@ -80,6 +80,7 @@
 #   distinti proprio per poterlo fare.
 # ============================================================================
 param(
+  [switch]$SoloTemporanei, # solo artefatti effimeri; conserva trascrizioni e configurazione
   [switch]$DryRun,   # stampa cosa verrebbe rimosso, senza rimuovere niente
   [switch]$List,     # sola lettura: elenca gli slug presenti marcati KEEP/WIPE
   [switch]$Forza,    # ignora le sessioni aperte: toglie anche cio che appartiene a loro
@@ -203,8 +204,15 @@ if (-not $looksLikeStore) {
 # -List lanciato dal controllo di igiene aveva cancellato l'esito dell'ultima pulizia vera.
 $script:logFile = if ($List -or $DryRun) { Join-Path $base 'session-end-wipe.prova.log' } else { Join-Path $base 'session-end-wipe.log' }
 # La copia rilanciata dal modo hook continua il diario della corsa che l'ha lanciata.
-if (-not $AttendiPid) { Set-Content -LiteralPath $script:logFile -Value '' -Encoding utf8 }
-$mode = if ($List) { 'list' } elseif ($DryRun) { 'dry' } else { 'wipe' }
+if ($SoloTemporanei) {
+  $script:logFile = $null
+  if ($Forza -or $List -or $script:payloadHook -or $AttendiPid) { Stop-Wipe '-SoloTemporanei richiede una chiamata manuale senza -Forza o -List.' }
+  $perimetro = Join-Path $PSScriptRoot 'wipe-temporanei-perimetro.ps1'
+  if (-not (Test-Path -LiteralPath $perimetro)) { Stop-Wipe 'Manca wipe-temporanei-perimetro.ps1; aggiornare il wipe dal template.' }
+  . $perimetro
+}
+elseif (-not $AttendiPid) { Set-Content -LiteralPath $script:logFile -Value '' -Encoding utf8 }
+$mode = if ($SoloTemporanei -and $DryRun) { 'temporanei-dry' } elseif ($SoloTemporanei) { 'temporanei' } elseif ($List) { 'list' } elseif ($DryRun) { 'dry' } else { 'wipe' }
 Write-Log ("session-end-wipe: {0}  modo={1}  base={2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $mode, $base)
 
 # 0.2 la configurazione e stata compilata. Il segnaposto non si sostituisce da solo, e un
@@ -219,7 +227,7 @@ Write-Log ("session-end-wipe: {0}  modo={1}  base={2}" -f (Get-Date -Format 'yyy
 # memoria di un progetto vive dentro il progetto, versionata.
 $keepPrefixes = @($keepPrefixes | Where-Object { $_ -and $_ -notmatch '<.*>' })
 $keepConfigured = ([bool]$keepPrefixes) -or $allowEmptyKeep
-if (-not $keepConfigured -and -not $List) {
+if (-not $keepConfigured -and -not $List -and -not $SoloTemporanei) {
   Stop-Wipe "keepPrefixes non compilato e $allowEmptyKeep non dichiarato. Esegui con -List per vedere gli slug presenti; se non si vuole preservare nulla, imposta $allowEmptyKeep = $true."
 }
 
@@ -253,10 +261,10 @@ if ($List) {
   }
   exit 0
 }
-if ($all.Count -gt 0 -and $keptList.Count -eq 0 -and -not $allowEmptyKeep) {
+if (-not $SoloTemporanei -and $all.Count -gt 0 -and $keptList.Count -eq 0 -and -not $allowEmptyKeep) {
   Stop-Wipe ("nessuno dei {0} slug in {1} corrisponde a keepPrefixes ('{2}'): la configurazione e di un'altra macchina. Esegui con -List e correggi i prefissi; se l'insieme vuoto e voluto, imposta `$allowEmptyKeep = `$true." -f $all.Count, $projects, ($keepPrefixes -join ' '))
 }
-Write-Log ("Progetti: {0} totali, {1} preservati, {2} da rimuovere." -f $all.Count, $keptList.Count, ($all.Count - $keptList.Count))
+if (-not $SoloTemporanei) { Write-Log ("Progetti: {0} totali, {1} preservati, {2} da rimuovere." -f $all.Count, $keptList.Count, ($all.Count - $keptList.Count)) }
 
 # 0.4 le sessioni ancora aperte. Storia, perche' spiega la forma attuale. Fino al
 # 2026-10-05 il wipe cancellava tutto a ogni chiusura, compresi scratchpad, piani e task
@@ -284,7 +292,8 @@ Write-Log ("Progetti: {0} totali, {1} preservati, {2} da rimuovere." -f $all.Cou
 # la catena di antenati di questo script, cioe la sessione che sta chiudendo e chi l'ha
 # lanciata: quella sessione si pulisce, non si protegge.
 function Get-AltreSessioniClaude([switch]$ConAntenati) {
-  $tutti = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue)
+  $erroreCim = if ($SoloTemporanei) { 'Stop' } else { 'SilentlyContinue' }
+  $tutti = @(Get-CimInstance Win32_Process -ErrorAction $erroreCim)
   $perPid = @{}
   foreach ($p in $tutti) { $perPid[[int]$p.ProcessId] = $p }
   $antenati = @{}
@@ -304,7 +313,8 @@ function Get-AltreSessioniClaude([switch]$ConAntenati) {
   })
 }
 $script:protezione = $null
-$altre = @(Get-AltreSessioniClaude -ConAntenati:(-not $script:payloadHook))
+try { $altre = @(Get-AltreSessioniClaude -ConAntenati:(-not $script:payloadHook)) }
+catch { Stop-Wipe "Rilevamento sessioni Claude non disponibile: $($_.Exception.Message)" }
 # Il modo hook non lavora dentro l'hook. Osservato il 2026-10-09 alle 09:42 su account1: la
 # prima corsa vera dall'hook ha scritto tre righe di diario e si e' fermata prima di
 # rimuovere qualunque cosa, mentre le prove da terminale finivano in pochi secondi.
@@ -361,6 +371,9 @@ if ($altre.Count -gt 0 -and -not $Forza) {
       $legamiTutti = @(Get-Legami @(Get-ProcessiClaude) $magazzinoTutti)
       if (-not $script:payloadHook) { foreach ($l in $legamiTutti) { $l.Processo.Proprio = $false } }
       $script:protezione = Get-Protezione $legamiTutti
+      if ($SoloTemporanei -and @($altre | Where-Object { $_.ProcessId -notin $script:protezione.Vive }).Count) {
+        throw 'Alcuni processi attivi mancano dal quadro di protezione.'
+      }
       $chiusa = if ($SessioneChiusa) { $SessioneChiusa } elseif ($script:payloadHook) { [string]$script:payloadHook.session_id } else { '' }
       if ($chiusa -and $script:protezione.Ids.ContainsKey($chiusa)) {
         $script:protezione.Ids.Remove($chiusa)
@@ -371,7 +384,7 @@ if ($altre.Count -gt 0 -and -not $Forza) {
   }
   if (-not $script:protezione) {
     Write-Log ("Rimandato: {0} altre sessioni di Claude Code aperte (PID {1}). Senza stato-magazzino.ps1 accanto a questo script non si sa che cosa appartenga a loro, e cancellare ora toglierebbe scratchpad e piani a sessioni ancora al lavoro: pulira l'ultima sessione che si chiude, oppure un'esecuzione manuale con -Forza." -f $altre.Count, (($altre | ForEach-Object { $_.ProcessId }) -join ', '))
-    if (-not $DryRun) {
+    if ($SoloTemporanei -or -not $DryRun) {
       Write-Log 'Nessuna rimozione eseguita.'
       exit 0
     }
@@ -509,7 +522,7 @@ function Move-InQuarantena($path) {
 # di un'altra sessione, che altrimenti le cancellerebbe come residui.
 $script:orfane = @{}
 $sessDirO = Join-Path $base 'sessions'
-if (Test-Path -LiteralPath $sessDirO) {
+if (-not $SoloTemporanei -and (Test-Path -LiteralPath $sessDirO)) {
   $chiusaO = if ($SessioneChiusa) { $SessioneChiusa } elseif ($script:payloadHook) { [string]$script:payloadHook.session_id } else { '' }
   foreach ($f in @(Get-ChildItem -LiteralPath $sessDirO -Filter '*.json' -File -Force)) {
     if ($f.Name -notmatch '^(\d+)\.json$') { continue }
@@ -549,7 +562,7 @@ if ($script:crash -and -not $DryRun -and (Test-Path -LiteralPath (Join-Path $bas
 # Scadenza: solo una chiusura canonica toglie le cartelle di data vecchie, e solo dentro una
 # radice che porta il LEGGIMI.txt scritto qui, cosi' che un percorso sbagliato non diventi
 # una rimozione ricorsiva altrove.
-if (-not $script:crash -and -not $List -and (Test-Path -LiteralPath (Join-Path $script:quarRoot 'LEGGIMI.txt'))) {
+if (-not $SoloTemporanei -and -not $script:crash -and -not $List -and (Test-Path -LiteralPath (Join-Path $script:quarRoot 'LEGGIMI.txt'))) {
   $sogliaQ = (Get-Date).Date.AddDays(-$giorniQuarantena)
   foreach ($dq in @(Get-ChildItem -LiteralPath $script:quarRoot -Directory -Force | Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' })) {
     [datetime]$dataQ = [datetime]::MinValue
@@ -561,6 +574,7 @@ if (-not $script:crash -and -not $List -and (Test-Path -LiteralPath (Join-Path $
 }
 
 $script:rimossi = 0
+$script:temporaneiFalliti = 0
 $script:conservati = 0
 $script:perCategoria = [ordered]@{}
 # La categoria di un percorso, per il riepilogo del diario: il primo livello sotto la home
@@ -577,6 +591,20 @@ function Remove-Target($path) {
   if (-not (Test-Path -LiteralPath $path)) { return }
   if (-not (Test-DentroPerimetro $path)) {
     Stop-Wipe ("RIFIUTO: '{0}' e fuori dalle radici consentite ({1}). Nessuna rimozione oltre questo punto." -f $path, ($script:radiciConsentite -join ' ; '))
+  }
+  if ($SoloTemporanei) {
+    $consentita = $script:radiciConsentite | Where-Object { $path -eq $_ -or (Test-SottoRadice $path $_) } | Select-Object -First 1
+    try {
+      if (-not $consentita -or -not (Test-TemporaneoLocale $path $consentita)) {
+        Write-Log "  saltato temporaneo con collegamenti o fuori radice: $path"
+        return
+      }
+      if ($DryRun) { Write-Log "  [dry-run] rimuoverei temporaneo: $path" }
+      else { Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction Stop }
+      $script:rimossi++
+    }
+    catch { $script:temporaneiFalliti++; Write-Log "  temporaneo non rimosso: $path ($($_.Exception.Message))" }
+    return
   }
   # In crash cio' che sta nella home dell'account si sposta in quarantena invece di sparire;
   # scratchpad e log MCP no, perche' per riprendere una sessione non servono.
@@ -604,7 +632,7 @@ function Clear-Mista($path, [switch]$TieniCartella) {
 # protette, e la cartella sparisce se non resta niente.
 $nomeAccountProj = Split-Path -Leaf $base
 if ($nomeAccountProj -ne '.claude') { $nomeAccountProj = $nomeAccountProj -replace '^\.claude-', '' }
-foreach ($d in $all) {
+foreach ($d in ($all | Where-Object { -not $SoloTemporanei })) {
   if (Test-Keep $d.Name) { continue }
   if (-not $script:protezione) { Remove-Target $d.FullName; continue }
   $avvioSlug = Get-AvvioSlug ('{0}|{1}' -f $nomeAccountProj, $d.Name)
@@ -622,11 +650,20 @@ foreach ($d in $all) {
 # configurazione, non residui di sessione. 'sessions' contiene un file per processo vivo,
 # <pid>.json e <pid>.<impronta>.key: si tolgono quelli dei processi che non ci sono piu'.
 $ephemeral = @('session-env','shell-snapshots','file-history',
-               'plans','tasks','paste-cache','backups','memory',
-               'cache','jobs','ide','todos','statsig','telemetry')
-foreach ($e in $ephemeral) { Clear-Mista (Join-Path $base $e) }
+               'plans','tasks','paste-cache','jobs','todos')
+if (-not $SoloTemporanei) { $ephemeral += @('backups','memory','cache','ide','statsig','telemetry') }
+# Gli scratchpad e i log MCP sono comuni. Le directory qui sotto sono
+# dell'account, quindi nel modo temporanei si possono pulire se tutti i processi
+# sono identificati e appartengono ad altre radici.
+$accountFermo = $SoloTemporanei -and $script:protezione -and
+  -not $script:protezione.Incerti -and -not $script:protezione.AccountVivi.ContainsKey($nomeAccountProj)
+foreach ($e in $ephemeral) {
+  $cartella = Join-Path $base $e
+  if ($accountFermo) { Remove-Target $cartella }
+  else { Clear-Mista $cartella }
+}
 $sessDir = Join-Path $base 'sessions'
-if (Test-Path -LiteralPath $sessDir) {
+if (-not $SoloTemporanei -and (Test-Path -LiteralPath $sessDir)) {
   if (-not $script:protezione) { Remove-Target $sessDir }
   else {
     foreach ($f in @(Get-ChildItem -LiteralPath $sessDir -Force -File)) {
@@ -638,7 +675,7 @@ if (Test-Path -LiteralPath $sessDir) {
 # per richiesta con il suo sessionId: con sessioni aperte si riscrive con le sole righe
 # delle sessioni protette, e quelle senza sessionId solo se scritte dopo il primo avvio vivo.
 $hist = Join-Path $base 'history.jsonl'
-if (Test-Path -LiteralPath $hist) {
+if (-not $SoloTemporanei -and (Test-Path -LiteralPath $hist)) {
   if (-not $script:protezione) { Remove-Target $hist }
   else {
     $righe = @(Get-Content -LiteralPath $hist -Encoding UTF8)
@@ -661,7 +698,7 @@ if (Test-Path -LiteralPath $hist) {
   }
 }
 $mcpCache = Join-Path $base 'mcp-needs-auth-cache.json'
-if ((Test-Path -LiteralPath $mcpCache) -and -not (Test-Recente (Get-Item -LiteralPath $mcpCache))) { Remove-Target $mcpCache }
+if (-not $SoloTemporanei -and (Test-Path -LiteralPath $mcpCache) -and -not (Test-Recente (Get-Item -LiteralPath $mcpCache))) { Remove-Target $mcpCache }
 
 # --- 3) scratchpad temporanei: <radice temporanea>\claude\<slug-progetto>\<id-sessione> ---
 # Claude Code tiene qui scratchpad e output dei task, uno slug per progetto e una
@@ -706,6 +743,13 @@ if ($mcpRoot -and (Test-Path -LiteralPath $mcpRoot)) {
   Get-ChildItem -LiteralPath $mcpRoot -Directory -Force |
     Where-Object { -not (Test-Keep $_.Name) } |
     ForEach-Object { Clear-PerData $_.FullName }
+}
+
+if ($SoloTemporanei) {
+  $verbo = if ($DryRun) { 'Da rimuovere' } else { 'Rimossi' }
+  Write-Log ("{0} {1} temporanei, conservati {2}." -f $verbo, $script:rimossi, $script:conservati)
+  if ($script:temporaneiFalliti) { exit 1 }
+  exit 0
 }
 
 # --- 4) .claude.json: voci 'projects' dei percorsi non preservati, metriche di quelli preservati ---

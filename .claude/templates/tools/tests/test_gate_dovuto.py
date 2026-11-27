@@ -39,10 +39,10 @@ class GateDovuto(unittest.TestCase):
             subprocess.run(["git", "-C", str(self.tpl), *args], check=True, capture_output=True)
         self.pubblica("alfa", "beta")
 
-    def pubblica(self, *nomi):
+    def pubblica(self, *nomi, altre_righe=""):
         f = self.tpl / CATALOGO
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(catalogo(*nomi), encoding="utf-8", newline="\n")
+        f.write_text(catalogo(*nomi) + altre_righe, encoding="utf-8", newline="\n")
         subprocess.run(["git", "-C", str(self.tpl), "add", "-A"], check=True, capture_output=True)
         subprocess.run(["git", "-C", str(self.tpl), "commit", "-q", "-m", "catalogo"], check=True, capture_output=True)
 
@@ -96,6 +96,43 @@ class GateDovuto(unittest.TestCase):
         ricevuta = self.allinea()
         self.assertIn("Gate dovuto: 1 voci del catalogo su 2", ricevuta)
         self.assertIn("`beta`", ricevuta)
+
+    def test_skill_di_sistema_consegnata_senza_scelta_al_gate(self):
+        skill = ".claude/skills/analisi-codice/SKILL.md"
+        f = self.tpl / skill
+        f.parent.mkdir(parents=True)
+        f.write_text("---\nname: analisi-codice\ndescription: Analisi su richiesta.\n---\n",
+                     encoding="utf-8", newline="\n")
+        self.pubblica("alfa", altre_righe=(
+            "| `analisi-codice` | Analisi | Non passa dal gate: skill di sistema | Attrezzi | Python |\n"
+            "| `separazione-ambienti` | Guida | Non passa dal gate dei pacchetti: ha un proprio gate | Guida | Nessuno |\n"
+        ))
+        ricevuta = self.allinea()
+        self.assertIn("| NUOVO | `" + skill + "` |", ricevuta)
+        self.assertEqual((self.prj / skill).read_bytes(), f.read_bytes())
+        self.assertIn("Gate dovuto: 1 voci del catalogo su 1", ricevuta)
+        self.assertIn("Voci mai viste: `alfa`.", ricevuta)
+        codice, uscita = self.verifica("--gate")
+        self.assertEqual(codice, 0, uscita)
+        self.assertIn("Gate dovuto: 1 voci del catalogo su 1", uscita)
+        sync = STRUMENTI / "sync-codex-skills.py"
+        for extra in ([], ["--check"]):
+            esito = subprocess.run([sys.executable, str(sync), "--project-root", str(self.prj), *extra],
+                                   capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(esito.returncode, 0, esito.stdout + esito.stderr)
+        self.assertTrue((self.prj / ".agents/skills/analisi-codice/SKILL.md").is_file())
+
+    def test_avviso_su_copia_rinominata_conserva_la_ricevuta(self):
+        src = self.tpl / ".claude/templates/prova/tools/converti.py"
+        src.parent.mkdir(parents=True)
+        src.write_text("print('prova scollegata')\n", encoding="utf-8", newline="\n")
+        locale = self.prj / "tools/converti-pagine.py"
+        locale.parent.mkdir()
+        locale.write_bytes(src.read_bytes())
+        self.pubblica("alfa", "beta", "gamma")
+        ricevuta = self.allinea()
+        self.assertIn("| NUOVO | `" + src.relative_to(self.tpl).as_posix() + "` |", ricevuta)
+        self.assertEqual(self.allinea(), ricevuta)
 
 
 VECCHIA = ("- Apertura di sessione: `python .claude/templates/tools/verifica-pacchetti.py --gate`; "

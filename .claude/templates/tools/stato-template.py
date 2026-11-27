@@ -297,13 +297,13 @@ def innesta_attese(testo, attesi, gate=None):
     return corpo + "\n" + sezione
 
 
+ESITI_CONSEGNATI = frozenset(
+    ("NUOVO", "VECCHIO", "SUPERATO", "MERGE", "RISOLTO", "INNESCO", "SPOSTATO", "RIMOSSO")
+)
+
+
 def ricevuta(esiti, commit, attesi=None, gate=None):
-    written = [
-        e
-        for e in esiti
-        if e["esito"]
-        in ("NUOVO", "VECCHIO", "SUPERATO", "MERGE", "RISOLTO", "INNESCO", "SPOSTATO", "RIMOSSO")
-    ]
+    written = [e for e in esiti if e["esito"] in ESITI_CONSEGNATI]
     attesi = list(attesi or [])
     if not written and not attesi and not (gate and gate.get("nuovi")):
         return None

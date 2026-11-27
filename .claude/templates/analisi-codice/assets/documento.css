@@ -1,0 +1,79 @@
+/* Foglio di stile del documento: mappa la struttura di un documento sui token del design
+   system. Estratto il 09/11/2026 dalla pagina scritta a mano, che lo teneva incollato
+   insieme a 878 KB di caratteri incorporati; separarlo e' la stessa operazione che
+   `documento-estrai.py` fa sul testo, applicata all'altra meta'. Il design system fornisce
+   i token e i componenti e non ha un foglio per gli elementi nudi di un documento: questo
+   lo e'. I colori riferiscono i token e tengono il valore come ripiego, cosi' la pagina
+   resta corretta anche senza il tema e un cambio di marchio arriva da solo. */
+
+:root{--ink:var(--iw-ink,#0A0A0A);--viola:var(--iw-purple,#4D11A7);--filo:var(--iw-hairline,#D0D4E3);--incavo:var(--iw-surface-sunken,#F4F5F9);--campo:var(--iw-surface-raised,#EBEDF4);
+  --spento:var(--iw-ink-disabled,#ACB0CD);--errore:#E7000B;--ok:#92B500;--gutter:116px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:#FFFFFF;color:var(--ink);font-family:"Altro Var","Altro Grotesk",system-ui,sans-serif;
+  font-weight:380;font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Altro Serif",Georgia,serif;margin:0;font-weight:400}
+h1{font-size:96px;line-height:1;font-weight:300;letter-spacing:-0.01em}
+h2{font-size:48px;line-height:1}h3{font-size:28px;line-height:1.15}p{margin:0}
+.utility{height:40px;border-bottom:1px solid var(--filo);display:flex;align-items:center;padding:0 var(--gutter);gap:24px;flex-wrap:wrap}
+.nav{height:77px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--gutter)}
+.rule{height:20px;background:linear-gradient(270deg,#57CCF6 7.21%,#AFD100 16.83%,#00CECE 67.79%,#4D11A7 96.15%)}
+.marchio{font-family:"Altro Serif",Georgia,serif;font-size:28px;letter-spacing:-0.01em}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.2em;font-weight:500}
+.label.muta{color:var(--spento)}
+.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.pin{width:11px;height:11px;flex:0 0 11px}.eyebrow .label{font-size:18px}
+main{padding:0 var(--gutter)}
+section{padding:96px 0;border-bottom:1px solid var(--filo)}section:last-of-type{border-bottom:0}
+.standfirst{max-width:none;font-size:24px;line-height:1.45;margin-top:24px}
+.nota{font-size:12px;color:var(--spento);margin-top:16px;max-width:none;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin-top:40px;font-size:18px}
+th,td{text-align:left;padding:16px 24px 16px 0;border-bottom:1px solid var(--filo);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.2em;font-weight:500;border-bottom:2px solid var(--ink);padding-bottom:12px}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.scheda{border:1px solid var(--filo);margin-top:40px}
+.scheda .capo{background:var(--incavo);border-bottom:1px solid var(--filo);padding:24px 40px;
+  display:flex;align-items:baseline;gap:20px;flex-wrap:wrap}
+.scheda .capo .cod{font-family:"Altro Serif",Georgia,serif;font-size:28px;color:var(--viola)}
+.scheda .capo h3{flex:1 1 320px}
+.scheda dl{margin:0;padding:40px;display:grid;grid-template-columns:230px 1fr;gap:20px 24px}
+.scheda dt{font-size:12px;text-transform:uppercase;letter-spacing:.2em;font-weight:500;color:var(--spento);padding-top:3px}
+.scheda dd{margin:0}
+.vuoto{display:inline-flex;align-items:center;gap:8px;font-size:12px;text-transform:uppercase;
+  letter-spacing:.2em;font-weight:500;color:var(--errore)}
+.vuoto::before{content:"";width:11px;height:11px;background:var(--errore);flex:0 0 11px}
+.riquadro{border:1px solid var(--filo);padding:40px;margin-top:40px;background:var(--incavo)}
+.riquadro h3{margin-bottom:24px}.riquadro p + p{margin-top:16px}
+footer{padding:64px var(--gutter) 96px;background:var(--incavo);border-top:1px solid var(--filo)}
+footer p{max-width:none;font-size:12px;color:var(--spento);line-height:1.6}footer p + p{margin-top:16px}
+@media (max-width:1100px){:root{--gutter:24px}h1{font-size:64px}h2{font-size:40px}
+  .scheda dl{grid-template-columns:1fr;gap:6px 0}
+  .scheda dt{padding-top:16px}}
+@media (max-width:640px){h1{font-size:40px}body{font-size:16px}}
+
+/* Prosa di sezione. Il foglio estratto dalla pagina scritta a mano non aveva nessuna regola
+   per i paragrafi dentro una sezione, e non era una dimenticanza: quella pagina era quasi
+   tutta tabelle e schede, e la poca prosa stava in riquadri e nel pie' di pagina, che le
+   regole ce le hanno. Un documento fatto di prosa senza queste regole esce con i paragrafi
+   attaccati fra loro e righe lunghe quanto la finestra. I valori non sono nuovi: sono gli
+   stessi gia' usati nel foglio, cioe' 16px fra due paragrafi come nei riquadri, 24px dopo un
+   titolo come per il sommario, 40px prima di un titolo di terzo livello come per le tabelle,
+   senza limite di misura di riga: il testo occupa la larghezza del contenitore, su richiesta del 26/11/2026. */
+section > p{max-width:none}
+section > p + p{margin-top:16px}
+section > h1 + p,section > h2 + p,section > h3 + p{margin-top:24px}
+section > h3{margin-top:40px}
+section > table + p{margin-top:24px}
+section > table + h2,section > table + h3{margin-top:40px}
+section > h1 + .standfirst,section > h2 + .standfirst{margin-top:24px}
+
+/* Testata del documento: occhiello, titolo e sommario prima delle sezioni. Le regole vengono
+   dalla seconda pagina scritta a mano, che usava un vocabolario di classi tutto suo; qui
+   valgono per il vocabolario unico, e i nomi italiani restano come sinonimi perche' le pagine
+   gia' esistenti li usano. */
+.testata{padding:64px var(--gutter) 0}
+.testata h1{margin:0}
+.testata .eyebrow,.testata .occhiello{margin-bottom:24px}
+.occhiello{display:inline-flex;align-items:center;gap:10px;text-transform:uppercase;
+  letter-spacing:.2em;font-size:12px;font-weight:500}
+.occhiello .pin{width:11px;height:11px;flex:0 0 11px}
+.sommario{max-width:none;font-size:24px;line-height:1.45;margin:24px 0 0}

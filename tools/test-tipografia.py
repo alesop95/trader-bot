@@ -353,7 +353,8 @@ def prova_guardia_modelli():
     EM = chr(0x2014)
     CONTENUTO = ("Perch" + "e" + AP + " la citta " + EM + " e" + AP + " cosi." + NL)
     falliti = 0
-    base = os.path.join(ROOT, "_notes", "tmp", "guardia-modelli")
+    # La prova per directory attraversa anche il filtro di visibilità Git.
+    base = tempfile.mkdtemp(prefix="prova-guardia-modelli-", dir=ROOT)
     sotto = os.path.join(base, ".claude", "templates")
     fuori = os.path.join(base, "docs")
 

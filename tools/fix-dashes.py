@@ -224,6 +224,29 @@ def elabora(percorso, conteggio):
     return True, (b"\xef\xbb\xbf" + dati) if bom else dati
 
 
+def visibili_a_git(radice):
+    """I file che git potrebbe committare sotto `radice`, o None se git non risponde.
+
+    Sono i tracciati piu' i nuovi non ignorati, la stessa vista del controllo di
+    anonimizzazione. Una cartella ignorata da git non arriva mai in un commit, quindi un
+    controllo che la percorre ferma la chiusura per un testo che non puo' essere pubblicato:
+    caso del 2026-11-25 in un progetto istanziato, dove la copia riservata del codice di un
+    collaboratore, piena di trattini lunghi, ha bloccato ogni commit con 31 file che nessun
+    commit avrebbe mai contenuto (L-011 di quel progetto).
+    """
+    import subprocess
+    try:
+        uscita = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            cwd=radice, stdin=subprocess.DEVNULL, capture_output=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if uscita.returncode != 0:
+        return None
+    return set(os.path.normcase(os.path.abspath(os.path.join(radice, p)))
+               for p in uscita.stdout.decode("utf-8", "replace").split("\0") if p)
+
+
 def autotest():
     """Prove interne: i cinque segni si normalizzano, il verbatim resta intatto."""
     casi = [
@@ -274,7 +297,41 @@ def autotest():
         print("  FALLITO  la prosa accanto al code span non e' stata normalizzata")
         fallite += 1
 
-    print("autotest: %d casi, %d falliti" % (len(casi) + 4, fallite))
+    # Una cartella ignorata da git resta fuori dalla vista: e' il caso del 2026-11-25 descritto
+    # in visibili_a_git. La prova costruisce un repository vero, perche' la proprieta' da
+    # verificare e' la risposta di git e non una regola dello strumento.
+    import shutil
+    import subprocess
+    import tempfile
+    extra = 0
+    if shutil.which("git"):
+        extra = 2
+        tmp = tempfile.mkdtemp()
+        try:
+            subprocess.run(["git", "init", "-q"], cwd=tmp, stdin=subprocess.DEVNULL,
+                           capture_output=True, timeout=60)
+            os.makedirs(os.path.join(tmp, "privato"))
+            with open(os.path.join(tmp, ".gitignore"), "w", encoding="utf-8") as f:
+                f.write("privato/\n")
+            with open(os.path.join(tmp, "privato", "copia.md"), "w", encoding="utf-8") as f:
+                f.write("testo " + EM + " altrui\n")
+            with open(os.path.join(tmp, "nuovo.md"), "w", encoding="utf-8") as f:
+                f.write("testo " + EM + " nostro\n")
+            vista = visibili_a_git(tmp)
+            privato = os.path.normcase(os.path.abspath(os.path.join(tmp, "privato", "copia.md")))
+            nuovo = os.path.normcase(os.path.abspath(os.path.join(tmp, "nuovo.md")))
+            if vista is None or privato in vista:
+                print("  FALLITO  un file in una cartella ignorata da git entra nel controllo")
+                fallite += 1
+            if vista is None or nuovo not in vista:
+                print("  FALLITO  un file nuovo non ignorato resta fuori dal controllo")
+                fallite += 1
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+    else:
+        print("  saltato  git assente: la prova della vista di git non gira")
+
+    print("autotest: %d casi, %d falliti" % (len(casi) + 4 + extra, fallite))
     return 1 if fallite else 0
 
 
@@ -365,6 +422,23 @@ def main():
                 if os.path.splitext(n)[1].lower() in estensioni:
                     file.append(os.path.join(radice, n))
 
+    # I file trovati percorrendo una cartella si confrontano con la vista di git; quelli passati
+    # per nome si esaminano comunque, perche' chi nomina un file lo vuole controllato.
+    nominati = set(os.path.normcase(os.path.abspath(p if os.path.isabs(p) else os.path.join(ROOT, p)))
+                   for p in args.percorsi
+                   if os.path.isfile(p if os.path.isabs(p) else os.path.join(ROOT, p)))
+    vista = visibili_a_git(ROOT)
+    ignorati_git = 0
+    if vista is not None:
+        tenuti = []
+        for p in file:
+            chiave = os.path.normcase(os.path.abspath(p))
+            if chiave in vista or chiave in nominati:
+                tenuti.append(p)
+            else:
+                ignorati_git += 1
+        file = tenuti
+
     conteggio, cambiati, saltati = {}, [], []
     for percorso in file:
         try:
@@ -396,6 +470,14 @@ def main():
     print("%d file esaminati, %d %s, %d esclusi" % (
         len(file), len(cambiati),
         "da modificare" if args.check else "modificati", len(saltati)))
+    if vista is None:
+        print("git non risponde: esaminati anche i file che git ignora")
+    elif ignorati_git:
+        print("%d file fuori dalla vista di git (ignorati), non esaminati" % ignorati_git)
+    if args.check and cambiati:
+        print("\nda modificare:")
+        for r in cambiati:
+            print("  %s" % r)
     if conteggio:
         print("\nsostituzioni per segno:")
         for segno, n in sorted(conteggio.items(), key=lambda x: -x[1]):

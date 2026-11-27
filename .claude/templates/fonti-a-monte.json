@@ -2207,6 +2207,17 @@
       "data": "2026-10-21"
     },
     {
+      "id": "github:Raphire/Win11Debloat",
+      "pacchetto": "filone prima-installazione-windows",
+      "scheda": "docs/filone-prima-installazione-windows.md",
+      "ruolo": "candidati",
+      "motivo": "Script di pulizia di Windows 11, MIT, fissato per tag e impronta nella catena di prima installazione dell'implementazione di riferimento; candidato al pacchetto del filone.",
+      "controllo": "release",
+      "verificato": "2026.10.30",
+      "licenza": "MIT",
+      "data": "2026-11-25"
+    },
+    {
       "id": "github:regenrek/deepwiki-mcp",
       "motivo": "Server DeepWiki self-hosted citato come alternativa nel documento di handoff di codebase-learning.",
       "pacchetto": "codebase-learning",
@@ -3390,6 +3401,7 @@
   "spediti": {
     "skills": [
       "alberi-di-lavoro",
+      "analisi-codice",
       "analisi-economica-controllo",
       "artefatto",
       "assumptions",

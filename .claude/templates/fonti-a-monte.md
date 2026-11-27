@@ -19,9 +19,9 @@ Le fonti stanno qui per ruolo, cioè per ciò che il template ne fa, e la colonn
 | Fonti di norme e guide | 11 | 4 | 5 | 2 |
 | Cataloghi e indici | 9 | 1 | 7 | 1 |
 | Ispirazioni e crediti | 7 | 7 | 0 | 0 |
-| Candidati e alternative | 128 | 77 | 34 | 17 |
+| Candidati e alternative | 129 | 78 | 34 | 17 |
 | Fonti di scouting | 2 | 2 | 0 | 0 |
-| Totale | 308 | | | |
+| Totale | 309 | | | |
 
 ## Skill, agenti, comandi e plugin
 
@@ -339,6 +339,7 @@ Repository valutati e non adottati: candidati segnalati da una fonte di scouting
 | [github:pi-hole/pi-hole](https://github.com/pi-hole/pi-hole) | Filtro DNS su una macchina Linux propria, quello degli appunti del proprietario; licenza da leggere nel file. | filone laboratorio-di-casa | `docs/piano-potenziamento-2026-11.md` | release | v6.6, 2026-11-12 |
 | [github:PleasePrompto/notebooklm-mcp](https://github.com/PleasePrompto/notebooklm-mcp) | Server MCP che il template raccomandava per il modo assistito di notebooklm-bridge, tolto il 2026-10-21 dopo l'archiviazione; resta citato come base di un eventuale fork proprio, locale e senza profilo persistito. | notebooklm-bridge | `.claude/templates/notebooklm-bridge/README.md` | release su `package.json` | v2.0.0, 2026-10-21 |
 | [github:r-uben/arxiv-mcp-server](https://github.com/r-uben/arxiv-mcp-server) | Server MCP per arXiv elencato nel documento di ricerca del 2026-07-01 come candidato; il catalogo non lo adotta. | academic-researcher | `.claude/templates/academic-researcher/references/claude-ricercatore-universitario-completo.md` | commit | 6f726c4f0adc, 2026-10-21 |
+| [github:Raphire/Win11Debloat](https://github.com/Raphire/Win11Debloat) | Script di pulizia di Windows 11, MIT, fissato per tag e impronta nella catena di prima installazione dell'implementazione di riferimento; candidato al pacchetto del filone. | filone prima-installazione-windows | `docs/filone-prima-installazione-windows.md` | release | 2026.10.30, 2026-11-25 |
 | [github:regenrek/deepwiki-mcp](https://github.com/regenrek/deepwiki-mcp) | Server DeepWiki self-hosted citato come alternativa nel documento di handoff di codebase-learning. | codebase-learning | `.claude/templates/codebase-learning/reference/codebase-learning-handoff.md` | commit | d62d74962971, 2026-10-21 |
 | [github:remotion-dev/remotion](https://github.com/remotion-dev/remotion) | Video e animazioni come codice React, con un plugin per Claude Code; licenza propria, da leggere prima dell'uso in un'organizzazione. | filone web-design | `docs/piano-potenziamento-2026-11.md` | release | v4.0.544, 2026-11-16 |
 | [github:ruvnet/ruflo](https://github.com/ruvnet/ruflo) | Meta-harness per Claude Code e Codex con sciami, memoria e server MCP, installato con un comando che scrive agenti e hook nel progetto; da valutare contro agenti-terminale e la posta fra sessioni. MIT. | filone orchestrazione-agenti | `docs/piano-potenziamento-2026-11.md` | release | v3.77.1, 2026-11-16 |

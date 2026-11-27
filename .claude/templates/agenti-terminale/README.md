@@ -180,6 +180,12 @@ Per tutte le radici di account, Pulisci-Codex.ps1 senza -Account le scopre autom
 
 Prima del wipe conservare conoscenza, fonti e ripresa nel progetto, completare il versionamento manuale e la sua impronta. L’attuale sessione si potrà rimuovere solo dopo la sua uscita; le altre sessioni vive restano protette. Il comando CLI codex delete SESSION elimina una sessione salvata e non equivale a salvare o chiudere il progetto. La verifica del30/10 nel progetto home-lab ha eseguito soltanto l’anteprima: nessuna rimozione dichiarata.
 
+## Artefatti temporanei
+
+La regola condivisa [Destinazione e pulizia degli artefatti](../../rules/artefatti-temporanei.md) richiede la destinazione prima della generazione. Dopo la consegna verificata, l'agente cancella i temporanei di quella generazione. Il wipe ordinario di Codex pulisce anche `generated_images` delle sessioni chiuse e rimuove `tmp` e `visualizations` quando la radice è inattiva. Il wipe di Claude pulisce già le cache di sessione e gli scratchpad.
+
+Per una pulizia da terminale che conservi trascrizioni, database e configurazione si usa `-SoloTemporanei` su `Pulisci-Codex.ps1` o su `session-end-wipe.ps1`. Con `-DryRun` si vede il perimetro senza rimuovere file. Codex rileva gli account numerati e include la radice desktop solo con `-IncludiDefault`. Su Claude il comando si esegue per radice con il wipe installato oppure dal template con `CLAUDE_CONFIG_DIR` impostato alla radice dell'account. Gli elementi ancora in uso e i percorsi collegati fuori dal magazzino sono indicati nell'esito e lasciati al loro posto.
+
 ## Cassetta comune,30/10/2026
 
 posta-sessioni.py registra partecipanti e offre elenca, invia e leggi con archiviazione esplicita; dal 2026-11-09 la cassetta vive per difetto sotto la radice di `ProgramData`, fuori dai dischi di progetto, e `invia` rifiuta senza scavalcamento un messaggio che contenga dati reali, con gli schemi del pacchetto `anonymization` e nominando le sole categorie trovate; Posta-Sessioni.ps1 collega entrambi i launcher. Avvia-Claude.ps1 e Avvia-Codex.ps1 espongono PROJECT_AGENT_MAILBOX_ROOT/ID/TOOL e concedono il solo percorso aggiuntivo tramite --add-dir. I messaggi restano dati da verificare, non ordini da eseguire. [Contratto e limiti](../../../docs/allineamento-e-posta-sessioni.md), incluso il fatto che registrazione non equivale a heartbeat e che le sessioni già aperte non acquisiscono i nuovi permessi.

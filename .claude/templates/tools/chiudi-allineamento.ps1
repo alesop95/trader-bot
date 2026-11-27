@@ -593,6 +593,7 @@ function Esegui-Autotest {
     $m = Messaggio-Predefinito 'abc1234567890'
     Prova "il messaggio sta nei 72 caratteri e non porta attribuzioni" (
       $m.Length -le 72 -and $m -notmatch 'Co-Authored-By' -and $m -notmatch 'Generated with')
+    Prova "il messaggio non nomina la sorgente ne' il suo commit" ($m -notmatch 'template' -and $m -notmatch 'abc1234')
   }
   finally {
     Remove-Item -LiteralPath $radice -Recurse -Force -ErrorAction SilentlyContinue
@@ -607,7 +608,9 @@ function Esegui-Autotest {
 function Messaggio-Predefinito([string]$commit) {
   $breve = $commit
   if ($breve.Length -gt 7) { $breve = $breve.Substring(0, 7) }
-  return "Allineamento dal template al commit $breve"
+  # Un repository condiviso non dice da dove arrivano i suoi strumenti (git-commands-format):
+  # il messaggio descrive che cosa cambia nel progetto, mai la sorgente ne' il suo commit.
+  return "Strumenti di progetto aggiornati"
 }
 
 # La stessa prova dello stage selettivo, ma su un progetto in una macchina via SSH:

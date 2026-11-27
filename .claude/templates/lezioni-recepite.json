@@ -1498,6 +1498,20 @@
     "dove": ".claude/PROJECT-SYSTEM.md sezione 24: misurare il margine dei progetti prima di far crescere una regola sempre attiva; .claude/rules/security-permissions.md alleggerita di 1667 caratteri spostando due sezioni in .claude/norme/security-permissions.md."
   },
   {
+    "progetto": "de961ef6297c",
+    "id": "L-001",
+    "commit": "",
+    "data": "2026-11-26",
+    "dove": ".claude/templates/comandi-ragionamento/skills/artefatto/SKILL.md; analisi-codice/tools/documento-genera.py (PIEGHE dal componente Accordion)"
+  },
+  {
+    "progetto": "de961ef6297c",
+    "id": "L-002",
+    "commit": "",
+    "data": "2026-11-26",
+    "dove": ".claude/templates/analisi-codice: ricerca.py componi e impatti_mancanti, dove-usato.py markdown, README e skill analisi-codice"
+  },
+  {
     "progetto": "e8225edf83b5",
     "id": "L-002",
     "commit": "",
